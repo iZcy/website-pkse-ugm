@@ -75,9 +75,11 @@ func (h *Handler) Contact(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ProfileRani(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"Name":    "Rani",
-		"Role":    "Wakil Ketua KSE Scholarship Association",
-		"Faculty": "Fakultas Kehutanan",
+		"Name":     "Auliya Maharani Lazuardi",
+		"Nickname": "Rani",
+		"Role":     "Wakil Ketua KSE Scholarship Association",
+		"Faculty":  "Fakultas Teknologi Pertanian",
+		"ImageURL": "https://instagram.fcgk3-2.fna.fbcdn.net/v/t51.82787-15/572321913_18494163121072924_7573564493378854406_n.webp?_nc_cat=106&ig_cache_key=Mzc1MTk0MjgzMzUzNjMyNDU0Mg%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6InhwaWRzLjEwODB4MTM1MC5zZHIuQzMifQ%3D%3D&_nc_ohc=cnUl5s6Ice8Q7kNvwG51wgt&_nc_oc=AdnvfDFF3TRE_mleHdnpv5SEyLbYJabIdmz5D5NeVaI1HDUkuSL22ITToygV4mrM3zc&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=instagram.fcgk3-2.fna&_nc_gid=2ZiSBH7xU89c4gVKse4rqQ&oh=00_AftE16sPXODDH01qRoWiLdfwksdWnwVvkEf90lrI48naQg&oe=699E5E2D",
 	}
 	h.templates.ExecuteTemplate(w, "profile.html", data)
 }

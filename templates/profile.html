@@ -55,9 +55,7 @@
                     <!-- Profile Image -->
                     <div class="relative">
                         <div class="w-48 h-48 md:w-56 md:h-56 rounded-full bg-white/20 backdrop-blur-sm p-2">
-                            <div class="w-full h-full rounded-full bg-gradient-to-br from-accent to-yellow-300 flex items-center justify-center">
-                                <i class="fas fa-user text-6xl md:text-7xl text-white/90"></i>
-                            </div>
+                            <img src="{{.ImageURL}}" alt="{{.Name}}" class="w-full h-full rounded-full object-cover">
                         </div>
                         <!-- Badge -->
                         <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-accent text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
@@ -68,7 +66,8 @@
                     <!-- Profile Info -->
                     <div class="text-center md:text-left">
                         <h1 class="text-4xl md:text-5xl font-bold mb-2">{{.Name}}</h1>
-                        <p class="text-xl opacity-90 mb-4">{{.Role}}</p>
+                        <p class="text-xl opacity-90 mb-2">{{.Nickname}}</p>
+                        <p class="text-lg opacity-80 mb-4">{{.Role}}</p>
                         <div class="flex flex-wrap justify-center md:justify-start gap-3">
                             <span class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm">
                                 <i class="fas fa-graduation-cap mr-2"></i>{{.Faculty}}
@@ -92,18 +91,18 @@
                     <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                         <i class="fas fa-user-circle text-2xl text-primary"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-800">Tentang {{.Name}}</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Tentang {{.Nickname}}</h2>
                 </div>
                 
                 <div class="prose prose-lg max-w-none">
                     <p class="text-gray-600 leading-relaxed text-lg">
-                        {{.Name}} adalah mahasiswa yang saat ini menempuh studi di Fakultas Kehutanan. Tak hanya unggul dalam akademik, {{.Name}} juga aktif sebagai <span class="text-primary font-medium">Co-Assistant</span> di berbagai praktikum kehutanan, serta pernah terlibat dalam penelitian.
+                        {{.Nickname}} adalah mahasiswa yang saat ini menempuh studi di {{.Faculty}}. Tak hanya unggul dalam akademik, {{.Nickname}} juga aktif sebagai <span class="text-primary font-medium">Co-Assistant</span> di berbagai praktikum, serta pernah terlibat dalam penelitian.
                     </p>
                     <p class="text-gray-600 leading-relaxed text-lg mt-4">
-                        Tidak berhenti di situ, semangatnya dalam berorganisasi juga luar biasa! Saat ini, {{.Name}} menjabat sebagai <span class="text-primary font-medium">Wakil Ketua Karya Salemba Empat Scholarship Association</span>, membina lebih dari 65 penerima beasiswa, serta menginisiasi sistem KPI untuk meningkatkan motivasi para anggota.
+                        Tidak berhenti di situ, semangatnya dalam berorganisasi juga luar biasa! Saat ini, {{.Nickname}} menjabat sebagai <span class="text-primary font-medium">Wakil Ketua Karya Salemba Empat Scholarship Association</span>, membina lebih dari 65 penerima beasiswa, serta menginisiasi sistem KPI untuk meningkatkan motivasi para anggota.
                     </p>
                     <p class="text-gray-600 leading-relaxed text-lg mt-4">
-                        {{.Name}} juga pernah menjadi <span class="text-primary font-medium">Koordinator Pengembangan Kader</span> di Keluarga Mahasiswa Islam Kehutanan, dan aktif dalam berbagai kegiatan kepemimpinan lainnya.
+                        {{.Nickname}} juga pernah menjadi <span class="text-primary font-medium">Koordinator Pengembangan Kader</span> di Keluarga Mahasiswa Islam, dan aktif dalam berbagai kegiatan kepemimpinan lainnya.
                     </p>
                     <p class="text-gray-600 leading-relaxed text-lg mt-4">
                         Dan tentu saja, prestasi akademiknya tak kalah menginspirasi!
@@ -129,7 +128,7 @@
                             <i class="fas fa-graduation-cap text-2xl text-primary"></i>
                         </div>
                         <h3 class="font-bold text-gray-800 mb-2">Akademik</h3>
-                        <p class="text-gray-600 text-sm">Prestasi akademik unggul di Fakultas Kehutanan</p>
+                        <p class="text-gray-600 text-sm">Prestasi akademik unggul di {{.Faculty}}</p>
                     </div>
                     
                     <!-- Achievement Card 2 -->
@@ -138,7 +137,7 @@
                             <i class="fas fa-flask text-2xl text-secondary"></i>
                         </div>
                         <h3 class="font-bold text-gray-800 mb-2">Penelitian</h3>
-                        <p class="text-gray-600 text-sm">Aktif dalam berbagai proyek penelitian kehutanan</p>
+                        <p class="text-gray-600 text-sm">Aktif dalam berbagai proyek penelitian</p>
                     </div>
                     
                     <!-- Achievement Card 3 -->
@@ -190,7 +189,7 @@
                         <div class="pb-8">
                             <span class="text-sm text-secondary font-medium">2024</span>
                             <h3 class="font-bold text-gray-800">Koordinator Pengembangan Kader</h3>
-                            <p class="text-gray-600 text-sm">Keluarga Mahasiswa Islam Kehutanan</p>
+                            <p class="text-gray-600 text-sm">Keluarga Mahasiswa Islam</p>
                         </div>
                     </div>
                     
@@ -204,7 +203,7 @@
                         <div>
                             <span class="text-sm text-accent font-medium">2023</span>
                             <h3 class="font-bold text-gray-800">Co-Assistant Praktikum</h3>
-                            <p class="text-gray-600 text-sm">Fakultas Kehutanan</p>
+                            <p class="text-gray-600 text-sm">{{.Faculty}}</p>
                         </div>
                     </div>
                 </div>
@@ -214,7 +213,7 @@
         <!-- Contact Card -->
         <section class="py-16 bg-gradient-to-r from-primary to-secondary">
             <div class="container mx-auto px-4 text-center text-white">
-                <h2 class="text-2xl font-bold mb-4">Terhubung dengan {{.Name}}</h2>
+                <h2 class="text-2xl font-bold mb-4">Terhubung dengan {{.Nickname}}</h2>
                 <p class="opacity-90 mb-8">Jangan ragu untuk menghubungi untuk kolaborasi atau diskusi</p>
                 <div class="flex justify-center gap-4">
                     <a href="#" class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center hover:bg-white hover:text-primary transition">
