@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - Organization Name</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">O</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-primary text-lg">Organization Name</h1>
+                    <p class="text-xs text-gray-500">Tagline Here</p>
+                </div>
+            </a>
+            <ul class="hidden md:flex gap-6">
+                <li><a href="/" class="text-gray-600 hover:text-primary">Beranda</a></li>
+                <li><a href="/about" class="text-gray-600 hover:text-primary">Tentang Kami</a></li>
+                <li><a href="/announcements" class="text-primary font-medium">Pengumuman</a></li>
+                <li><a href="/contact" class="text-gray-600 hover:text-primary">Hubungi Kami</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="bg-primary text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold">Pengumuman</h1>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div id="announcements" class="max-w-3xl mx-auto">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>Memuat pengumuman...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>&copy; 2025 Organization Name. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        fetch('/api/announcements')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('announcements');
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-gray-500"><i class="fas fa-inbox text-4xl mb-4"></i><p>Belum ada pengumuman</p></div>';
+                    return;
+                }
+                container.innerHTML = data.map(a => `
+                    <article class="border-b py-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">${a.title}</h2>
+                        <p class="text-gray-600 mb-2">${a.content}</p>
+                        <span class="text-sm text-gray-400">${a.created_at}</span>
+                    </article>
+                `).join('');
+            });
+    </script>
+</body>
+</html>

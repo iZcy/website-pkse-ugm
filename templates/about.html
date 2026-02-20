@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - Organization Name</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">O</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-primary text-lg">Organization Name</h1>
+                    <p class="text-xs text-gray-500">Tagline Here</p>
+                </div>
+            </a>
+            <ul class="hidden md:flex gap-6">
+                <li><a href="/" class="text-gray-600 hover:text-primary">Beranda</a></li>
+                <li><a href="/about" class="text-primary font-medium">Tentang Kami</a></li>
+                <li><a href="/announcements" class="text-gray-600 hover:text-primary">Pengumuman</a></li>
+                <li><a href="/contact" class="text-gray-600 hover:text-primary">Hubungi Kami</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="bg-primary text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold">Tentang Kami</h1>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Sejarah Organisasi</h2>
+            <p class="text-gray-600 mb-8">Deskripsi sejarah organisasi akan ditulis di sini.</p>
+            
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Visi & Misi</h2>
+            <div class="bg-gray-50 p-6 rounded-lg mb-8">
+                <h3 class="font-bold text-primary mb-3">Visi</h3>
+                <p class="text-gray-600 mb-4">Visi organisasi akan ditulis di sini.</p>
+                <h3 class="font-bold text-primary mb-3">Misi</h3>
+                <ul class="text-gray-600 list-disc list-inside space-y-2">
+                    <li>Misi pertama</li>
+                    <li>Misi kedua</li>
+                    <li>Misi ketiga</li>
+                </ul>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Struktur Organisasi</h2>
+            <p class="text-gray-600">Informasi struktur organisasi akan ditampilkan di sini.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>&copy; 2025 Organization Name. All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

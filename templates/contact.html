@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - Organization Name</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">O</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-primary text-lg">Organization Name</h1>
+                    <p class="text-xs text-gray-500">Tagline Here</p>
+                </div>
+            </a>
+            <ul class="hidden md:flex gap-6">
+                <li><a href="/" class="text-gray-600 hover:text-primary">Beranda</a></li>
+                <li><a href="/about" class="text-gray-600 hover:text-primary">Tentang Kami</a></li>
+                <li><a href="/announcements" class="text-gray-600 hover:text-primary">Pengumuman</a></li>
+                <li><a href="/contact" class="text-primary font-medium">Hubungi Kami</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="bg-primary text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold">Hubungi Kami</h1>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+                <!-- Contact Info -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Informasi Kontak</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Alamat</h3>
+                                <p class="text-gray-600">Alamat lengkap organisasi di sini</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-phone text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Telepon</h3>
+                                <p class="text-gray-600">+62 xxx-xxxx-xxxx</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-envelope text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800">Email</h3>
+                                <p class="text-gray-600">email@organization.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Social Media -->
+                    <div class="mt-8">
+                        <h3 class="font-semibold text-gray-800 mb-4">Ikuti Kami</h3>
+                        <div class="flex gap-4">
+                            <a href="#" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Contact Form -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Kirim Pesan</h2>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Nama</label>
+                            <input type="text" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Nama Anda">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Email</label>
+                            <input type="email" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="email@example.com">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Pesan</label>
+                            <textarea rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Tulis pesan Anda"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-secondary transition">
+                            Kirim Pesan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>&copy; 2025 Organization Name. All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
