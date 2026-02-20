@@ -8,7 +8,7 @@ import (
 )
 
 type Handler struct {
-	db *sql.DB
+	db        *sql.DB
 	templates *template.Template
 }
 
@@ -30,7 +30,6 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 		"Title": "Beranda",
 	}
 
-	// Get announcements
 	rows, err := h.db.Query("SELECT id, title, content, created_at FROM announcements ORDER BY created_at DESC LIMIT 5")
 	if err == nil {
 		defer rows.Close()
@@ -72,6 +71,15 @@ func (h *Handler) Contact(w http.ResponseWriter, r *http.Request) {
 		"Title": "Hubungi Kami",
 	}
 	h.templates.ExecuteTemplate(w, "contact.html", data)
+}
+
+func (h *Handler) ProfileRani(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{
+		"Name":    "Rani",
+		"Role":    "Wakil Ketua KSE Scholarship Association",
+		"Faculty": "Fakultas Kehutanan",
+	}
+	h.templates.ExecuteTemplate(w, "profile.html", data)
 }
 
 func (h *Handler) AnnouncementsAPI(w http.ResponseWriter, r *http.Request) {
