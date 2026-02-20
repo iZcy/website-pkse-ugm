@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,7 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="h-full flex flex-col bg-gray-50 font-sans">
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -42,29 +42,71 @@
         </nav>
     </header>
 
-    <!-- Page Header -->
-    <section class="bg-primary text-white py-16">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl font-bold">Pengumuman</h1>
-        </div>
-    </section>
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <!-- Page Header -->
+        <section class="bg-primary text-white py-16">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl font-bold">Pengumuman</h1>
+            </div>
+        </section>
 
-    <!-- Content -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <div id="announcements" class="max-w-3xl mx-auto">
-                <div class="text-center py-12 text-gray-500">
-                    <i class="fas fa-inbox text-4xl mb-4"></i>
-                    <p>Memuat pengumuman...</p>
+        <!-- Content -->
+        <section class="py-16 bg-white min-h-[60vh]">
+            <div class="container mx-auto px-4">
+                <div id="announcements" class="max-w-3xl mx-auto">
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                        <p>Memuat pengumuman...</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8">
-        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
-            <p>&copy; 2025 Organization Name. All Rights Reserved.</p>
+    <footer class="bg-gray-900 text-white py-12 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Organization Name</h3>
+                    <p class="text-gray-400 text-sm">Deskripsi singkat tentang organisasi.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Tautan Cepat</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/" class="hover:text-white">Beranda</a></li>
+                        <li><a href="/about" class="hover:text-white">Tentang Kami</a></li>
+                        <li><a href="/announcements" class="hover:text-white">Pengumuman</a></li>
+                        <li><a href="/contact" class="hover:text-white">Hubungi Kami</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Kontak</h3>
+                    <ul class="space-y-2 text-gray-400 text-sm">
+                        <li><i class="fas fa-map-marker-alt mr-2"></i>Alamat Lengkap</li>
+                        <li><i class="fas fa-phone mr-2"></i>+62 xxx-xxxx-xxxx</li>
+                        <li><i class="fas fa-envelope mr-2"></i>email@organization.com</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-4">Ikuti Kami</h3>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2025 Organization Name. All Rights Reserved.</p>
+            </div>
         </div>
     </footer>
 

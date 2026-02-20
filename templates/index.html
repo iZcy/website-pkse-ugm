@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,7 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="h-full flex flex-col bg-gray-50 font-sans">
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -54,121 +54,119 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-primary to-secondary text-white py-20">
-        <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">Organization Name</h1>
-            <p class="text-xl md:text-2xl opacity-90 mb-8">Kabinet / Periode 2025/2026</p>
-            <a href="/about" class="inline-block bg-accent text-white px-8 py-3 rounded-full font-semibold hover:bg-yellow-600 transition">
-                Pelajari Lebih Lanjut
-            </a>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Tentang Organisasi</h2>
-            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">
-                Organisasi kami adalah wadah bagi para anggota untuk saling bersinergi, 
-                mengembangkan potensi diri, dan memberikan dampak positif bagi masyarakat.
-            </p>
-            <div class="text-center">
-                <a href="/about" class="text-primary font-medium hover:underline">Selengkapnya →</a>
+    <!-- Main Content (flex-grow to fill space) -->
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-r from-primary to-secondary text-white py-20">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Organization Name</h1>
+                <p class="text-xl md:text-2xl opacity-90 mb-8">Kabinet / Periode 2025/2026</p>
+                <a href="/about" class="inline-block bg-accent text-white px-8 py-3 rounded-full font-semibold hover:bg-yellow-600 transition">
+                    Pelajari Lebih Lanjut
+                </a>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 3 Pillars -->
-    <section class="py-16 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Sharing -->
-                <div class="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-hand-holding-heart text-3xl text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Sharing</h3>
-                    <p class="text-gray-600">Menularkan semangat berbagi kebaikan dan keilmuan kepada masyarakat.</p>
-                </div>
-                <!-- Networking -->
-                <div class="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-users text-3xl text-secondary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Networking</h3>
-                    <p class="text-gray-600">Membangun jejaring koneksi dan kolaborasi yang luas antar anggota.</p>
-                </div>
-                <!-- Developing -->
-                <div class="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition">
-                    <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-chart-line text-3xl text-accent"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Developing</h3>
-                    <p class="text-gray-600">Mengembangkan potensi diri, karakter, dan profesionalisme anggota.</p>
+        <!-- About Section -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Tentang Organisasi</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8">
+                    Organisasi kami adalah wadah bagi para anggota untuk saling bersinergi, 
+                    mengembangkan potensi diri, dan memberikan dampak positif bagi masyarakat.
+                </p>
+                <div class="text-center">
+                    <a href="/about" class="text-primary font-medium hover:underline">Selengkapnya →</a>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Stats Section -->
-    <section class="py-16 bg-primary text-white">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12">Kabinet 2025/2026</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div>
-                    <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
-                    <div class="text-sm opacity-80">Anggota Aktif</div>
-                </div>
-                <div>
-                    <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
-                    <div class="text-sm opacity-80">Departemen</div>
-                </div>
-                <div>
-                    <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
-                    <div class="text-sm opacity-80">Program Kerja</div>
-                </div>
-                <div>
-                    <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
-                    <div class="text-sm opacity-80">Kegiatan</div>
+        <!-- 3 Pillars -->
+        <section class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-hand-holding-heart text-3xl text-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Sharing</h3>
+                        <p class="text-gray-600">Menularkan semangat berbagi kebaikan dan keilmuan kepada masyarakat.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-users text-3xl text-secondary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Networking</h3>
+                        <p class="text-gray-600">Membangun jejaring koneksi dan kolaborasi yang luas antar anggota.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-lg text-center hover:shadow-xl transition">
+                        <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line text-3xl text-accent"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Developing</h3>
+                        <p class="text-gray-600">Mengembangkan potensi diri, karakter, dan profesionalisme anggota.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Announcements Section -->
-    <section class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Pengumuman Terbaru</h2>
-            {{if .Announcements}}
-            <div class="grid md:grid-cols-3 gap-6">
-                {{range .Announcements}}
-                <div class="border rounded-lg p-6 hover:shadow-lg transition">
-                    <h3 class="font-bold text-gray-800 mb-2">{{.Title}}</h3>
-                    <p class="text-gray-600 text-sm mb-4">{{.Content}}</p>
-                    <span class="text-xs text-gray-400">{{.CreatedAt}}</span>
+        <!-- Stats Section -->
+        <section class="py-16 bg-primary text-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12">Kabinet 2025/2026</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div>
+                        <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
+                        <div class="text-sm opacity-80">Anggota Aktif</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
+                        <div class="text-sm opacity-80">Departemen</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
+                        <div class="text-sm opacity-80">Program Kerja</div>
+                    </div>
+                    <div>
+                        <div class="text-4xl md:text-5xl font-bold mb-2">0</div>
+                        <div class="text-sm opacity-80">Kegiatan</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Announcements Section -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Pengumuman Terbaru</h2>
+                {{if .Announcements}}
+                <div class="grid md:grid-cols-3 gap-6">
+                    {{range .Announcements}}
+                    <div class="border rounded-lg p-6 hover:shadow-lg transition">
+                        <h3 class="font-bold text-gray-800 mb-2">{{.Title}}</h3>
+                        <p class="text-gray-600 text-sm mb-4">{{.Content}}</p>
+                        <span class="text-xs text-gray-400">{{.CreatedAt}}</span>
+                    </div>
+                    {{end}}
+                </div>
+                {{else}}
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>Belum ada pengumuman</p>
                 </div>
                 {{end}}
             </div>
-            {{else}}
-            <div class="text-center py-12 text-gray-500">
-                <i class="fas fa-inbox text-4xl mb-4"></i>
-                <p>Belum ada pengumuman</p>
-            </div>
-            {{end}}
-        </div>
-    </section>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12">
+    <footer class="bg-gray-900 text-white py-12 mt-auto">
         <div class="container mx-auto px-4">
             <div class="grid md:grid-cols-4 gap-8">
-                <!-- About -->
                 <div>
                     <h3 class="font-bold text-lg mb-4">Organization Name</h3>
                     <p class="text-gray-400 text-sm">Deskripsi singkat tentang organisasi.</p>
                 </div>
-                <!-- Quick Links -->
                 <div>
                     <h3 class="font-bold text-lg mb-4">Tautan Cepat</h3>
                     <ul class="space-y-2 text-gray-400">
@@ -178,7 +176,6 @@
                         <li><a href="/contact" class="hover:text-white">Hubungi Kami</a></li>
                     </ul>
                 </div>
-                <!-- Contact -->
                 <div>
                     <h3 class="font-bold text-lg mb-4">Kontak</h3>
                     <ul class="space-y-2 text-gray-400 text-sm">
@@ -187,7 +184,6 @@
                         <li><i class="fas fa-envelope mr-2"></i>email@organization.com</li>
                     </ul>
                 </div>
-                <!-- Social -->
                 <div>
                     <h3 class="font-bold text-lg mb-4">Ikuti Kami</h3>
                     <div class="flex gap-4">
@@ -210,7 +206,6 @@
     </footer>
 
     <script>
-        // Mobile menu toggle
         document.getElementById('menuToggle').addEventListener('click', function() {
             document.getElementById('mobileMenu').classList.toggle('hidden');
         });
