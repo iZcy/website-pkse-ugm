@@ -2,29 +2,47 @@ package handlers
 
 import (
 "encoding/json"
-"log"
+"html/template"
 "net/http"
 "strings"
-"text/template"
 
 "webapp/internal/db"
 )
 
 type Handler struct {
-templates *template.Template
+tmpl *template.Template
 }
 
 func New() *Handler {
 tmpl := template.Must(template.ParseGlob("templates/*.html"))
-return &Handler{templates: tmpl}
+return &Handler{tmpl: tmpl}
 }
 
-func activePeriod() string {
+func (h *Handler) baseData() map[string]any {
+gs, _ := db.GetGlobalSetting()
+if gs == nil {
+gs = &db.GlobalSetting{OrgName: "PKSE UGM"}
+}
+activePeriod, _ := db.GetActivePeriod()
+return map[string]any{
+"GlobalSetting": gs,
+"ActivePeriod":  activePeriod,
+}
+}
+
+func (h *Handler) activePeriodLabel() string {
 p, err := db.GetActivePeriod()
-if err != nil {
+if err != nil || p == nil {
 return ""
 }
 return p.Label
+}
+
+func (h *Handler) render(w http.ResponseWriter, name string, data map[string]any) {
+w.Header().Set("Content-Type", "text/html; charset=utf-8")
+if err := h.tmpl.ExecuteTemplate(w, name, data); err != nil {
+http.Error(w, "Template error: "+err.Error(), 500)
+}
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
@@ -32,126 +50,131 @@ if r.URL.Path != "/" {
 http.NotFound(w, r)
 return
 }
-pid := activePeriod()
-data := map[string]interface{}{"Title": "Beranda"}
-
-if ss, err := db.GetSiteSetting(pid); err != nil {
-log.Printf("db GetSiteSetting: %v", err)
-} else {
-data["SiteSetting"] = ss
+data := h.baseData()
+pl := h.activePeriodLabel()
+announcements, _ := db.GetAnnouncements(5, true, pl)
+data["Announcements"] = announcements
+arts, _ := db.GetArticles(true, pl)
+if len(arts) > 3 {
+arts = arts[:3]
 }
-
-if announcements, err := db.GetAnnouncements(5, true, pid); err != nil {
-log.Printf("db GetAnnouncements: %v", err)
-} else {
-items := make([]map[string]interface{}, 0, len(announcements))
-for _, a := range announcements {
-items = append(items, map[string]interface{}{
-"ID":        a.ID.Hex(),
-"Title":     a.Title,
-"Content":   a.Content,
-"CreatedAt": a.CreatedAt.Format("2006-01-02"),
-})
-}
-data["Announcements"] = items
-}
-
-if articles, err := db.GetArticles(true, pid); err != nil {
-log.Printf("db GetArticles: %v", err)
-} else {
-data["Articles"] = articles
-}
-
-h.templates.ExecuteTemplate(w, "index.html", data)
-}
-
-func (h *Handler) About(w http.ResponseWriter, r *http.Request) {
-pid := activePeriod()
-data := map[string]interface{}{"Title": "Tentang Kami"}
-
-if ss, err := db.GetSiteSetting(pid); err != nil {
-log.Printf("db GetSiteSetting: %v", err)
-} else {
-data["SiteSetting"] = ss
-}
-
-if depts, err := db.GetDepartments(pid); err != nil {
-log.Printf("db GetDepartments: %v", err)
-} else {
+data["Articles"] = arts
+periodAbout, _ := db.GetPeriodAbout(pl)
+data["PeriodAbout"] = periodAbout
+depts, _ := db.GetDepartments(pl)
 data["Departments"] = depts
+members, _ := db.GetMembers(pl)
+if len(members) > 8 {
+members = members[:8]
+}
+data["Members"] = members
+h.render(w, "index.html", data)
 }
 
-if officers, err := db.GetOfficers(pid); err != nil {
-log.Printf("db GetOfficers: %v", err)
-} else {
-var inti, dept []db.Officer
-for _, o := range officers {
-if o.Tier == "departemen" {
-dept = append(dept, o)
-} else {
-inti = append(inti, o)
-}
-}
-data["IntiOfficers"] = inti
-data["DeptOfficers"] = dept
+func (h *Handler) TentangKami(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+pl := h.activePeriodLabel()
+periodAbout, _ := db.GetPeriodAbout(pl)
+data["PeriodAbout"] = periodAbout
+h.render(w, "tentang-kami.html", data)
 }
 
-h.templates.ExecuteTemplate(w, "about.html", data)
+func (h *Handler) Anggota(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+sel := r.URL.Query().Get("period")
+if sel == "" {
+sel = h.activePeriodLabel()
+}
+data["SelectedPeriod"] = sel
+members, _ := db.GetMembers(sel)
+data["Members"] = members
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+depts, _ := db.GetDepartments(sel)
+data["Departments"] = depts
+h.render(w, "anggota.html", data)
 }
 
-func (h *Handler) Announcements(w http.ResponseWriter, r *http.Request) {
-h.templates.ExecuteTemplate(w, "announcements.html", map[string]interface{}{"Title": "Pengumuman"})
+func (h *Handler) Artikel(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+filterPeriod := r.URL.Query().Get("period")
+if filterPeriod == "" {
+filterPeriod = h.activePeriodLabel()
 }
-
-func (h *Handler) Articles(w http.ResponseWriter, r *http.Request) {
-pid := activePeriod()
-data := map[string]interface{}{"Title": "Artikel"}
-if articles, err := db.GetArticles(true, pid); err != nil {
-log.Printf("db GetArticles: %v", err)
-} else {
+data["FilterPeriod"] = filterPeriod
+articles, _ := db.GetArticles(true, filterPeriod)
 data["Articles"] = articles
-}
-h.templates.ExecuteTemplate(w, "articles.html", data)
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+h.render(w, "artikel.html", data)
 }
 
-func (h *Handler) ArticleDetail(w http.ResponseWriter, r *http.Request) {
-slug := strings.TrimPrefix(r.URL.Path, "/artikel/")
+func (h *Handler) ArtikelDetail(w http.ResponseWriter, r *http.Request) {
+slug := strings.Trim(strings.TrimPrefix(r.URL.Path, "/artikel/"), "/")
 if slug == "" {
 http.Redirect(w, r, "/artikel", http.StatusFound)
 return
 }
 article, err := db.GetArticleBySlug(slug)
-if err != nil || !article.Published {
+if err != nil {
 http.NotFound(w, r)
 return
 }
-h.templates.ExecuteTemplate(w, "article-detail.html", map[string]interface{}{
-"Title":   article.Title,
-"Article": article,
-})
+data := h.baseData()
+data["Article"] = article
+h.render(w, "artikel-detail.html", data)
 }
 
-func (h *Handler) Contact(w http.ResponseWriter, r *http.Request) {
-h.templates.ExecuteTemplate(w, "contact.html", map[string]interface{}{"Title": "Hubungi Kami"})
+func (h *Handler) Pengumuman(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+filterPeriod := r.URL.Query().Get("period")
+if filterPeriod == "" {
+filterPeriod = h.activePeriodLabel()
+}
+data["FilterPeriod"] = filterPeriod
+announcements, _ := db.GetAnnouncements(0, true, filterPeriod)
+data["Announcements"] = announcements
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+h.render(w, "pengumuman.html", data)
+}
+
+func (h *Handler) Periode(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+h.render(w, "periode.html", data)
+}
+
+func (h *Handler) PeriodeDetail(w http.ResponseWriter, r *http.Request) {
+label := strings.Trim(strings.TrimPrefix(r.URL.Path, "/periode/"), "/")
+if label == "" {
+http.Redirect(w, r, "/periode", http.StatusFound)
+return
+}
+period, err := db.GetPeriodByLabel(label)
+if err != nil {
+http.NotFound(w, r)
+return
+}
+data := h.baseData()
+data["Period"] = period
+periodAbout, _ := db.GetPeriodAbout(label)
+data["PeriodAbout"] = periodAbout
+members, _ := db.GetMembers(label)
+data["Members"] = members
+depts, _ := db.GetDepartments(label)
+data["Departments"] = depts
+h.render(w, "periode-detail.html", data)
 }
 
 func (h *Handler) AnnouncementsAPI(w http.ResponseWriter, r *http.Request) {
-pid := activePeriod()
-w.Header().Set("Content-Type", "application/json")
-announcements, err := db.GetAnnouncements(0, true, pid)
+pl := h.activePeriodLabel()
+items, err := db.GetAnnouncements(10, true, pl)
 if err != nil {
-log.Printf("db GetAnnouncements: %v", err)
-json.NewEncoder(w).Encode([]interface{}{})
+http.Error(w, err.Error(), 500)
 return
 }
-results := make([]map[string]interface{}, 0, len(announcements))
-for _, a := range announcements {
-results = append(results, map[string]interface{}{
-"id":         a.ID.Hex(),
-"title":      a.Title,
-"content":    a.Content,
-"created_at": a.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-})
-}
-json.NewEncoder(w).Encode(results)
+w.Header().Set("Content-Type", "application/json")
+json.NewEncoder(w).Encode(items)
 }

@@ -1,58 +1,58 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Masuk — Panel Admin KSE UGM</title>
-<style>
-  @font-face { font-family:'Plus Jakarta Sans'; src:url('/static/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype'); font-weight:200 800; }
-  *,*::before,*::after { box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; margin:0; padding:0; }
-  body { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#f0f4f9; }
-  .card { background:#fff; border-radius:20px; padding:40px 36px; width:100%; max-width:380px; box-shadow:0 8px 40px rgba(56,95,140,0.12); }
-  .logo { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
-  .logo-dot { width:38px; height:38px; background:#385F8C; border-radius:10px; display:flex; align-items:center; justify-content:center; }
-  .logo-dot span { color:#fff; font-weight:800; font-size:14px; }
-  .logo-text h1 { font-size:14px; font-weight:800; color:#385F8C; line-height:1.2; }
-  .logo-text p { font-size:10px; color:#9ca3af; font-weight:600; letter-spacing:.08em; text-transform:uppercase; margin-top:2px; }
-  h2 { font-size:22px; font-weight:800; color:#111; margin-bottom:6px; }
-  .subtitle { font-size:13px; color:#6b7280; margin-bottom:28px; }
-  label { display:block; font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
-  .form-row { margin-bottom:16px; }
-  input[type=text], input[type=password] { width:100%; padding:11px 14px; border:2px solid #e5e7eb; border-radius:10px; font-size:14px; outline:none; transition:border-color .15s; background:#f9fafb; }
-  input[type=text]:focus, input[type=password]:focus { border-color:#385F8C; background:#fff; }
-  .btn { width:100%; margin-top:8px; padding:13px; background:#385F8C; color:#fff; font-size:14px; font-weight:700; border:none; border-radius:10px; cursor:pointer; transition:background .15s; }
-  .btn:hover { background:#2c4d73; }
-  .err { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; font-size:13px; padding:10px 14px; border-radius:10px; margin-bottom:18px; }
-  .back { text-align:center; margin-top:18px; font-size:12px; color:#9ca3af; }
-  .back a { color:#385F8C; font-weight:600; text-decoration:none; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - PKSE UGM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<div class="card">
-  <div class="logo">
-    <div class="logo-dot"><span>KSE</span></div>
-    <div class="logo-text">
-      <h1>Panel Admin</h1>
-      <p>Paguyuban KSE UGM</p>
+<body class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">Panel Admin</h1>
+      <p class="text-slate-500 text-sm mt-1">PKSE UGM</p>
     </div>
+
+    {{if .Error}}
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-6 flex items-center gap-2 text-sm">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      {{.Error}}
+    </div>
+    {{end}}
+
+    <form method="POST" action="/admin" class="space-y-5">
+      <div>
+        <label for="username" class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          </div>
+          <input type="text" id="username" name="username" required autocomplete="username"
+            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            placeholder="Masukkan username">
+        </div>
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Kata Sandi</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <input type="password" id="password" name="password" required autocomplete="current-password"
+            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            placeholder="Masukkan kata sandi">
+        </div>
+      </div>
+      <button type="submit"
+        class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        Masuk
+      </button>
+    </form>
   </div>
-  <h2>Masuk</h2>
-  <p class="subtitle">Masukkan username dan kata sandi untuk mengakses panel pengelolaan konten.</p>
-
-  {{if .Error}}<div class="err">{{.Error}}</div>{{end}}
-
-  <form method="POST" action="/admin">
-    <div class="form-row">
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" placeholder="superadmin" autocomplete="username" autofocus required>
-    </div>
-    <div class="form-row">
-      <label for="pw">Kata Sandi</label>
-      <input type="password" id="pw" name="password" placeholder="••••••••" autocomplete="current-password" required>
-    </div>
-    <button class="btn" type="submit">Masuk →</button>
-  </form>
-  <div class="back"><a href="/">← Kembali ke website</a></div>
-</div>
 </body>
 </html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  {{template "head" .}}
+  <title>Sejarah Periode - {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+  {{template "navbar" .}}
+
+  <div class="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-4xl font-bold mb-2">Sejarah Periode Kepengurusan</h1>
+      <p class="text-blue-200">Rekam jejak perjalanan organisasi PKSE UGM</p>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    {{if .Periods}}
+    <div class="space-y-4">
+      {{range .Periods}}
+      <a href="/periode/{{.Label}}" class="block bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:border-blue-300 hover:shadow-md transition group">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-{{if .IsActive}}600{{else}}100{{end}} rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 {{if .IsActive}}text-white{{else}}text-blue-600{{end}}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <h2 class="font-bold text-slate-800 text-xl group-hover:text-blue-700 transition">{{.DisplayName}}</h2>
+              <p class="text-slate-500 text-sm">Kode: {{.Label}}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            {{if .IsActive}}
+            <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Aktif</span>
+            {{end}}
+            <svg class="w-5 h-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </a>
+      {{end}}
+    </div>
+    {{else}}
+    <div class="text-center py-16 text-slate-400">
+      <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <p class="text-lg">Belum ada data periode.</p>
+    </div>
+    {{end}}
+  </div>
+
+  {{template "footer" .}}
+</body>
+</html>

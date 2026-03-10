@@ -1,733 +1,1106 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Admin – PKSE UGM</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0f4f8;color:#1e293b;min-height:100vh}
-/* ── topbar ── */
-.topbar{background:#385F8C;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,.2);gap:16px}
-.topbar-left{display:flex;align-items:center;gap:16px}
-.topbar h1{font-size:.95rem;font-weight:700;letter-spacing:.5px;white-space:nowrap}
-.period-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:8px}
-.period-wrap label{font-size:.75rem;font-weight:600;opacity:.85;margin:0;text-transform:uppercase;letter-spacing:.05em;display:block}
-#periodSelect{background:transparent;border:none;color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;outline:none;padding:0}
-#periodSelect option{color:#1e293b;background:#fff}
-.topbar-right{display:flex;align-items:center;gap:16px}
-.topbar-user{font-size:.82rem;opacity:.85;display:flex;align-items:center;gap:6px}
-.topbar a{color:#fff;opacity:.85;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:6px}
-.topbar a:hover{opacity:1}
-/* ── layout ── */
-.shell{display:flex;min-height:calc(100vh - 56px)}
-.sidebar{width:220px;background:#fff;border-right:1px solid #e2e8f0;flex-shrink:0;padding:16px 0}
-.sidebar button{width:100%;background:none;border:none;text-align:left;padding:10px 20px;cursor:pointer;font-family:inherit;font-size:.9rem;color:#475569;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:.15s}
-.sidebar button:hover{background:#f8fafc;color:#385F8C}
-.sidebar button.active{color:#385F8C;font-weight:600;border-left-color:#385F8C;background:#eff6ff}
-.sidebar-section{padding:8px 20px 4px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-top:8px}
-.main{flex:1;padding:28px;max-width:960px}
-/* ── card ── */
-.card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:22px 24px;margin-bottom:20px}
-.card-title{font-size:1rem;font-weight:700;margin-bottom:16px;color:#1e3a5f;display:flex;align-items:center;gap:8px}
-/* ── table ── */
-table{width:100%;border-collapse:collapse;font-size:.875rem}
-th{text-align:left;padding:8px 10px;border-bottom:2px solid #e2e8f0;color:#64748b;font-weight:600}
-td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
-tr:hover td{background:#f8fafc}
-.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.75rem;font-weight:600}
-.badge-green{background:#dcfce7;color:#166534}
-.badge-gray{background:#f1f5f9;color:#64748b}
-.badge-blue{background:#dbeafe;color:#1d4ed8}
-.badge-yellow{background:#fef9c3;color:#854d0e}
-/* ── buttons ── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:600;transition:.15s}
-.btn-primary{background:#385F8C;color:#fff}.btn-primary:hover{background:#2d4f78}
-.btn-danger{background:#fee2e2;color:#dc2626}.btn-danger:hover{background:#fecaca}
-.btn-secondary{background:#f1f5f9;color:#475569}.btn-secondary:hover{background:#e2e8f0}
-.btn-success{background:#dcfce7;color:#166534}.btn-success:hover{background:#bbf7d0}
-.btn-sm{padding:4px 10px;font-size:.78rem}
-/* ── form ── */
-.form-row{margin-bottom:14px}
-label{display:block;font-size:.8rem;font-weight:600;color:#475569;margin-bottom:5px}
-input[type=text],input[type=number],input[type=password],textarea,select{width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:.875rem;color:#1e293b;background:#fff;transition:.15s}
-input[type=text]:focus,input[type=number]:focus,input[type=password]:focus,textarea:focus,select:focus{outline:none;border-color:#385F8C;box-shadow:0 0 0 3px rgba(56,95,140,.12)}
-textarea{resize:vertical;min-height:90px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.toggle-row{display:flex;align-items:center;gap:10px;font-size:.875rem}
-input[type=checkbox]{width:16px;height:16px;cursor:pointer}
-/* ── inline form panel ── */
-.form-panel{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:20px 22px;margin-top:16px;display:none}
-.form-panel.open{display:block}
-.form-actions{display:flex;gap:10px;margin-top:16px}
-/* ── toast ── */
-#toast{position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:12px 20px;border-radius:8px;font-size:.875rem;font-weight:600;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;z-index:999}
-#toast.show{opacity:1;transform:translateY(0)}
-#toast.err{background:#dc2626}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - PKSE UGM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .sidebar-item { transition: background 0.15s, color 0.15s; }
+    .sidebar-item.active { background: #1e40af; color: white; }
+    .sidebar-item:not(.active):hover { background: #1e3a8a; color: white; }
+  </style>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen flex flex-col">
 
-<div class="topbar">
-  <div class="topbar-left">
-    <h1><i class="fa fa-shield-halved"></i>&nbsp; Panel Admin – PKSE UGM</h1>
-    <div class="period-wrap">
-      <label for="periodSelect">Periode</label>
-      <select id="periodSelect" onchange="onPeriodChange()">
-        <option value="">Memuat…</option>
-      </select>
-    </div>
+<!-- Top Bar -->
+<header class="bg-blue-900 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0">
+  <div class="flex items-center gap-3">
+    {{if and .GlobalSetting .GlobalSetting.LogoURL}}
+    <img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-auto object-contain brightness-0 invert" onerror="this.style.display='none'">
+    {{end}}
+    <span class="font-bold text-lg">{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}} — Admin</span>
   </div>
-  <div class="topbar-right">
-    <span class="topbar-user"><i class="fa fa-circle-user"></i> {{.Username}} <span class="badge badge-blue" style="font-size:.7rem">{{.Role}}</span></span>
-    <a href="/admin/logout"><i class="fa fa-right-from-bracket"></i> Keluar</a>
+  <div class="flex items-center gap-4">
+    <span class="text-blue-200 text-sm hidden sm:block">
+      <span class="mr-1">👤</span>{{.Username}}
+      <span class="ml-2 bg-blue-700 text-xs px-2 py-0.5 rounded-full">{{.Role}}</span>
+    </span>
+    <a href="/" target="_blank" class="text-blue-200 hover:text-white text-sm hidden sm:block">
+      <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+      Lihat Website
+    </a>
+    <a href="/admin/logout" class="bg-blue-800 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-lg transition">Keluar</a>
   </div>
+</header>
+
+<!-- Period Selector Bar -->
+<div class="bg-blue-800 px-6 py-2 flex items-center gap-4 flex-shrink-0">
+  <span class="text-blue-200 text-sm font-medium flex-shrink-0">Periode:</span>
+  <div class="flex flex-wrap gap-2">
+    {{range .AccessiblePeriods}}
+    <a href="/admin/dashboard?period={{.Label}}"
+      class="px-3 py-1 rounded-md text-sm font-medium transition {{if eq $.SelectedPeriod .Label}}bg-white text-blue-900{{else}}bg-blue-700 text-blue-100 hover:bg-blue-600{{end}}">
+      {{.DisplayName}}{{if .IsActive}} ✦{{end}}
+    </a>
+    {{end}}
+  </div>
+  {{if eq .Role "superadmin"}}
+  <span class="ml-auto text-blue-300 text-xs">Superadmin dapat mengakses semua periode</span>
+  {{end}}
 </div>
 
-<div class="shell">
-  <nav class="sidebar">
-    <div class="sidebar-section">Konten</div>
-    <button onclick="switchTab('pengumuman')" id="tab-pengumuman"><i class="fa fa-bullhorn fa-fw"></i> Pengumuman</button>
-    <button onclick="switchTab('artikel')" id="tab-artikel"><i class="fa fa-newspaper fa-fw"></i> Artikel</button>
-    <button onclick="switchTab('tentang')" id="tab-tentang"><i class="fa fa-circle-info fa-fw"></i> Tentang Kami</button>
-    <button onclick="switchTab('departemen')" id="tab-departemen"><i class="fa fa-sitemap fa-fw"></i> Departemen</button>
-    <button onclick="switchTab('pengurus')" id="tab-pengurus"><i class="fa fa-users fa-fw"></i> Pengurus</button>
-    {{if eq .Role "superadmin"}}
-    <div class="sidebar-section">Superadmin</div>
-    <button onclick="switchTab('periode')" id="tab-periode"><i class="fa fa-calendar-alt fa-fw"></i> Periode</button>
-    <button onclick="switchTab('akun')" id="tab-akun"><i class="fa fa-user-cog fa-fw"></i> Akun</button>
-    {{end}}
-  </nav>
+<!-- Main Layout -->
+<div class="flex flex-1 overflow-hidden">
 
-  <main class="main">
+  <!-- Sidebar -->
+  <aside class="w-56 bg-blue-900 text-blue-100 flex-shrink-0 overflow-y-auto">
+    <nav class="p-3 space-y-1">
+      <div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider">Konten Periode</div>
+      <button onclick="switchTab('pengumuman')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-pengumuman">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+        Pengumuman
+      </button>
+      <button onclick="switchTab('artikel')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-artikel">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Artikel
+      </button>
+      <button onclick="switchTab('tentang')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-tentang">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Tentang Periode
+      </button>
+      <button onclick="switchTab('departemen')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-departemen">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Departemen
+      </button>
+      <button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        Anggota
+      </button>
+      <button onclick="switchTab('struktur')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-struktur">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Struktur Org
+      </button>
+      {{if eq .Role "superadmin"}}
+      <div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-3">Superadmin</div>
+      <button onclick="switchTab('global')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-global">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Pengaturan Global
+      </button>
+      <button onclick="switchTab('periode')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-periode">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Manajemen Periode
+      </button>
+      <button onclick="switchTab('akun')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-akun">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Manajemen Akun
+      </button>
+      {{end}}
+    </nav>
+  </aside>
 
-    <!-- ═══════════════════════════════════════════════════════ PENGUMUMAN -->
-    <div id="pane-pengumuman" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-bullhorn"></i> Daftar Pengumuman</div>
-        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-ann')"><i class="fa fa-plus"></i> Tambah</button>
-        <div id="form-ann" class="form-panel">
-          <div class="grid-2">
-            <div class="form-row"><label>Judul</label><input type="text" id="ann-title"></div>
-            <div class="form-row"><label>Period ID</label><input type="text" id="ann-period" readonly></div>
-          </div>
-          <div class="form-row"><label>Konten</label><textarea id="ann-content" rows="4"></textarea></div>
-          <div class="toggle-row"><input type="checkbox" id="ann-pub"><label for="ann-pub" style="margin:0">Terbitkan sekarang</label></div>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveAnn()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="cancelForm('form-ann','ann-edit-id')">Batal</button>
-          </div>
-          <input type="hidden" id="ann-edit-id">
-        </div>
-        <table style="margin-top:18px">
-          <thead><tr><th>Judul</th><th>Periode</th><th>Status</th><th>Dibuat</th><th></th></tr></thead>
-          <tbody id="ann-tbody"></tbody>
-        </table>
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto p-6">
+
+    <!-- ═══ PENGUMUMAN ═══ -->
+    <div id="tab-pengumuman" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Pengumuman</h2>
+        <button onclick="openModal('modalPengumuman')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Pengumuman
+        </button>
+      </div>
+      <div id="list-pengumuman" class="space-y-3">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════ ARTIKEL -->
-    <div id="pane-artikel" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-newspaper"></i> Daftar Artikel</div>
-        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-art')"><i class="fa fa-plus"></i> Tambah</button>
-        <div id="form-art" class="form-panel">
-          <div class="grid-2">
-            <div class="form-row"><label>Judul</label><input type="text" id="art-title" oninput="autoSlug()"></div>
-            <div class="form-row"><label>Slug (URL)</label><input type="text" id="art-slug"></div>
-          </div>
-          <div class="form-row"><label>Kutipan / Excerpt</label><input type="text" id="art-excerpt"></div>
-          <div class="form-row"><label>Cover URL (opsional)</label><input type="text" id="art-cover"></div>
-          <div class="form-row"><label>Konten (HTML diperbolehkan)</label><textarea id="art-content" rows="8"></textarea></div>
-          <div class="grid-2">
-            <div class="form-row"><label>Period ID</label><input type="text" id="art-period" readonly></div>
-            <div class="toggle-row" style="align-items:flex-end;padding-bottom:2px"><input type="checkbox" id="art-pub"><label for="art-pub" style="margin:0">Terbitkan</label></div>
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveArt()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="cancelForm('form-art','art-edit-id')">Batal</button>
-          </div>
-          <input type="hidden" id="art-edit-id">
-        </div>
-        <table style="margin-top:18px">
-          <thead><tr><th>Judul</th><th>Slug</th><th>Periode</th><th>Status</th><th>Dibuat</th><th></th></tr></thead>
-          <tbody id="art-tbody"></tbody>
-        </table>
+    <!-- ═══ ARTIKEL ═══ -->
+    <div id="tab-artikel" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Artikel</h2>
+        <button onclick="openModal('modalArtikel')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Artikel
+        </button>
+      </div>
+      <div id="list-artikel" class="space-y-3">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════ TENTANG KAMI -->
-    <div id="pane-tentang" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-circle-info"></i> Tentang Kami</div>
-        <div class="form-row"><label>Sejarah</label><textarea id="ss-sejarah" rows="5"></textarea></div>
-        <div class="form-row"><label>Visi</label><textarea id="ss-visi" rows="3"></textarea></div>
-        <div class="form-row"><label>Misi</label><textarea id="ss-misi" rows="3"></textarea></div>
-        <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveSiteSetting()"><i class="fa fa-floppy-disk"></i> Simpan</button>
+    <!-- ═══ TENTANG PERIODE ═══ -->
+    <div id="tab-tentang" class="tab-content">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Tentang Periode</h2>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <form id="formTentang" class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Sejarah / Latar Belakang</label>
+            <textarea id="tentang-sejarah" rows="4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ceritakan latar belakang kepengurusan periode ini..."></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Visi</label>
+            <textarea id="tentang-visi" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Visi kepengurusan..."></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Misi</label>
+            <textarea id="tentang-misi" rows="4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Misi kepengurusan (pisahkan tiap poin dengan baris baru)..."></textarea>
+          </div>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Perubahan</button>
+          <div id="tentang-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══ DEPARTEMEN ═══ -->
+    <div id="tab-departemen" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Departemen</h2>
+        <button onclick="openModal('modalDepartemen')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Departemen
+        </button>
+      </div>
+      <div id="list-departemen" class="space-y-3">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- ═══ ANGGOTA ═══ -->
+    <div id="tab-anggota" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Anggota</h2>
+        <button onclick="openModal('modalAnggota')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Anggota
+        </button>
+      </div>
+      <div id="list-anggota" class="overflow-x-auto">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- ═══ STRUKTUR ORGANISASI ═══ -->
+    <div id="tab-struktur" class="tab-content">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Struktur Organisasi</h2>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <p class="text-sm text-slate-500 mb-4">Upload atau masukkan URL gambar bagan struktur organisasi untuk periode ini.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">URL Gambar Struktur Organisasi</label>
+            <input type="url" id="struktur-url" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://...">
+          </div>
+          <div id="struktur-preview" class="hidden">
+            <p class="text-sm font-medium text-slate-700 mb-2">Preview:</p>
+            <img id="struktur-img" src="" alt="Struktur Organisasi" class="max-w-full rounded-lg border border-slate-200">
+          </div>
+          <div class="flex gap-3">
+            <button onclick="previewStruktur()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Preview</button>
+            <button onclick="saveStruktur()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Simpan</button>
+          </div>
+          <div id="struktur-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
         </div>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════ DEPARTEMEN -->
-    <div id="pane-departemen" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-sitemap"></i> Daftar Departemen</div>
-        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-dept')"><i class="fa fa-plus"></i> Tambah</button>
-        <div id="form-dept" class="form-panel">
-          <div class="form-row"><label>Nama</label><input type="text" id="dept-name"></div>
-          <div class="form-row"><label>Deskripsi</label><textarea id="dept-desc"></textarea></div>
-          <div class="grid-2">
-            <div class="form-row"><label>Icon Class (Font Awesome)</label><input type="text" id="dept-icon" placeholder="fa-solid fa-book"></div>
-            <div class="form-row"><label>Urutan</label><input type="number" id="dept-order" value="0"></div>
-          </div>
-          <input type="hidden" id="dept-period">
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveDept()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="cancelForm('form-dept','dept-edit-id')">Batal</button>
-          </div>
-          <input type="hidden" id="dept-edit-id">
-        </div>
-        <table style="margin-top:18px">
-          <thead><tr><th>Nama</th><th>Deskripsi</th><th>Periode</th><th>Urutan</th><th></th></tr></thead>
-          <tbody id="dept-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ PENGURUS -->
-    <div id="pane-pengurus" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-users"></i> Daftar Pengurus</div>
-        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-off')"><i class="fa fa-plus"></i> Tambah</button>
-        <div id="form-off" class="form-panel">
-          <div class="grid-2">
-            <div class="form-row"><label>Nama</label><input type="text" id="off-name"></div>
-            <div class="form-row"><label>Jabatan</label><input type="text" id="off-role"></div>
-          </div>
-          <div class="grid-2">
-            <div class="form-row"><label>Departemen</label><input type="text" id="off-dept"></div>
-            <div class="form-row"><label>Tier</label>
-              <select id="off-tier">
-                <option value="inti">Inti</option>
-                <option value="departemen">Departemen</option>
-              </select>
+    <!-- ═══ PENGATURAN GLOBAL (superadmin) ═══ -->
+    <div id="tab-global" class="tab-content">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Pengaturan Global Organisasi</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Branding -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Identitas Organisasi &amp; Logo</h3>
+          <form id="formGlobal" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Nama Organisasi</label>
+              <input type="text" id="global-orgname" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
             </div>
-          </div>
-          <div class="grid-2">
-            <div class="form-row"><label>URL Foto</label><input type="text" id="off-photo"></div>
-            <div class="form-row"><label>Urutan</label><input type="number" id="off-order" value="0"></div>
-          </div>
-          <input type="hidden" id="off-period">
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveOff()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="cancelForm('form-off','off-edit-id')">Batal</button>
-          </div>
-          <input type="hidden" id="off-edit-id">
-        </div>
-        <table style="margin-top:18px">
-          <thead><tr><th>Nama</th><th>Jabatan</th><th>Dept</th><th>Tier</th><th>Periode</th><th></th></tr></thead>
-          <tbody id="off-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ PERIODE (superadmin) -->
-    <div id="pane-periode" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-calendar-alt"></i> Manajemen Periode</div>
-        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-period-new')"><i class="fa fa-plus"></i> Tambah Periode</button>
-        <div id="form-period-new" class="form-panel">
-          <div class="grid-2">
-            <div class="form-row"><label>Label (misal: 26.27)</label><input type="text" id="np-label" placeholder="26.27"></div>
-            <div class="form-row"><label>Nama Tampil (misal: 2026/2027)</label><input type="text" id="np-display" placeholder="2026/2027"></div>
-          </div>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="savePeriod()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="toggleForm('form-period-new')">Batal</button>
-          </div>
-        </div>
-        <table style="margin-top:18px">
-          <thead><tr><th>Label</th><th>Nama Tampil</th><th>Status</th><th>Dibuat</th><th></th></tr></thead>
-          <tbody id="period-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════ AKUN (superadmin) -->
-    <div id="pane-akun" class="pane" style="display:none">
-      <div class="card">
-        <div class="card-title"><i class="fa fa-user-cog"></i> Manajemen Akun</div>
-        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-acc')"><i class="fa fa-plus"></i> Tambah Akun</button>
-        <div id="form-acc" class="form-panel">
-          <div class="grid-2">
-            <div class="form-row"><label>Username</label><input type="text" id="acc-username"></div>
-            <div class="form-row"><label>Role</label>
-              <select id="acc-role">
-                <option value="admin">admin</option>
-                <option value="superadmin">superadmin</option>
-              </select>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">URL Logo</label>
+              <input type="url" id="global-logo" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://...">
+              <div id="logo-preview-wrap" class="mt-2 hidden">
+                <img id="logo-preview-img" src="" alt="Logo Preview" class="h-16 object-contain border border-slate-200 rounded p-1">
+              </div>
+              <button type="button" onclick="previewLogo()" class="mt-2 text-xs text-blue-600 hover:underline">Preview Logo</button>
             </div>
-          </div>
-          <div class="form-row"><label>Password <span id="acc-pw-hint" style="color:#94a3b8;font-weight:400">(isi untuk ubah)</span></label><input type="password" id="acc-password" placeholder="Password baru…"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveAcc()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="cancelForm('form-acc','acc-edit-id')">Batal</button>
-          </div>
-          <input type="hidden" id="acc-edit-id">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Tentang Organisasi (Global)</label>
+              <textarea id="global-about" rows="5" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Deskripsi organisasi (mendukung HTML dasar)..."></textarea>
+              <p class="text-xs text-slate-400 mt-1">Mendukung HTML sederhana (tag &lt;p&gt;, &lt;b&gt;, &lt;a&gt;, dst.)</p>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Pengaturan</button>
+            <div id="global-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
+          </form>
         </div>
-        <table style="margin-top:18px">
-          <thead><tr><th>Username</th><th>Role</th><th>Dibuat</th><th></th></tr></thead>
-          <tbody id="acc-tbody"></tbody>
-        </table>
+        <!-- Social Media -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Media Sosial</h3>
+          <form id="formSocmed" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                Instagram
+              </label>
+              <input type="url" id="sm-instagram" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://instagram.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-sky-500" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Twitter / X
+              </label>
+              <input type="url" id="sm-twitter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://twitter.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+              </label>
+              <input type="url" id="sm-youtube" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://youtube.com/@...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+              </label>
+              <input type="url" id="sm-linkedin" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://linkedin.com/company/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                TikTok
+              </label>
+              <input type="url" id="sm-tiktok" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://tiktok.com/@...">
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Media Sosial</button>
+            <div id="socmed-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MANAJEMEN PERIODE (superadmin) ═══ -->
+    <div id="tab-periode" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Manajemen Periode</h2>
+        <button onclick="openModal('modalPeriode')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Periode
+        </button>
+      </div>
+      <div id="list-periode" class="space-y-3">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- ═══ MANAJEMEN AKUN (superadmin) ═══ -->
+    <div id="tab-akun" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Manajemen Akun</h2>
+        <button onclick="openModal('modalAkun')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Akun
+        </button>
+      </div>
+      <div id="list-akun" class="overflow-x-auto">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
       </div>
     </div>
 
   </main>
 </div>
 
-<div id="toast"></div>
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Modal Pengumuman -->
+<div id="modalPengumuman" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+      <h3 id="modalPengumumanTitle" class="text-lg font-bold">Tambah Pengumuman</h3>
+      <button onclick="closeModal('modalPengumuman')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formPengumuman" class="p-6 space-y-4">
+      <input type="hidden" id="pengumuman-id">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Judul</label>
+        <input type="text" id="pengumuman-title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Konten</label>
+        <textarea id="pengumuman-content" rows="4" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="pengumuman-published" class="rounded text-blue-600">
+        <label for="pengumuman-published" class="text-sm font-medium text-slate-700">Publikasikan</label>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalPengumuman')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Artikel -->
+<div id="modalArtikel" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-screen overflow-y-auto">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+      <h3 id="modalArtikelTitle" class="text-lg font-bold">Tambah Artikel</h3>
+      <button onclick="closeModal('modalArtikel')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formArtikel" class="p-6 space-y-4">
+      <input type="hidden" id="artikel-id">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Judul</label>
+        <input type="text" id="artikel-title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" oninput="autoSlug()">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Slug (URL)</label>
+        <input type="text" id="artikel-slug" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-xs">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Ringkasan</label>
+        <textarea id="artikel-excerpt" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Konten (mendukung HTML)</label>
+        <textarea id="artikel-content" rows="8" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">URL Gambar Cover</label>
+        <input type="url" id="artikel-cover" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="artikel-published" class="rounded text-blue-600">
+        <label for="artikel-published" class="text-sm font-medium text-slate-700">Publikasikan</label>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalArtikel')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Departemen -->
+<div id="modalDepartemen" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+      <h3 id="modalDeptTitle" class="text-lg font-bold">Tambah Departemen</h3>
+      <button onclick="closeModal('modalDepartemen')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formDepartemen" class="p-6 space-y-4">
+      <input type="hidden" id="dept-id">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Departemen</label>
+        <input type="text" id="dept-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi</label>
+        <textarea id="dept-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Urutan</label>
+        <input type="number" id="dept-order" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalDepartemen')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Anggota -->
+<div id="modalAnggota" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-screen overflow-y-auto">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
+      <h3 id="modalAnggotaTitle" class="text-lg font-bold">Tambah Anggota</h3>
+      <button onclick="closeModal('modalAnggota')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formAnggota" class="p-6 space-y-4">
+      <input type="hidden" id="anggota-id">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+          <input type="text" id="anggota-fullname" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Panggilan</label>
+          <input type="text" id="anggota-nickname" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Jabatan</label>
+          <input type="text" id="anggota-position" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Departemen</label>
+          <input type="text" id="anggota-department" list="deptSuggestions" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <datalist id="deptSuggestions"></datalist>
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-medium text-slate-700 mb-1">URL Foto</label>
+          <input type="url" id="anggota-photo" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://...">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Urutan</label>
+          <input type="number" id="anggota-order" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalAnggota')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Periode -->
+<div id="modalPeriode" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold">Tambah Periode</h3>
+      <button onclick="closeModal('modalPeriode')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formPeriode" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Label (Kode Unik)</label>
+        <input type="text" id="periode-label" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono" placeholder="25.26">
+        <p class="text-xs text-slate-400 mt-1">Format: YY.YY (mis: 25.26 untuk 2025/2026)</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Tampilan</label>
+        <input type="text" id="periode-displayname" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kepengurusan 2025/2026">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">URL Gambar Struktur Organisasi</label>
+        <input type="url" id="periode-hierarchy" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://...">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalPeriode')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Akun -->
+<div id="modalAkun" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+      <h3 id="modalAkunTitle" class="text-lg font-bold">Tambah Akun</h3>
+      <button onclick="closeModal('modalAkun')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formAkun" class="p-6 space-y-4">
+      <input type="hidden" id="akun-id">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+        <input type="text" id="akun-username" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Kata Sandi <span id="akun-pw-hint" class="text-slate-400 font-normal">(kosong = tidak diubah)</span></label>
+        <input type="password" id="akun-password" autocomplete="new-password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
+        <select id="akun-role" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="toggleAssignedPeriod()">
+          <option value="admin">admin</option>
+          <option value="superadmin">superadmin</option>
+        </select>
+      </div>
+      <div id="akun-period-wrap">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Periode yang Ditugaskan</label>
+        <select id="akun-assigned-period" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option value="">-- Pilih Periode --</option>
+        </select>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalAkun')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
-let currentPeriod = '';
-let currentTab = '{{.Tab}}';
+const PERIOD = "{{.SelectedPeriod}}";
+const ROLE = "{{.Role}}";
 
-// ── Init ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadPeriods();
-  switchTab(currentTab);
+// ── Tab switching ────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const btn = document.getElementById('tab-btn-' + name);
+  if (btn) btn.classList.add('active');
+  loadTab(name);
+}
+
+function loadTab(name) {
+  if (name === 'pengumuman') loadPengumuman();
+  if (name === 'artikel') loadArtikel();
+  if (name === 'departemen') loadDepartemen();
+  if (name === 'anggota') loadAnggota();
+  if (name === 'periode') loadPeriode();
+  if (name === 'akun') loadAkun();
+  if (name === 'global') loadGlobal();
+  if (name === 'tentang') loadTentang();
+  if (name === 'struktur') loadStruktur();
+}
+
+// ── Modal helpers ────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ── Generic fetch ────────────────────────────────────────────────────────────
+async function api(method, url, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  if (!r.ok) { const e = await r.json().catch(() => ({error: r.status})); throw new Error(e.error || r.status); }
+  return r.json().catch(() => ({}));
+}
+
+function errHtml(e) { return `<div class="bg-red-50 text-red-700 rounded-lg p-4 text-sm border border-red-200">${e}</div>`; }
+function emptyHtml(msg) { return `<div class="text-center py-12 text-slate-400"><p>${msg}</p></div>`; }
+
+// ── PENGUMUMAN ───────────────────────────────────────────────────────────────
+async function loadPengumuman() {
+  const el = document.getElementById('list-pengumuman');
+  try {
+    const items = await api('GET', `/api/cms/announcements?period=${PERIOD}`);
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada pengumuman.'); return; }
+    el.innerHTML = items.map(a => `
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="font-semibold text-slate-800">${a.title}</h3>
+            <span class="text-xs px-2 py-0.5 rounded-full ${a.published ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${a.published ? 'Terbit' : 'Draft'}</span>
+          </div>
+          <p class="text-slate-500 text-sm line-clamp-2">${a.content}</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick='editPengumuman(${JSON.stringify(a)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button onclick="deletePengumuman('${a.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = errHtml(e.message); }
+}
+
+function editPengumuman(a) {
+  document.getElementById('pengumuman-id').value = a.id;
+  document.getElementById('pengumuman-title').value = a.title;
+  document.getElementById('pengumuman-content').value = a.content;
+  document.getElementById('pengumuman-published').checked = a.published;
+  document.getElementById('modalPengumumanTitle').textContent = 'Edit Pengumuman';
+  openModal('modalPengumuman');
+}
+
+async function deletePengumuman(id) {
+  if (!confirm('Hapus pengumuman ini?')) return;
+  await api('DELETE', `/api/cms/announcements/${id}`);
+  loadPengumuman();
+}
+
+document.getElementById('formPengumuman').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('pengumuman-id').value;
+  const body = {
+    title: document.getElementById('pengumuman-title').value,
+    content: document.getElementById('pengumuman-content').value,
+    published: document.getElementById('pengumuman-published').checked,
+    period_label: PERIOD
+  };
+  try {
+    if (id) await api('PUT', `/api/cms/announcements/${id}`, body);
+    else await api('POST', '/api/cms/announcements', body);
+    closeModal('modalPengumuman');
+    document.getElementById('formPengumuman').reset();
+    document.getElementById('pengumuman-id').value = '';
+    document.getElementById('modalPengumumanTitle').textContent = 'Tambah Pengumuman';
+    loadPengumuman();
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
 
-async function loadPeriods() {
+// ── ARTIKEL ──────────────────────────────────────────────────────────────────
+async function loadArtikel() {
+  const el = document.getElementById('list-artikel');
   try {
-    const res = await fetch('/api/cms/periods');
-    const periods = await res.json();
-    const sel = document.getElementById('periodSelect');
-    sel.innerHTML = '';
-    if (!periods || periods.length === 0) {
-      sel.innerHTML = '<option value="">Tidak ada periode</option>';
-      return;
-    }
-    periods.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.label;
-      opt.textContent = p.display_name || p.label;
-      if (p.is_active) { opt.selected = true; currentPeriod = p.label; }
-      sel.appendChild(opt);
-    });
-    if (!currentPeriod && periods.length) currentPeriod = periods[0].label;
-  } catch(e) { console.error('loadPeriods', e); }
+    const items = await api('GET', `/api/cms/articles?period=${PERIOD}`);
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada artikel.'); return; }
+    el.innerHTML = items.map(a => `
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
+        <div class="flex items-start gap-4 flex-1">
+          ${a.cover_url ? `<img src="${a.cover_url}" alt="" class="w-16 h-12 object-cover rounded-lg flex-shrink-0">` : ''}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-semibold text-slate-800 truncate">${a.title}</h3>
+              <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${a.published ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${a.published ? 'Terbit' : 'Draft'}</span>
+            </div>
+            <p class="text-slate-400 text-xs font-mono">/artikel/${a.slug}</p>
+            ${a.excerpt ? `<p class="text-slate-500 text-sm line-clamp-1 mt-1">${a.excerpt}</p>` : ''}
+          </div>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick='editArtikel(${JSON.stringify(a)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button onclick="deleteArtikel('${a.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = errHtml(e.message); }
 }
 
-function onPeriodChange() {
-  currentPeriod = document.getElementById('periodSelect').value;
-  loadCurrentTab();
-}
-
-// ── Tab switching ─────────────────────────────────────────────────────────────
-function switchTab(tab) {
-  document.querySelectorAll('.pane').forEach(p => p.style.display = 'none');
-  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
-  currentTab = tab;
-  const pane = document.getElementById('pane-' + tab);
-  if (pane) pane.style.display = 'block';
-  const btn = document.getElementById('tab-' + tab);
-  if (btn) btn.classList.add('active');
-  loadCurrentTab();
-}
-
-function loadCurrentTab() {
-  switch(currentTab) {
-    case 'pengumuman': loadAnn(); break;
-    case 'artikel': loadArt(); break;
-    case 'tentang': loadSiteSetting(); break;
-    case 'departemen': loadDept(); break;
-    case 'pengurus': loadOff(); break;
-    case 'periode': loadPeriodeTab(); break;
-    case 'akun': loadAcc(); break;
-  }
-}
-
-// ── Toast ─────────────────────────────────────────────────────────────────────
-function toast(msg, isErr) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show' + (isErr ? ' err' : '');
-  setTimeout(() => t.className = '', 3000);
-}
-
-// ── Form helpers ──────────────────────────────────────────────────────────────
-function toggleForm(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle('open');
-}
-
-function cancelForm(formId, editId) {
-  document.getElementById(formId).classList.remove('open');
-  if (editId) document.getElementById(editId).value = '';
-}
-
-async function api(method, url, body) {
-  const opts = { method, headers: {'Content-Type':'application/json'} };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
-  return res;
-}
-
-// ── PENGUMUMAN ────────────────────────────────────────────────────────────────
-async function loadAnn() {
-  const res = await fetch('/api/cms/announcements?period=' + encodeURIComponent(currentPeriod));
-  const items = await res.json();
-  const tb = document.getElementById('ann-tbody');
-  tb.innerHTML = '';
-  (items || []).forEach(a => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${esc(a.title)}</td>
-      <td><span class="badge badge-blue">${esc(a.period_id||'')}</span></td>
-      <td>${a.published ? '<span class="badge badge-green">Terbit</span>' : '<span class="badge badge-gray">Draft</span>'}</td>
-      <td>${fmtDate(a.created_at)}</td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick='editAnn(${JSON.stringify(a)})'><i class="fa fa-pen"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="delAnn('${a.id}')"><i class="fa fa-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function editAnn(a) {
-  document.getElementById('ann-edit-id').value = a.id;
-  document.getElementById('ann-title').value = a.title;
-  document.getElementById('ann-content').value = a.content;
-  document.getElementById('ann-pub').checked = a.published;
-  document.getElementById('ann-period').value = a.period_id || currentPeriod;
-  document.getElementById('form-ann').classList.add('open');
-}
-
-async function saveAnn() {
-  const id = document.getElementById('ann-edit-id').value;
-  const body = {
-    title: document.getElementById('ann-title').value,
-    content: document.getElementById('ann-content').value,
-    published: document.getElementById('ann-pub').checked,
-    period_id: currentPeriod,
-  };
-  const res = id
-    ? await api('PUT', '/api/cms/announcements/' + id, body)
-    : await api('POST', '/api/cms/announcements', body);
-  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-ann','ann-edit-id'); loadAnn(); }
-  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
-}
-
-async function delAnn(id) {
-  if (!confirm('Hapus pengumuman ini?')) return;
-  const res = await api('DELETE', '/api/cms/announcements/' + id);
-  if (res.ok) { toast('Dihapus'); loadAnn(); }
-  else toast('Gagal hapus', true);
-}
-
-// ── ARTIKEL ───────────────────────────────────────────────────────────────────
 function autoSlug() {
-  const title = document.getElementById('art-title').value;
-  document.getElementById('art-slug').value = title.toLowerCase()
-    .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
+  const title = document.getElementById('artikel-title').value;
+  document.getElementById('artikel-slug').value = title
+    .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-');
 }
 
-async function loadArt() {
-  const res = await fetch('/api/cms/articles?period=' + encodeURIComponent(currentPeriod));
-  const items = await res.json();
-  const tb = document.getElementById('art-tbody');
-  tb.innerHTML = '';
-  (items || []).forEach(a => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${esc(a.title)}</td>
-      <td><code style="font-size:.8rem">${esc(a.slug)}</code></td>
-      <td><span class="badge badge-blue">${esc(a.period_id||'')}</span></td>
-      <td>${a.published ? '<span class="badge badge-green">Terbit</span>' : '<span class="badge badge-gray">Draft</span>'}</td>
-      <td>${fmtDate(a.created_at)}</td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick='editArt(${JSON.stringify(a)})'><i class="fa fa-pen"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="delArt('${a.id}')"><i class="fa fa-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
+function editArtikel(a) {
+  document.getElementById('artikel-id').value = a.id;
+  document.getElementById('artikel-title').value = a.title;
+  document.getElementById('artikel-slug').value = a.slug;
+  document.getElementById('artikel-excerpt').value = a.excerpt || '';
+  document.getElementById('artikel-content').value = a.content;
+  document.getElementById('artikel-cover').value = a.cover_url || '';
+  document.getElementById('artikel-published').checked = a.published;
+  document.getElementById('modalArtikelTitle').textContent = 'Edit Artikel';
+  openModal('modalArtikel');
 }
 
-function editArt(a) {
-  document.getElementById('art-edit-id').value = a.id;
-  document.getElementById('art-title').value = a.title;
-  document.getElementById('art-slug').value = a.slug;
-  document.getElementById('art-excerpt').value = a.excerpt;
-  document.getElementById('art-content').value = a.content;
-  document.getElementById('art-cover').value = a.cover_url || '';
-  document.getElementById('art-pub').checked = a.published;
-  document.getElementById('art-period').value = a.period_id || currentPeriod;
-  document.getElementById('form-art').classList.add('open');
-}
-
-async function saveArt() {
-  const id = document.getElementById('art-edit-id').value;
-  const body = {
-    title: document.getElementById('art-title').value,
-    slug: document.getElementById('art-slug').value,
-    excerpt: document.getElementById('art-excerpt').value,
-    content: document.getElementById('art-content').value,
-    cover_url: document.getElementById('art-cover').value,
-    published: document.getElementById('art-pub').checked,
-    period_id: currentPeriod,
-  };
-  const res = id
-    ? await api('PUT', '/api/cms/articles/' + id, body)
-    : await api('POST', '/api/cms/articles', body);
-  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-art','art-edit-id'); loadArt(); }
-  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
-}
-
-async function delArt(id) {
+async function deleteArtikel(id) {
   if (!confirm('Hapus artikel ini?')) return;
-  const res = await api('DELETE', '/api/cms/articles/' + id);
-  if (res.ok) { toast('Dihapus'); loadArt(); }
-  else toast('Gagal hapus', true);
+  await api('DELETE', `/api/cms/articles/${id}`);
+  loadArtikel();
 }
 
-// ── SITE SETTING ──────────────────────────────────────────────────────────────
-async function loadSiteSetting() {
-  const res = await fetch('/api/cms/site-setting?period=' + encodeURIComponent(currentPeriod));
-  const s = await res.json();
-  document.getElementById('ss-sejarah').value = s.sejarah || '';
-  document.getElementById('ss-visi').value = s.visi || '';
-  document.getElementById('ss-misi').value = s.misi || '';
-}
-
-async function saveSiteSetting() {
+document.getElementById('formArtikel').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('artikel-id').value;
   const body = {
-    sejarah: document.getElementById('ss-sejarah').value,
-    visi: document.getElementById('ss-visi').value,
-    misi: document.getElementById('ss-misi').value,
-    period_id: currentPeriod,
+    title: document.getElementById('artikel-title').value,
+    slug: document.getElementById('artikel-slug').value,
+    excerpt: document.getElementById('artikel-excerpt').value,
+    content: document.getElementById('artikel-content').value,
+    cover_url: document.getElementById('artikel-cover').value,
+    published: document.getElementById('artikel-published').checked,
+    period_label: PERIOD
   };
-  const res = await api('PUT', '/api/cms/site-setting?period=' + encodeURIComponent(currentPeriod), body);
-  if (res.ok) toast('Tersimpan ✓');
-  else toast('Gagal simpan', true);
+  try {
+    if (id) await api('PUT', `/api/cms/articles/${id}`, body);
+    else await api('POST', '/api/cms/articles', body);
+    closeModal('modalArtikel');
+    document.getElementById('formArtikel').reset();
+    document.getElementById('artikel-id').value = '';
+    document.getElementById('modalArtikelTitle').textContent = 'Tambah Artikel';
+    loadArtikel();
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── TENTANG PERIODE ──────────────────────────────────────────────────────────
+async function loadTentang() {
+  try {
+    const pa = await api('GET', `/api/cms/period-about?period=${PERIOD}`);
+    document.getElementById('tentang-sejarah').value = pa.sejarah || '';
+    document.getElementById('tentang-visi').value = pa.visi || '';
+    document.getElementById('tentang-misi').value = pa.misi || '';
+  } catch(e) {}
 }
 
-// ── DEPARTEMEN ────────────────────────────────────────────────────────────────
-async function loadDept() {
-  const res = await fetch('/api/cms/departments?period=' + encodeURIComponent(currentPeriod));
-  const items = await res.json();
-  const tb = document.getElementById('dept-tbody');
-  tb.innerHTML = '';
-  (items || []).forEach(d => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${esc(d.name)}</td>
-      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.description)}</td>
-      <td><span class="badge badge-blue">${esc(d.period_id||'')}</span></td>
-      <td>${d.sort_order}</td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick='editDept(${JSON.stringify(d)})'><i class="fa fa-pen"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="delDept('${d.id}')"><i class="fa fa-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
+document.getElementById('formTentang').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = document.getElementById('tentang-msg');
+  try {
+    await api('PUT', '/api/cms/period-about', {
+      period_label: PERIOD,
+      sejarah: document.getElementById('tentang-sejarah').value,
+      visi: document.getElementById('tentang-visi').value,
+      misi: document.getElementById('tentang-misi').value
+    });
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── DEPARTEMEN ───────────────────────────────────────────────────────────────
+async function loadDepartemen() {
+  const el = document.getElementById('list-departemen');
+  try {
+    const items = await api('GET', `/api/cms/departments?period=${PERIOD}`);
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada departemen.'); return; }
+    el.innerHTML = items.map(d => `
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between gap-4">
+        <div>
+          <h3 class="font-semibold text-slate-800">${d.name}</h3>
+          ${d.description ? `<p class="text-slate-500 text-sm">${d.description}</p>` : ''}
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick='editDept(${JSON.stringify(d)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button onclick="deleteDept('${d.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+    // Update datalist for member form
+    const dl = document.getElementById('deptSuggestions');
+    if (dl) dl.innerHTML = items.map(d => `<option value="${d.name}">`).join('');
+  } catch(e) { el.innerHTML = errHtml(e.message); }
 }
 
 function editDept(d) {
-  document.getElementById('dept-edit-id').value = d.id;
+  document.getElementById('dept-id').value = d.id;
   document.getElementById('dept-name').value = d.name;
-  document.getElementById('dept-desc').value = d.description;
-  document.getElementById('dept-icon').value = d.icon_class || '';
-  document.getElementById('dept-order').value = d.sort_order;
-  document.getElementById('dept-period').value = d.period_id || currentPeriod;
-  document.getElementById('form-dept').classList.add('open');
+  document.getElementById('dept-desc').value = d.description || '';
+  document.getElementById('dept-order').value = d.sort_order || 0;
+  document.getElementById('modalDeptTitle').textContent = 'Edit Departemen';
+  openModal('modalDepartemen');
 }
 
-async function saveDept() {
-  const id = document.getElementById('dept-edit-id').value;
+async function deleteDept(id) {
+  if (!confirm('Hapus departemen ini?')) return;
+  await api('DELETE', `/api/cms/departments/${id}`);
+  loadDepartemen();
+}
+
+document.getElementById('formDepartemen').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('dept-id').value;
   const body = {
     name: document.getElementById('dept-name').value,
     description: document.getElementById('dept-desc').value,
-    icon_class: document.getElementById('dept-icon').value,
     sort_order: parseInt(document.getElementById('dept-order').value) || 0,
-    period_id: currentPeriod,
+    period_label: PERIOD
   };
-  const res = id
-    ? await api('PUT', '/api/cms/departments/' + id, body)
-    : await api('POST', '/api/cms/departments', body);
-  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-dept','dept-edit-id'); loadDept(); }
-  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
+  try {
+    if (id) await api('PUT', `/api/cms/departments/${id}`, body);
+    else await api('POST', '/api/cms/departments', body);
+    closeModal('modalDepartemen');
+    document.getElementById('formDepartemen').reset();
+    document.getElementById('dept-id').value = '';
+    document.getElementById('modalDeptTitle').textContent = 'Tambah Departemen';
+    loadDepartemen();
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── ANGGOTA ──────────────────────────────────────────────────────────────────
+async function loadAnggota() {
+  const el = document.getElementById('list-anggota');
+  try {
+    const items = await api('GET', `/api/cms/members?period=${PERIOD}`);
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada anggota.'); return; }
+    el.innerHTML = `<table class="min-w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Anggota</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Departemen</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Jabatan</th><th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase">Aksi</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        ${items.map(m => `<tr class="hover:bg-slate-50">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              ${m.photo_url ? `<img src="${m.photo_url}" class="w-9 h-9 rounded-full object-cover">` : `<div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>`}
+              <div><p class="font-medium text-slate-800 text-sm">${m.full_name}</p>${m.nickname ? `<p class="text-xs text-slate-400">"${m.nickname}"</p>` : ''}</div>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-slate-600 text-sm">${m.department || '-'}</td>
+          <td class="px-4 py-3 text-blue-700 text-sm font-medium">${m.position || '-'}</td>
+          <td class="px-4 py-3 text-right">
+            <div class="flex justify-end gap-2">
+              <button onclick='editAnggota(${JSON.stringify(m)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button onclick="deleteAnggota('${m.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  } catch(e) { el.innerHTML = errHtml(e.message); }
 }
 
-async function delDept(id) {
-  if (!confirm('Hapus departemen ini?')) return;
-  const res = await api('DELETE', '/api/cms/departments/' + id);
-  if (res.ok) { toast('Dihapus'); loadDept(); }
-  else toast('Gagal hapus', true);
+function editAnggota(m) {
+  document.getElementById('anggota-id').value = m.id;
+  document.getElementById('anggota-fullname').value = m.full_name;
+  document.getElementById('anggota-nickname').value = m.nickname || '';
+  document.getElementById('anggota-position').value = m.position;
+  document.getElementById('anggota-department').value = m.department || '';
+  document.getElementById('anggota-photo').value = m.photo_url || '';
+  document.getElementById('anggota-order').value = m.sort_order || 0;
+  document.getElementById('modalAnggotaTitle').textContent = 'Edit Anggota';
+  openModal('modalAnggota');
 }
 
-// ── PENGURUS ──────────────────────────────────────────────────────────────────
-async function loadOff() {
-  const res = await fetch('/api/cms/officers?period=' + encodeURIComponent(currentPeriod));
-  const items = await res.json();
-  const tb = document.getElementById('off-tbody');
-  tb.innerHTML = '';
-  (items || []).forEach(o => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${esc(o.name)}</td>
-      <td>${esc(o.role)}</td>
-      <td>${esc(o.department)}</td>
-      <td><span class="badge ${o.tier==='inti'?'badge-blue':'badge-gray'}">${esc(o.tier)}</span></td>
-      <td><span class="badge badge-blue">${esc(o.period_id||'')}</span></td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick='editOff(${JSON.stringify(o)})'><i class="fa fa-pen"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="delOff('${o.id}')"><i class="fa fa-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
+async function deleteAnggota(id) {
+  if (!confirm('Hapus anggota ini?')) return;
+  await api('DELETE', `/api/cms/members/${id}`);
+  loadAnggota();
 }
 
-function editOff(o) {
-  document.getElementById('off-edit-id').value = o.id;
-  document.getElementById('off-name').value = o.name;
-  document.getElementById('off-role').value = o.role;
-  document.getElementById('off-dept').value = o.department;
-  document.getElementById('off-tier').value = o.tier || 'inti';
-  document.getElementById('off-photo').value = o.photo_url || '';
-  document.getElementById('off-order').value = o.sort_order;
-  document.getElementById('off-period').value = o.period_id || currentPeriod;
-  document.getElementById('form-off').classList.add('open');
-}
-
-async function saveOff() {
-  const id = document.getElementById('off-edit-id').value;
+document.getElementById('formAnggota').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('anggota-id').value;
   const body = {
-    name: document.getElementById('off-name').value,
-    role: document.getElementById('off-role').value,
-    department: document.getElementById('off-dept').value,
-    tier: document.getElementById('off-tier').value,
-    photo_url: document.getElementById('off-photo').value,
-    sort_order: parseInt(document.getElementById('off-order').value) || 0,
-    period_id: currentPeriod,
+    full_name: document.getElementById('anggota-fullname').value,
+    nickname: document.getElementById('anggota-nickname').value,
+    position: document.getElementById('anggota-position').value,
+    department: document.getElementById('anggota-department').value,
+    photo_url: document.getElementById('anggota-photo').value,
+    sort_order: parseInt(document.getElementById('anggota-order').value) || 0,
+    period_label: PERIOD
   };
-  const res = id
-    ? await api('PUT', '/api/cms/officers/' + id, body)
-    : await api('POST', '/api/cms/officers', body);
-  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-off','off-edit-id'); loadOff(); }
-  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
+  try {
+    if (id) await api('PUT', `/api/cms/members/${id}`, body);
+    else await api('POST', '/api/cms/members', body);
+    closeModal('modalAnggota');
+    document.getElementById('formAnggota').reset();
+    document.getElementById('anggota-id').value = '';
+    document.getElementById('modalAnggotaTitle').textContent = 'Tambah Anggota';
+    loadAnggota();
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── STRUKTUR ORGANISASI ──────────────────────────────────────────────────────
+async function loadStruktur() {
+  try {
+    const data = await api('GET', `/api/cms/periods`);
+    const period = data.find(p => p.label === PERIOD);
+    if (period && period.hierarchy_image_url) {
+      document.getElementById('struktur-url').value = period.hierarchy_image_url;
+      const img = document.getElementById('struktur-img');
+      img.src = period.hierarchy_image_url;
+      document.getElementById('struktur-preview').classList.remove('hidden');
+    }
+  } catch(e) {}
 }
 
-async function delOff(id) {
-  if (!confirm('Hapus pengurus ini?')) return;
-  const res = await api('DELETE', '/api/cms/officers/' + id);
-  if (res.ok) { toast('Dihapus'); loadOff(); }
-  else toast('Gagal hapus', true);
+function previewStruktur() {
+  const url = document.getElementById('struktur-url').value;
+  if (!url) return;
+  document.getElementById('struktur-img').src = url;
+  document.getElementById('struktur-preview').classList.remove('hidden');
 }
 
-// ── PERIODE ───────────────────────────────────────────────────────────────────
-async function loadPeriodeTab() {
-  const res = await fetch('/api/cms/periods');
-  const items = await res.json();
-  const tb = document.getElementById('period-tbody');
-  tb.innerHTML = '';
-  (items || []).forEach(p => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><strong>${esc(p.label)}</strong></td>
-      <td>${esc(p.display_name)}</td>
-      <td>${p.is_active ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-gray">Tidak Aktif</span>'}</td>
-      <td>${fmtDate(p.created_at)}</td>
-      <td>${!p.is_active ? `<button class="btn btn-success btn-sm" onclick="activatePeriod('${p.label}')"><i class="fa fa-check"></i> Aktifkan</button>` : ''}</td>`;
-    tb.appendChild(tr);
-  });
+async function saveStruktur() {
+  const url = document.getElementById('struktur-url').value;
+  const msg = document.getElementById('struktur-msg');
+  try {
+    await api('PUT', `/api/cms/periods/${PERIOD}`, { hierarchy_image_url: url });
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(ex) { alert('Error: ' + ex.message); }
 }
 
-async function savePeriod() {
+// ── GLOBAL PENGATURAN ────────────────────────────────────────────────────────
+async function loadGlobal() {
+  try {
+    const g = await api('GET', '/api/cms/global-setting');
+    document.getElementById('global-orgname').value = g.org_name || '';
+    document.getElementById('global-logo').value = g.logo_url || '';
+    document.getElementById('global-about').value = g.about_html || '';
+    if (g.social_media) {
+      document.getElementById('sm-instagram').value = g.social_media.instagram || '';
+      document.getElementById('sm-twitter').value = g.social_media.twitter || '';
+      document.getElementById('sm-youtube').value = g.social_media.youtube || '';
+      document.getElementById('sm-linkedin').value = g.social_media.linkedin || '';
+      document.getElementById('sm-tiktok').value = g.social_media.tiktok || '';
+    }
+    if (g.logo_url) {
+      document.getElementById('logo-preview-img').src = g.logo_url;
+      document.getElementById('logo-preview-wrap').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+
+function previewLogo() {
+  const url = document.getElementById('global-logo').value;
+  if (!url) return;
+  document.getElementById('logo-preview-img').src = url;
+  document.getElementById('logo-preview-wrap').classList.remove('hidden');
+}
+
+async function saveGlobal(includeSocmed) {
+  const g = {
+    org_name: document.getElementById('global-orgname').value,
+    logo_url: document.getElementById('global-logo').value,
+    about_html: document.getElementById('global-about').value,
+    social_media: {
+      instagram: document.getElementById('sm-instagram').value,
+      twitter: document.getElementById('sm-twitter').value,
+      youtube: document.getElementById('sm-youtube').value,
+      linkedin: document.getElementById('sm-linkedin').value,
+      tiktok: document.getElementById('sm-tiktok').value
+    }
+  };
+  await api('PUT', '/api/cms/global-setting', g);
+}
+
+document.getElementById('formGlobal').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = document.getElementById('global-msg');
+  try {
+    await saveGlobal(false);
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+document.getElementById('formSocmed').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = document.getElementById('socmed-msg');
+  try {
+    await saveGlobal(true);
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── PERIODE ──────────────────────────────────────────────────────────────────
+async function loadPeriode() {
+  const el = document.getElementById('list-periode');
+  try {
+    const items = await api('GET', '/api/cms/periods');
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada periode.'); return; }
+    el.innerHTML = items.map(p => `
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="font-semibold text-slate-800">${p.display_name}</h3>
+            ${p.is_active ? '<span class="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">Aktif</span>' : ''}
+          </div>
+          <p class="text-slate-400 text-sm font-mono">Kode: ${p.label}</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+          ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg text-xs font-medium transition">Jadikan Aktif</button>` : ''}
+        </div>
+      </div>`).join('');
+    // Populate akun period select
+    const sel = document.getElementById('akun-assigned-period');
+    if (sel) {
+      sel.innerHTML = '<option value="">-- Pilih Periode --</option>' + items.map(p => `<option value="${p.label}">${p.display_name}</option>`).join('');
+    }
+  } catch(e) { el.innerHTML = errHtml(e.message); }
+}
+
+async function activatePeriode(label) {
+  if (!confirm(`Aktifkan periode ${label}? Periode lain akan dinonaktifkan.`)) return;
+  await api('PUT', `/api/cms/periods/${label}/activate`);
+  loadPeriode();
+  location.reload();
+}
+
+document.getElementById('formPeriode').addEventListener('submit', async e => {
+  e.preventDefault();
   const body = {
-    label: document.getElementById('np-label').value.trim(),
-    display_name: document.getElementById('np-display').value.trim(),
-    is_active: false,
+    label: document.getElementById('periode-label').value,
+    display_name: document.getElementById('periode-displayname').value,
+    hierarchy_image_url: document.getElementById('periode-hierarchy').value
   };
-  if (!body.label) { toast('Label wajib diisi', true); return; }
-  const res = await api('POST', '/api/cms/periods', body);
-  if (res.ok) {
-    toast('Periode ditambahkan ✓');
-    document.getElementById('np-label').value = '';
-    document.getElementById('np-display').value = '';
-    toggleForm('form-period-new');
-    loadPeriodeTab();
-    await loadPeriods(); // refresh topbar dropdown
-  } else { const d = await res.json(); toast(d.error || 'Gagal', true); }
+  try {
+    await api('POST', '/api/cms/periods', body);
+    closeModal('modalPeriode');
+    document.getElementById('formPeriode').reset();
+    loadPeriode();
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── AKUN ─────────────────────────────────────────────────────────────────────
+async function loadAkun() {
+  const el = document.getElementById('list-akun');
+  await loadPeriode(); // populate period datalist too
+  try {
+    const items = await api('GET', '/api/cms/accounts');
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
+    el.innerHTML = `<table class="min-w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Username</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Role</th><th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Periode</th><th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase">Aksi</th></tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        ${items.map(u => `<tr class="hover:bg-slate-50">
+          <td class="px-4 py-3 font-medium text-slate-800">${u.username}</td>
+          <td class="px-4 py-3"><span class="px-2 py-0.5 text-xs rounded-full ${u.role === 'superadmin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role}</span></td>
+          <td class="px-4 py-3 text-slate-500 text-sm">${u.assigned_period || '-'}</td>
+          <td class="px-4 py-3 text-right">
+            <div class="flex justify-end gap-2">
+              <button onclick='editAkun(${JSON.stringify(u)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button onclick="deleteAkun('${u.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  } catch(e) { el.innerHTML = errHtml(e.message); }
 }
 
-async function activatePeriod(label) {
-  if (!confirm('Aktifkan periode ' + label + '? Periode aktif saat ini akan dinonaktifkan.')) return;
-  const res = await api('PUT', '/api/cms/periods/' + encodeURIComponent(label) + '/activate');
-  if (res.ok) {
-    toast('Periode ' + label + ' kini aktif ✓');
-    loadPeriodeTab();
-    await loadPeriods(); // refresh dropdown
-  } else toast('Gagal aktifkan', true);
+function editAkun(u) {
+  document.getElementById('akun-id').value = u.id;
+  document.getElementById('akun-username').value = u.username;
+  document.getElementById('akun-password').value = '';
+  document.getElementById('akun-role').value = u.role;
+  document.getElementById('akun-assigned-period').value = u.assigned_period || '';
+  document.getElementById('akun-pw-hint').textContent = '(kosong = tidak diubah)';
+  document.getElementById('modalAkunTitle').textContent = 'Edit Akun';
+  toggleAssignedPeriod();
+  openModal('modalAkun');
 }
 
-// ── AKUN ──────────────────────────────────────────────────────────────────────
-async function loadAcc() {
-  const res = await fetch('/api/cms/accounts');
-  const items = await res.json();
-  const tb = document.getElementById('acc-tbody');
-  tb.innerHTML = '';
-  (items || []).forEach(u => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${esc(u.username)}</td>
-      <td><span class="badge ${u.role==='superadmin'?'badge-blue':'badge-gray'}">${esc(u.role)}</span></td>
-      <td>${fmtDate(u.created_at)}</td>
-      <td style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-sm" onclick='editAcc(${JSON.stringify(u)})'><i class="fa fa-pen"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="delAcc('${u.id}')"><i class="fa fa-trash"></i></button>
-      </td>`;
-    tb.appendChild(tr);
-  });
-}
-
-function editAcc(u) {
-  document.getElementById('acc-edit-id').value = u.id;
-  document.getElementById('acc-username').value = u.username;
-  document.getElementById('acc-role').value = u.role;
-  document.getElementById('acc-password').value = '';
-  document.getElementById('acc-pw-hint').style.display = 'inline';
-  document.getElementById('form-acc').classList.add('open');
-}
-
-async function saveAcc() {
-  const id = document.getElementById('acc-edit-id').value;
-  const body = {
-    username: document.getElementById('acc-username').value,
-    role: document.getElementById('acc-role').value,
-    password: document.getElementById('acc-password').value,
-  };
-  if (!id && !body.password) { toast('Password wajib untuk akun baru', true); return; }
-  const res = id
-    ? await api('PUT', '/api/cms/accounts/' + id, body)
-    : await api('POST', '/api/cms/accounts', body);
-  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-acc','acc-edit-id'); loadAcc(); }
-  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
-}
-
-async function delAcc(id) {
+async function deleteAkun(id) {
   if (!confirm('Hapus akun ini?')) return;
-  const res = await api('DELETE', '/api/cms/accounts/' + id);
-  if (res.ok) { toast('Dihapus'); loadAcc(); }
-  else toast('Gagal hapus', true);
+  await api('DELETE', `/api/cms/accounts/${id}`);
+  loadAkun();
 }
 
-// ── Utilities ─────────────────────────────────────────────────────────────────
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtDate(s) { if (!s) return '—'; return new Date(s).toLocaleDateString('id-ID',{year:'numeric',month:'short',day:'numeric'}); }
+function toggleAssignedPeriod() {
+  const role = document.getElementById('akun-role').value;
+  const wrap = document.getElementById('akun-period-wrap');
+  if (role === 'superadmin') wrap.style.display = 'none';
+  else wrap.style.display = 'block';
+}
+
+document.getElementById('formAkun').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('akun-id').value;
+  const isNew = !id;
+  const body = {
+    username: document.getElementById('akun-username').value,
+    role: document.getElementById('akun-role').value,
+    assigned_period: document.getElementById('akun-assigned-period').value
+  };
+  const pw = document.getElementById('akun-password').value;
+  if (pw) body.password = pw;
+  if (isNew && !pw) { alert('Kata sandi wajib diisi untuk akun baru.'); return; }
+  try {
+    if (id) await api('PUT', `/api/cms/accounts/${id}`, body);
+    else await api('POST', '/api/cms/accounts', body);
+    closeModal('modalAkun');
+    document.getElementById('formAkun').reset();
+    document.getElementById('akun-id').value = '';
+    document.getElementById('modalAkunTitle').textContent = 'Tambah Akun';
+    loadAkun();
+  } catch(ex) { alert('Error: ' + ex.message); }
+});
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+switchTab('pengumuman');
 </script>
 </body>
 </html>

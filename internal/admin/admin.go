@@ -1,58 +1,98 @@
 package admin
 
 import (
-	"net/http"
-	"text/template"
+"html/template"
+"net/http"
+"path/filepath"
 
-	"webapp/internal/auth"
-	"webapp/internal/db"
+"webapp/internal/auth"
+"webapp/internal/db"
 )
 
 var tmpl *template.Template
 
 func Init() {
-	tmpl = template.Must(template.ParseGlob("templates/admin-panel/*.html"))
+var err error
+tmpl, err = template.ParseGlob(filepath.Join("templates", "admin-panel", "*.html"))
+if err != nil {
+panic("admin template parse: " + err.Error())
+}
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	if _, _, ok := auth.GetSessionUser(r); ok {
-		http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
-		return
-	}
-	errMsg := ""
-	if r.Method == "POST" {
-		r.ParseForm()
-		username := r.FormValue("username")
-		password := r.FormValue("password")
-		user, err := db.GetUserByUsername(username)
-		if err == nil && auth.CheckPassword(user.PasswordHash, password) {
-			auth.SetSession(w, user.Username, user.Role)
-			http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
-			return
-		}
-		errMsg = "Username atau kata sandi salah."
-	}
-	tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"Error": errMsg})
+if r.Method == http.MethodPost {
+username := r.FormValue("username")
+password := r.FormValue("password")
+u, err := db.GetUserByUsername(username)
+if err != nil || !auth.CheckPassword(u.PasswordHash, password) {
+w.WriteHeader(http.StatusUnauthorized)
+tmpl.ExecuteTemplate(w, "login.html", map[string]any{"Error": "Username atau password salah."})
+return
+}
+auth.SetSession(w, u.Username, u.Role)
+http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
+return
+}
+tmpl.ExecuteTemplate(w, "login.html", nil)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	auth.ClearSession(w)
-	http.Redirect(w, r, "/admin", http.StatusFound)
+auth.ClearSession(w)
+http.Redirect(w, r, "/admin", http.StatusFound)
 }
 
 func Dashboard(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := auth.GetSessionUser(r)
-	if !ok {
-		http.Redirect(w, r, "/admin", http.StatusFound)
-		return
-	}
-	tab := r.URL.Query().Get("tab")
-	if tab == "" {
-		tab = "pengumuman"
-	}
-	tmpl.ExecuteTemplate(w, "dashboard.html", map[string]interface{}{
-		"Tab":      tab,
-		"Username": username,
-		"Role":     role,
-	})
+username, role, ok := auth.GetSessionUser(r)
+if !ok || username == "" {
+http.Redirect(w, r, "/admin", http.StatusFound)
+return
+}
+
+u, err := db.GetUserByUsername(username)
+if err != nil {
+http.Redirect(w, r, "/admin", http.StatusFound)
+return
+}
+
+var accessiblePeriods []db.Period
+allPeriods, _ := db.GetPeriods()
+
+if role == "superadmin" {
+accessiblePeriods = allPeriods
+} else {
+for _, p := range allPeriods {
+if p.Label == u.AssignedPeriod {
+accessiblePeriods = append(accessiblePeriods, p)
+break
+}
+}
+}
+
+selectedPeriod := r.URL.Query().Get("period")
+if role != "superadmin" {
+selectedPeriod = u.AssignedPeriod
+} else if selectedPeriod == "" && len(accessiblePeriods) > 0 {
+selectedPeriod = accessiblePeriods[0].Label
+for _, p := range accessiblePeriods {
+if p.IsActive {
+selectedPeriod = p.Label
+break
+}
+}
+}
+
+globalSetting, _ := db.GetGlobalSetting()
+
+data := map[string]any{
+"Username":          username,
+"Role":              role,
+"AccessiblePeriods": accessiblePeriods,
+"SelectedPeriod":    selectedPeriod,
+"GlobalSetting":     globalSetting,
+}
+
+w.Header().Set("Content-Type", "text/html; charset=utf-8")
+if err := tmpl.ExecuteTemplate(w, "dashboard.html", data); err != nil {
+http.Error(w, err.Error(), http.StatusInternalServerError)
+}
 }
