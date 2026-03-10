@@ -7,10 +7,10 @@
 <body class="bg-slate-50 text-slate-800 font-sans">
   {{template "navbar" .}}
 
-  <div class="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 px-4">
+  <div class="bg-gradient-to-r from-primary-xdark to-primary-dark text-white py-16 px-4">
     <div class="max-w-4xl mx-auto">
       <h1 class="text-4xl font-bold mb-2">Artikel</h1>
-      <p class="text-blue-200">Kajian dan tulisan ilmiah PKSE UGM</p>
+      <p class="text-[#b8d0e8]">Kajian dan tulisan ilmiah PKSE UGM</p>
     </div>
   </div>
 
@@ -23,7 +23,7 @@
       <div class="flex flex-wrap gap-2">
         {{range .Periods}}
         <a href="/artikel?period={{.Label}}"
-          class="px-4 py-2 rounded-lg text-sm font-medium transition {{if eq $.FilterPeriod .Label}}bg-blue-600 text-white{{else}}bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700{{end}}">
+          class="px-4 py-2 rounded-lg text-sm font-medium transition {{if eq $.FilterPeriod .Label}}bg-primary text-white{{else}}bg-slate-100 text-slate-600 hover:bg-primary-light hover:text-primary-dark{{end}}">
           {{.DisplayName}}{{if .IsActive}} ✦{{end}}
         </a>
         {{end}}
@@ -42,16 +42,16 @@
         </div>
         {{else}}
         <div class="h-52 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-          <svg class="w-16 h-16 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <svg class="w-16 h-16 text-[#93b8d9]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
         {{end}}
         <div class="p-6 flex flex-col flex-1">
-          <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded inline-block w-fit mb-3">{{.PeriodLabel}}</span>
+          <span class="text-xs text-primary font-medium bg-primary-light px-2 py-1 rounded inline-block w-fit mb-3">{{.PeriodLabel}}</span>
           <h2 class="font-bold text-slate-800 text-lg mb-2 leading-snug flex-1">
-            <a href="/artikel/{{.Slug}}" class="hover:text-blue-700 transition">{{.Title}}</a>
+            <a href="/artikel/{{.Slug}}" class="hover:text-primary-dark transition">{{.Title}}</a>
           </h2>
           {{if .Excerpt}}<p class="text-slate-500 text-sm mb-4 line-clamp-3">{{.Excerpt}}</p>{{end}}
-          <a href="/artikel/{{.Slug}}" class="mt-auto text-blue-600 text-sm font-medium hover:underline inline-flex items-center gap-1">
+          <a href="/artikel/{{.Slug}}" class="mt-auto text-primary text-sm font-medium hover:underline inline-flex items-center gap-1">
             Baca selengkapnya
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </a>

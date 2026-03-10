@@ -8,20 +8,20 @@
   {{template "navbar" .}}
 
   <!-- Hero Section -->
-  <section class="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700 text-white py-24 px-4">
+  <section class="bg-gradient-to-br from-primary-xdark via-blue-800 to-primary-dark text-white py-24 px-4">
     <div class="max-w-4xl mx-auto text-center">
       {{if .ActivePeriod}}
-      <span class="inline-block bg-blue-600 text-blue-100 text-sm font-medium px-4 py-1 rounded-full mb-4">{{.ActivePeriod.DisplayName}}</span>
+      <span class="inline-block bg-primary text-[#dde9f5] text-sm font-medium px-4 py-1 rounded-full mb-4">{{.ActivePeriod.DisplayName}}</span>
       {{end}}
       <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
         {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}
       </h1>
-      <p class="text-blue-100 text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+      <p class="text-[#dde9f5] text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
         Pusat Kajian dan Studi Ekonomi — wadah mahasiswa untuk tumbuh dalam riset, diskusi, dan kontribusi nyata bagi perekonomian Indonesia.
       </p>
       <div class="flex flex-wrap justify-center gap-4">
-        <a href="/tentang-kami" class="bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg hover:bg-blue-50 transition shadow-md">Tentang Kami</a>
-        <a href="/artikel" class="border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-blue-900 transition">Baca Artikel</a>
+        <a href="/tentang-kami" class="bg-white text-primary-xdark font-semibold px-6 py-3 rounded-lg hover:bg-primary-light transition shadow-md">Tentang Kami</a>
+        <a href="/artikel" class="border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-primary-xdark transition">Baca Artikel</a>
       </div>
     </div>
   </section>
@@ -32,17 +32,17 @@
   <section class="py-16 px-4 bg-white">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-blue-900">Visi &amp; Misi</h2>
+        <h2 class="text-3xl font-bold text-primary-xdark">Visi &amp; Misi</h2>
         {{if .ActivePeriod}}<p class="text-slate-500 mt-2">{{.ActivePeriod.DisplayName}}</p>{{end}}
       </div>
       <div class="grid md:grid-cols-2 gap-8">
         {{if .PeriodAbout.Visi}}
-        <div class="bg-blue-50 rounded-2xl p-8 border border-blue-100">
+        <div class="bg-primary-light rounded-2xl p-8 border border-[#dde9f5]">
           <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-blue-900">Visi</h3>
+            <h3 class="text-xl font-bold text-primary-xdark">Visi</h3>
           </div>
           <p class="text-slate-700 leading-relaxed">{{.PeriodAbout.Visi}}</p>
         </div>
@@ -69,14 +69,14 @@
   <section class="py-16 px-4 bg-slate-50">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-blue-900">Departemen</h2>
+        <h2 class="text-3xl font-bold text-primary-xdark">Departemen</h2>
         {{if .ActivePeriod}}<p class="text-slate-500 mt-2">Struktur Organisasi {{.ActivePeriod.DisplayName}}</p>{{end}}
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {{range .Departments}}
         <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <div class="w-10 h-10 bg-[#dde9f5] rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </div>
           <h3 class="font-semibold text-slate-800 text-lg mb-2">{{.Name}}</h3>
           {{if .Description}}<p class="text-slate-500 text-sm">{{.Description}}</p>{{end}}
@@ -92,13 +92,13 @@
   <section class="py-16 px-4 bg-white">
     <div class="max-w-6xl mx-auto">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-blue-900">Pengurus Aktif</h2>
+        <h2 class="text-3xl font-bold text-primary-xdark">Pengurus Aktif</h2>
         {{if .ActivePeriod}}<p class="text-slate-500 mt-2">{{.ActivePeriod.DisplayName}}</p>{{end}}
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
         {{range .Members}}
         <div class="text-center">
-          <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden bg-slate-200 border-2 border-blue-100">
+          <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden bg-slate-200 border-2 border-[#dde9f5]">
             {{if .PhotoURL}}
             <img src="{{.PhotoURL}}" alt="{{.Nickname}}" class="w-full h-full object-cover">
             {{else}}
@@ -108,12 +108,12 @@
             {{end}}
           </div>
           <p class="font-semibold text-slate-800 text-sm">{{.Nickname}}</p>
-          <p class="text-blue-600 text-xs">{{.Position}}</p>
+          <p class="text-primary text-xs">{{.Position}}</p>
         </div>
         {{end}}
       </div>
       <div class="text-center">
-        <a href="/anggota" class="inline-flex items-center gap-2 bg-blue-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-800 transition">
+        <a href="/anggota" class="inline-flex items-center gap-2 bg-primary-xdark text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-dark transition">
           Lihat Semua Anggota
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
         </a>
@@ -127,8 +127,8 @@
   <section class="py-16 px-4 bg-slate-50">
     <div class="max-w-6xl mx-auto">
       <div class="flex justify-between items-center mb-12">
-        <h2 class="text-3xl font-bold text-blue-900">Artikel Terbaru</h2>
-        <a href="/artikel" class="text-blue-600 hover:underline text-sm font-medium">Lihat semua &rarr;</a>
+        <h2 class="text-3xl font-bold text-primary-xdark">Artikel Terbaru</h2>
+        <a href="/artikel" class="text-primary hover:underline text-sm font-medium">Lihat semua &rarr;</a>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {{range .Articles}}
@@ -139,12 +139,12 @@
           </div>
           {{end}}
           <div class="p-6">
-            <span class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded">{{.PeriodLabel}}</span>
+            <span class="text-xs text-primary font-medium bg-primary-light px-2 py-1 rounded">{{.PeriodLabel}}</span>
             <h3 class="font-bold text-slate-800 mt-3 mb-2 text-lg leading-snug">
-              <a href="/artikel/{{.Slug}}" class="hover:text-blue-700 transition">{{.Title}}</a>
+              <a href="/artikel/{{.Slug}}" class="hover:text-primary-dark transition">{{.Title}}</a>
             </h3>
             {{if .Excerpt}}<p class="text-slate-500 text-sm mb-4 line-clamp-2">{{.Excerpt}}</p>{{end}}
-            <a href="/artikel/{{.Slug}}" class="text-blue-600 text-sm font-medium hover:underline">Baca selengkapnya &rarr;</a>
+            <a href="/artikel/{{.Slug}}" class="text-primary text-sm font-medium hover:underline">Baca selengkapnya &rarr;</a>
           </div>
         </article>
         {{end}}
@@ -158,15 +158,15 @@
   <section class="py-16 px-4 bg-white">
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-10">
-        <h2 class="text-3xl font-bold text-blue-900">Pengumuman Terkini</h2>
-        <a href="/pengumuman" class="text-blue-600 hover:underline text-sm font-medium">Lihat semua &rarr;</a>
+        <h2 class="text-3xl font-bold text-primary-xdark">Pengumuman Terkini</h2>
+        <a href="/pengumuman" class="text-primary hover:underline text-sm font-medium">Lihat semua &rarr;</a>
       </div>
       <div class="space-y-4">
         {{range .Announcements}}
-        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-blue-300 transition">
+        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-[#6b9ec9] transition">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+            <div class="w-10 h-10 bg-[#dde9f5] rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
             </div>
             <div>
               <h3 class="font-semibold text-slate-800 mb-1">{{.Title}}</h3>
