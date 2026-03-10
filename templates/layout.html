@@ -1,7 +1,7 @@
 {{define "head"}}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="/static/fa/all.min.css">
 <link rel="preload" href="/static/fonts/PlusJakartaSans-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -81,7 +81,7 @@
 <script>
   (function(){
     var t=document.getElementById('menuToggle'),m=document.getElementById('mobileMenu'),i=document.getElementById('menuIcon');
-    if(t)t.addEventListener('click',function(){var o=m.classList.toggle('hidden');i.className=o?'fas fa-bars':'fas fa-times';});
+    if(t)t.addEventListener('click',function(){var o=m.classList.toggle('hidden');i.className=o?'fas fa-bars':'fas fa-xmark';});
     window.addEventListener('scroll',function(){document.getElementById('navbar').classList.toggle('nav-scrolled',window.scrollY>8);},{passive:true});
   })();
 </script>
@@ -130,13 +130,13 @@
           <li><a href="/tentang-kami#visi-misi" class="hover:text-white transition-colors">Visi &amp; Misi</a></li>
           <li><a href="/anggota" class="hover:text-white transition-colors">Struktur Organisasi</a></li>
           <li><a href="/periode" class="hover:text-white transition-colors">Riwayat Periode</a></li>
-          <li><a href="https://kse.or.id" target="_blank" rel="noopener" class="hover:text-white transition-colors flex items-center gap-1">KSE Pusat <i class="fas fa-external-link-alt text-[9px]"></i></a></li>
+          <li><a href="https://kse.or.id" target="_blank" rel="noopener" class="hover:text-white transition-colors flex items-center gap-1">KSE Pusat <i class="fas fa-up-right-from-square text-[9px]"></i></a></li>
         </ul>
       </div>
       <div>
         <div class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] mb-5">Kontak</div>
         <ul class="space-y-2.5 text-sm text-gray-400">
-          <li class="flex items-start gap-2"><i class="fas fa-map-marker-alt mt-0.5 text-primary flex-shrink-0 text-xs"></i><span>Universitas Gadjah Mada, Bulaksumur, Yogyakarta</span></li>
+          <li class="flex items-start gap-2"><i class="fas fa-location-dot mt-0.5 text-primary flex-shrink-0 text-xs"></i><span>Universitas Gadjah Mada, Bulaksumur, Yogyakarta</span></li>
           {{if and .GlobalSetting .GlobalSetting.ContactEmail}}
           <li class="flex items-center gap-2"><i class="fas fa-envelope text-primary flex-shrink-0 text-xs"></i><a href="mailto:{{.GlobalSetting.ContactEmail}}" class="hover:text-white transition-colors">{{.GlobalSetting.ContactEmail}}</a></li>
           {{end}}
