@@ -9,16 +9,25 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0f4f8;color:#1e293b;min-height:100vh}
-/* ── layout ── */
-.topbar{background:#385F8C;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.topbar h1{font-size:1rem;font-weight:700;letter-spacing:.5px}
+/* ── topbar ── */
+.topbar{background:#385F8C;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;box-shadow:0 2px 8px rgba(0,0,0,.2);gap:16px}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar h1{font-size:.95rem;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.period-wrap{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:8px}
+.period-wrap label{font-size:.75rem;font-weight:600;opacity:.85;margin:0;text-transform:uppercase;letter-spacing:.05em;display:block}
+#periodSelect{background:transparent;border:none;color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;outline:none;padding:0}
+#periodSelect option{color:#1e293b;background:#fff}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.topbar-user{font-size:.82rem;opacity:.85;display:flex;align-items:center;gap:6px}
 .topbar a{color:#fff;opacity:.85;text-decoration:none;font-size:.85rem;display:flex;align-items:center;gap:6px}
 .topbar a:hover{opacity:1}
+/* ── layout ── */
 .shell{display:flex;min-height:calc(100vh - 56px)}
 .sidebar{width:220px;background:#fff;border-right:1px solid #e2e8f0;flex-shrink:0;padding:16px 0}
 .sidebar button{width:100%;background:none;border:none;text-align:left;padding:10px 20px;cursor:pointer;font-family:inherit;font-size:.9rem;color:#475569;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:.15s}
 .sidebar button:hover{background:#f8fafc;color:#385F8C}
 .sidebar button.active{color:#385F8C;font-weight:600;border-left-color:#385F8C;background:#eff6ff}
+.sidebar-section{padding:8px 20px 4px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-top:8px}
 .main{flex:1;padding:28px;max-width:960px}
 /* ── card ── */
 .card{background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:22px 24px;margin-bottom:20px}
@@ -32,17 +41,19 @@ tr:hover td{background:#f8fafc}
 .badge-green{background:#dcfce7;color:#166534}
 .badge-gray{background:#f1f5f9;color:#64748b}
 .badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-yellow{background:#fef9c3;color:#854d0e}
 /* ── buttons ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;font-size:.85rem;font-weight:600;transition:.15s}
 .btn-primary{background:#385F8C;color:#fff}.btn-primary:hover{background:#2d4f78}
 .btn-danger{background:#fee2e2;color:#dc2626}.btn-danger:hover{background:#fecaca}
 .btn-secondary{background:#f1f5f9;color:#475569}.btn-secondary:hover{background:#e2e8f0}
+.btn-success{background:#dcfce7;color:#166534}.btn-success:hover{background:#bbf7d0}
 .btn-sm{padding:4px 10px;font-size:.78rem}
 /* ── form ── */
 .form-row{margin-bottom:14px}
 label{display:block;font-size:.8rem;font-weight:600;color:#475569;margin-bottom:5px}
-input[type=text],input[type=number],textarea,select{width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:.875rem;color:#1e293b;background:#fff;transition:.15s}
-input[type=text]:focus,input[type=number]:focus,textarea:focus,select:focus{outline:none;border-color:#385F8C;box-shadow:0 0 0 3px rgba(56,95,140,.12)}
+input[type=text],input[type=number],input[type=password],textarea,select{width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:.875rem;color:#1e293b;background:#fff;transition:.15s}
+input[type=text]:focus,input[type=number]:focus,input[type=password]:focus,textarea:focus,select:focus{outline:none;border-color:#385F8C;box-shadow:0 0 0 3px rgba(56,95,140,.12)}
 textarea{resize:vertical;min-height:90px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .toggle-row{display:flex;align-items:center;gap:10px;font-size:.875rem}
@@ -60,16 +71,34 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 <body>
 
 <div class="topbar">
-  <h1><i class="fa fa-shield-halved"></i>&nbsp; Panel Admin – Paguyuban KSE UGM</h1>
-  <a href="/admin/logout"><i class="fa fa-right-from-bracket"></i> Keluar</a>
+  <div class="topbar-left">
+    <h1><i class="fa fa-shield-halved"></i>&nbsp; Panel Admin – PKSE UGM</h1>
+    <div class="period-wrap">
+      <label for="periodSelect">Periode</label>
+      <select id="periodSelect" onchange="onPeriodChange()">
+        <option value="">Memuat…</option>
+      </select>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-user"><i class="fa fa-circle-user"></i> {{.Username}} <span class="badge badge-blue" style="font-size:.7rem">{{.Role}}</span></span>
+    <a href="/admin/logout"><i class="fa fa-right-from-bracket"></i> Keluar</a>
+  </div>
 </div>
 
 <div class="shell">
   <nav class="sidebar">
+    <div class="sidebar-section">Konten</div>
     <button onclick="switchTab('pengumuman')" id="tab-pengumuman"><i class="fa fa-bullhorn fa-fw"></i> Pengumuman</button>
+    <button onclick="switchTab('artikel')" id="tab-artikel"><i class="fa fa-newspaper fa-fw"></i> Artikel</button>
     <button onclick="switchTab('tentang')" id="tab-tentang"><i class="fa fa-circle-info fa-fw"></i> Tentang Kami</button>
     <button onclick="switchTab('departemen')" id="tab-departemen"><i class="fa fa-sitemap fa-fw"></i> Departemen</button>
     <button onclick="switchTab('pengurus')" id="tab-pengurus"><i class="fa fa-users fa-fw"></i> Pengurus</button>
+    {{if eq .Role "superadmin"}}
+    <div class="sidebar-section">Superadmin</div>
+    <button onclick="switchTab('periode')" id="tab-periode"><i class="fa fa-calendar-alt fa-fw"></i> Periode</button>
+    <button onclick="switchTab('akun')" id="tab-akun"><i class="fa fa-user-cog fa-fw"></i> Akun</button>
+    {{end}}
   </nav>
 
   <main class="main">
@@ -78,20 +107,53 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
     <div id="pane-pengumuman" class="pane" style="display:none">
       <div class="card">
         <div class="card-title"><i class="fa fa-bullhorn"></i> Daftar Pengumuman</div>
-        <button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openAnnForm()"><i class="fa fa-plus"></i> Tambah Pengumuman</button>
-        <div id="ann-form-panel" class="form-panel">
-          <input type="hidden" id="ann-id">
-          <div class="form-row"><label>Judul</label><input type="text" id="ann-title" placeholder="Judul pengumuman"></div>
-          <div class="form-row"><label>Isi</label><textarea id="ann-content" rows="5" placeholder="Isi pengumuman..."></textarea></div>
-          <div class="form-row toggle-row"><input type="checkbox" id="ann-published"><label for="ann-published" style="margin:0">Publikasikan sekarang</label></div>
+        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-ann')"><i class="fa fa-plus"></i> Tambah</button>
+        <div id="form-ann" class="form-panel">
+          <div class="grid-2">
+            <div class="form-row"><label>Judul</label><input type="text" id="ann-title"></div>
+            <div class="form-row"><label>Period ID</label><input type="text" id="ann-period" readonly></div>
+          </div>
+          <div class="form-row"><label>Konten</label><textarea id="ann-content" rows="4"></textarea></div>
+          <div class="toggle-row"><input type="checkbox" id="ann-pub"><label for="ann-pub" style="margin:0">Terbitkan sekarang</label></div>
           <div class="form-actions">
             <button class="btn btn-primary" onclick="saveAnn()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="closeAnnForm()">Batal</button>
+            <button class="btn btn-secondary" onclick="cancelForm('form-ann','ann-edit-id')">Batal</button>
           </div>
+          <input type="hidden" id="ann-edit-id">
         </div>
-        <table id="ann-table">
-          <thead><tr><th>Judul</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+        <table style="margin-top:18px">
+          <thead><tr><th>Judul</th><th>Periode</th><th>Status</th><th>Dibuat</th><th></th></tr></thead>
           <tbody id="ann-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ ARTIKEL -->
+    <div id="pane-artikel" class="pane" style="display:none">
+      <div class="card">
+        <div class="card-title"><i class="fa fa-newspaper"></i> Daftar Artikel</div>
+        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-art')"><i class="fa fa-plus"></i> Tambah</button>
+        <div id="form-art" class="form-panel">
+          <div class="grid-2">
+            <div class="form-row"><label>Judul</label><input type="text" id="art-title" oninput="autoSlug()"></div>
+            <div class="form-row"><label>Slug (URL)</label><input type="text" id="art-slug"></div>
+          </div>
+          <div class="form-row"><label>Kutipan / Excerpt</label><input type="text" id="art-excerpt"></div>
+          <div class="form-row"><label>Cover URL (opsional)</label><input type="text" id="art-cover"></div>
+          <div class="form-row"><label>Konten (HTML diperbolehkan)</label><textarea id="art-content" rows="8"></textarea></div>
+          <div class="grid-2">
+            <div class="form-row"><label>Period ID</label><input type="text" id="art-period" readonly></div>
+            <div class="toggle-row" style="align-items:flex-end;padding-bottom:2px"><input type="checkbox" id="art-pub"><label for="art-pub" style="margin:0">Terbitkan</label></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveArt()"><i class="fa fa-floppy-disk"></i> Simpan</button>
+            <button class="btn btn-secondary" onclick="cancelForm('form-art','art-edit-id')">Batal</button>
+          </div>
+          <input type="hidden" id="art-edit-id">
+        </div>
+        <table style="margin-top:18px">
+          <thead><tr><th>Judul</th><th>Slug</th><th>Periode</th><th>Status</th><th>Dibuat</th><th></th></tr></thead>
+          <tbody id="art-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -100,18 +162,12 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
     <div id="pane-tentang" class="pane" style="display:none">
       <div class="card">
         <div class="card-title"><i class="fa fa-circle-info"></i> Tentang Kami</div>
-        <div class="form-row"><label>Sejarah</label><textarea id="ts-sejarah" rows="6" placeholder="Narasi sejarah organisasi..."></textarea></div>
-        <div class="form-row"><label>Visi</label><textarea id="ts-visi" rows="3" placeholder="Pernyataan visi..."></textarea></div>
-        <div class="form-row"><label>Misi <span style="font-weight:400;color:#94a3b8">(satu poin per baris)</span></label><textarea id="ts-misi" rows="5" placeholder="Misi 1&#10;Misi 2&#10;Misi 3"></textarea></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="fa fa-chart-bar"></i> Statistik</div>
-        <div class="grid-2">
-          <div class="form-row"><label>Jumlah Anggota</label><input type="text" id="ts-stat-members" placeholder="cth: 500+"></div>
-          <div class="form-row"><label>Jumlah Departemen</label><input type="text" id="ts-stat-dept" placeholder="cth: 8"></div>
-          <div class="form-row"><label>Jumlah Program Kerja</label><input type="text" id="ts-stat-proker" placeholder="cth: 24"></div>
+        <div class="form-row"><label>Sejarah</label><textarea id="ss-sejarah" rows="5"></textarea></div>
+        <div class="form-row"><label>Visi</label><textarea id="ss-visi" rows="3"></textarea></div>
+        <div class="form-row"><label>Misi</label><textarea id="ss-misi" rows="3"></textarea></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveSiteSetting()"><i class="fa fa-floppy-disk"></i> Simpan</button>
         </div>
-        <button class="btn btn-primary" onclick="saveSiteSetting()"><i class="fa fa-floppy-disk"></i> Simpan Semua</button>
       </div>
     </div>
 
@@ -119,22 +175,23 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
     <div id="pane-departemen" class="pane" style="display:none">
       <div class="card">
         <div class="card-title"><i class="fa fa-sitemap"></i> Daftar Departemen</div>
-        <button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openDeptForm()"><i class="fa fa-plus"></i> Tambah Departemen</button>
-        <div id="dept-form-panel" class="form-panel">
-          <input type="hidden" id="dept-id">
+        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-dept')"><i class="fa fa-plus"></i> Tambah</button>
+        <div id="form-dept" class="form-panel">
+          <div class="form-row"><label>Nama</label><input type="text" id="dept-name"></div>
+          <div class="form-row"><label>Deskripsi</label><textarea id="dept-desc"></textarea></div>
           <div class="grid-2">
-            <div class="form-row"><label>Nama Departemen</label><input type="text" id="dept-name" placeholder="cth: Departemen PSDM"></div>
-            <div class="form-row"><label>Ikon (Font Awesome)</label><input type="text" id="dept-icon" placeholder="cth: fa-users"></div>
+            <div class="form-row"><label>Icon Class (Font Awesome)</label><input type="text" id="dept-icon" placeholder="fa-solid fa-book"></div>
+            <div class="form-row"><label>Urutan</label><input type="number" id="dept-order" value="0"></div>
           </div>
-          <div class="form-row"><label>Deskripsi</label><textarea id="dept-desc" rows="3" placeholder="Deskripsi singkat departemen..."></textarea></div>
-          <div class="form-row"><label>Urutan Tampil</label><input type="number" id="dept-order" placeholder="1" min="0"></div>
+          <input type="hidden" id="dept-period">
           <div class="form-actions">
             <button class="btn btn-primary" onclick="saveDept()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="closeDeptForm()">Batal</button>
+            <button class="btn btn-secondary" onclick="cancelForm('form-dept','dept-edit-id')">Batal</button>
           </div>
+          <input type="hidden" id="dept-edit-id">
         </div>
-        <table>
-          <thead><tr><th>Nama</th><th>Ikon</th><th>Urutan</th><th>Aksi</th></tr></thead>
+        <table style="margin-top:18px">
+          <thead><tr><th>Nama</th><th>Deskripsi</th><th>Periode</th><th>Urutan</th><th></th></tr></thead>
           <tbody id="dept-tbody"></tbody>
         </table>
       </div>
@@ -144,35 +201,86 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
     <div id="pane-pengurus" class="pane" style="display:none">
       <div class="card">
         <div class="card-title"><i class="fa fa-users"></i> Daftar Pengurus</div>
-        <button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openOfficerForm()"><i class="fa fa-plus"></i> Tambah Pengurus</button>
-        <div id="officer-form-panel" class="form-panel">
-          <input type="hidden" id="off-id">
+        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-off')"><i class="fa fa-plus"></i> Tambah</button>
+        <div id="form-off" class="form-panel">
           <div class="grid-2">
-            <div class="form-row"><label>Nama Lengkap</label><input type="text" id="off-name" placeholder="Nama pengurus"></div>
-            <div class="form-row"><label>Jabatan</label><input type="text" id="off-role" placeholder="cth: Ketua Umum"></div>
+            <div class="form-row"><label>Nama</label><input type="text" id="off-name"></div>
+            <div class="form-row"><label>Jabatan</label><input type="text" id="off-role"></div>
           </div>
           <div class="grid-2">
-            <div class="form-row">
-              <label>Tingkat</label>
+            <div class="form-row"><label>Departemen</label><input type="text" id="off-dept"></div>
+            <div class="form-row"><label>Tier</label>
               <select id="off-tier">
-                <option value="inti">Pengurus Inti</option>
-                <option value="departemen">Pengurus Departemen</option>
+                <option value="inti">Inti</option>
+                <option value="departemen">Departemen</option>
               </select>
             </div>
-            <div class="form-row"><label>Departemen</label><input type="text" id="off-dept" placeholder="Kosongkan jika pengurus inti"></div>
           </div>
           <div class="grid-2">
-            <div class="form-row"><label>URL Foto</label><input type="text" id="off-photo" placeholder="https://..."></div>
-            <div class="form-row"><label>Urutan Tampil</label><input type="number" id="off-order" placeholder="1" min="0"></div>
+            <div class="form-row"><label>URL Foto</label><input type="text" id="off-photo"></div>
+            <div class="form-row"><label>Urutan</label><input type="number" id="off-order" value="0"></div>
+          </div>
+          <input type="hidden" id="off-period">
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveOff()"><i class="fa fa-floppy-disk"></i> Simpan</button>
+            <button class="btn btn-secondary" onclick="cancelForm('form-off','off-edit-id')">Batal</button>
+          </div>
+          <input type="hidden" id="off-edit-id">
+        </div>
+        <table style="margin-top:18px">
+          <thead><tr><th>Nama</th><th>Jabatan</th><th>Dept</th><th>Tier</th><th>Periode</th><th></th></tr></thead>
+          <tbody id="off-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ PERIODE (superadmin) -->
+    <div id="pane-periode" class="pane" style="display:none">
+      <div class="card">
+        <div class="card-title"><i class="fa fa-calendar-alt"></i> Manajemen Periode</div>
+        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-period-new')"><i class="fa fa-plus"></i> Tambah Periode</button>
+        <div id="form-period-new" class="form-panel">
+          <div class="grid-2">
+            <div class="form-row"><label>Label (misal: 26.27)</label><input type="text" id="np-label" placeholder="26.27"></div>
+            <div class="form-row"><label>Nama Tampil (misal: 2026/2027)</label><input type="text" id="np-display" placeholder="2026/2027"></div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" onclick="saveOfficer()"><i class="fa fa-floppy-disk"></i> Simpan</button>
-            <button class="btn btn-secondary" onclick="closeOfficerForm()">Batal</button>
+            <button class="btn btn-primary" onclick="savePeriod()"><i class="fa fa-floppy-disk"></i> Simpan</button>
+            <button class="btn btn-secondary" onclick="toggleForm('form-period-new')">Batal</button>
           </div>
         </div>
-        <table>
-          <thead><tr><th>Nama</th><th>Jabatan</th><th>Tingkat</th><th>Urutan</th><th>Aksi</th></tr></thead>
-          <tbody id="officer-tbody"></tbody>
+        <table style="margin-top:18px">
+          <thead><tr><th>Label</th><th>Nama Tampil</th><th>Status</th><th>Dibuat</th><th></th></tr></thead>
+          <tbody id="period-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ AKUN (superadmin) -->
+    <div id="pane-akun" class="pane" style="display:none">
+      <div class="card">
+        <div class="card-title"><i class="fa fa-user-cog"></i> Manajemen Akun</div>
+        <button class="btn btn-primary btn-sm" onclick="toggleForm('form-acc')"><i class="fa fa-plus"></i> Tambah Akun</button>
+        <div id="form-acc" class="form-panel">
+          <div class="grid-2">
+            <div class="form-row"><label>Username</label><input type="text" id="acc-username"></div>
+            <div class="form-row"><label>Role</label>
+              <select id="acc-role">
+                <option value="admin">admin</option>
+                <option value="superadmin">superadmin</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row"><label>Password <span id="acc-pw-hint" style="color:#94a3b8;font-weight:400">(isi untuk ubah)</span></label><input type="password" id="acc-password" placeholder="Password baru…"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveAcc()"><i class="fa fa-floppy-disk"></i> Simpan</button>
+            <button class="btn btn-secondary" onclick="cancelForm('form-acc','acc-edit-id')">Batal</button>
+          </div>
+          <input type="hidden" id="acc-edit-id">
+        </div>
+        <table style="margin-top:18px">
+          <thead><tr><th>Username</th><th>Role</th><th>Dibuat</th><th></th></tr></thead>
+          <tbody id="acc-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -183,235 +291,443 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 <div id="toast"></div>
 
 <script>
-// ── tab navigation ────────────────────────────────────────────────────────────
-const TABS = ['pengumuman','tentang','departemen','pengurus'];
-function switchTab(name) {
-  TABS.forEach(t => {
-    document.getElementById('pane-'+t).style.display = (t===name)?'block':'none';
-    document.getElementById('tab-'+t).classList.toggle('active', t===name);
-  });
-  if(name==='pengumuman') loadAnn();
-  if(name==='tentang')    loadSiteSetting();
-  if(name==='departemen') loadDept();
-  if(name==='pengurus')   loadOfficers();
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentPeriod = '';
+let currentTab = '{{.Tab}}';
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadPeriods();
+  switchTab(currentTab);
+});
+
+async function loadPeriods() {
+  try {
+    const res = await fetch('/api/cms/periods');
+    const periods = await res.json();
+    const sel = document.getElementById('periodSelect');
+    sel.innerHTML = '';
+    if (!periods || periods.length === 0) {
+      sel.innerHTML = '<option value="">Tidak ada periode</option>';
+      return;
+    }
+    periods.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.label;
+      opt.textContent = p.display_name || p.label;
+      if (p.is_active) { opt.selected = true; currentPeriod = p.label; }
+      sel.appendChild(opt);
+    });
+    if (!currentPeriod && periods.length) currentPeriod = periods[0].label;
+  } catch(e) { console.error('loadPeriods', e); }
 }
 
-// ── toast ─────────────────────────────────────────────────────────────────────
-let toastTimer;
-function toast(msg, err=false) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (err?' err':'');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>el.className='', 3000);
+function onPeriodChange() {
+  currentPeriod = document.getElementById('periodSelect').value;
+  loadCurrentTab();
 }
 
-// ── generic API helpers ───────────────────────────────────────────────────────
-async function api(method, path, body) {
-  const opts = { method, headers:{'Content-Type':'application/json'} };
-  if(body) opts.body = JSON.stringify(body);
-  const r = await fetch(path, opts);
-  const data = await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(data.error || r.statusText);
-  return data;
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.pane').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+  currentTab = tab;
+  const pane = document.getElementById('pane-' + tab);
+  if (pane) pane.style.display = 'block';
+  const btn = document.getElementById('tab-' + tab);
+  if (btn) btn.classList.add('active');
+  loadCurrentTab();
 }
 
-// ═══════════════════════════════════════════════════════════════ PENGUMUMAN
+function loadCurrentTab() {
+  switch(currentTab) {
+    case 'pengumuman': loadAnn(); break;
+    case 'artikel': loadArt(); break;
+    case 'tentang': loadSiteSetting(); break;
+    case 'departemen': loadDept(); break;
+    case 'pengurus': loadOff(); break;
+    case 'periode': loadPeriodeTab(); break;
+    case 'akun': loadAcc(); break;
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' err' : '');
+  setTimeout(() => t.className = '', 3000);
+}
+
+// ── Form helpers ──────────────────────────────────────────────────────────────
+function toggleForm(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function cancelForm(formId, editId) {
+  document.getElementById(formId).classList.remove('open');
+  if (editId) document.getElementById(editId).value = '';
+}
+
+async function api(method, url, body) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  return res;
+}
+
+// ── PENGUMUMAN ────────────────────────────────────────────────────────────────
 async function loadAnn() {
-  const items = await api('GET','/api/cms/announcements');
+  const res = await fetch('/api/cms/announcements?period=' + encodeURIComponent(currentPeriod));
+  const items = await res.json();
   const tb = document.getElementById('ann-tbody');
-  if(!items.length){ tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px">Belum ada pengumuman</td></tr>'; return; }
-  tb.innerHTML = items.map(a=>`
-    <tr>
+  tb.innerHTML = '';
+  (items || []).forEach(a => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td>${esc(a.title)}</td>
-      <td>${a.published?'<span class="badge badge-green">Dipublikasi</span>':'<span class="badge badge-gray">Draf</span>'}</td>
+      <td><span class="badge badge-blue">${esc(a.period_id||'')}</span></td>
+      <td>${a.published ? '<span class="badge badge-green">Terbit</span>' : '<span class="badge badge-gray">Draft</span>'}</td>
       <td>${fmtDate(a.created_at)}</td>
-      <td>
-        <button class="btn btn-secondary btn-sm" onclick="editAnn(${JSON.stringify(a).replace(/"/g,'&quot;')})"><i class="fa fa-pen"></i></button>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick='editAnn(${JSON.stringify(a)})'><i class="fa fa-pen"></i></button>
         <button class="btn btn-danger btn-sm" onclick="delAnn('${a.id}')"><i class="fa fa-trash"></i></button>
-      </td>
-    </tr>`).join('');
+      </td>`;
+    tb.appendChild(tr);
+  });
 }
 
-function openAnnForm(){ document.getElementById('ann-id').value=''; document.getElementById('ann-title').value=''; document.getElementById('ann-content').value=''; document.getElementById('ann-published').checked=false; document.getElementById('ann-form-panel').classList.add('open'); }
-function closeAnnForm(){ document.getElementById('ann-form-panel').classList.remove('open'); }
-
-function editAnn(a){
-  document.getElementById('ann-id').value=a.id;
-  document.getElementById('ann-title').value=a.title;
-  document.getElementById('ann-content').value=a.content;
-  document.getElementById('ann-published').checked=a.published;
-  document.getElementById('ann-form-panel').classList.add('open');
-  document.getElementById('ann-form-panel').scrollIntoView({behavior:'smooth'});
+function editAnn(a) {
+  document.getElementById('ann-edit-id').value = a.id;
+  document.getElementById('ann-title').value = a.title;
+  document.getElementById('ann-content').value = a.content;
+  document.getElementById('ann-pub').checked = a.published;
+  document.getElementById('ann-period').value = a.period_id || currentPeriod;
+  document.getElementById('form-ann').classList.add('open');
 }
 
-async function saveAnn(){
-  const id = document.getElementById('ann-id').value;
+async function saveAnn() {
+  const id = document.getElementById('ann-edit-id').value;
   const body = {
-    title:     document.getElementById('ann-title').value.trim(),
-    content:   document.getElementById('ann-content').value.trim(),
-    published: document.getElementById('ann-published').checked,
+    title: document.getElementById('ann-title').value,
+    content: document.getElementById('ann-content').value,
+    published: document.getElementById('ann-pub').checked,
+    period_id: currentPeriod,
   };
-  if(!body.title){ toast('Judul tidak boleh kosong',true); return; }
-  try {
-    if(id) await api('PUT',`/api/cms/announcements/${id}`,body);
-    else   await api('POST','/api/cms/announcements',body);
-    toast(id?'Pengumuman diperbarui':'Pengumuman ditambahkan');
-    closeAnnForm(); loadAnn();
-  } catch(e){ toast(e.message,true); }
+  const res = id
+    ? await api('PUT', '/api/cms/announcements/' + id, body)
+    : await api('POST', '/api/cms/announcements', body);
+  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-ann','ann-edit-id'); loadAnn(); }
+  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
 }
 
-async function delAnn(id){
-  if(!confirm('Hapus pengumuman ini?')) return;
-  try { await api('DELETE',`/api/cms/announcements/${id}`); toast('Pengumuman dihapus'); loadAnn(); }
-  catch(e){ toast(e.message,true); }
+async function delAnn(id) {
+  if (!confirm('Hapus pengumuman ini?')) return;
+  const res = await api('DELETE', '/api/cms/announcements/' + id);
+  if (res.ok) { toast('Dihapus'); loadAnn(); }
+  else toast('Gagal hapus', true);
 }
 
-// ═══════════════════════════════════════════════════════════════ TENTANG KAMI
-async function loadSiteSetting(){
-  try {
-    const ss = await api('GET','/api/cms/site-setting');
-    document.getElementById('ts-sejarah').value = ss.sejarah||'';
-    document.getElementById('ts-visi').value    = ss.visi||'';
-    document.getElementById('ts-misi').value    = (ss.misi||[]).join('\n');
-    document.getElementById('ts-stat-members').value = ss.stat_members||'';
-    document.getElementById('ts-stat-dept').value    = ss.stat_dept||'';
-    document.getElementById('ts-stat-proker').value  = ss.stat_proker||'';
-  } catch(e){ toast(e.message,true); }
+// ── ARTIKEL ───────────────────────────────────────────────────────────────────
+function autoSlug() {
+  const title = document.getElementById('art-title').value;
+  document.getElementById('art-slug').value = title.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
 }
 
-async function saveSiteSetting(){
-  const misiRaw = document.getElementById('ts-misi').value;
-  const misi = misiRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+async function loadArt() {
+  const res = await fetch('/api/cms/articles?period=' + encodeURIComponent(currentPeriod));
+  const items = await res.json();
+  const tb = document.getElementById('art-tbody');
+  tb.innerHTML = '';
+  (items || []).forEach(a => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(a.title)}</td>
+      <td><code style="font-size:.8rem">${esc(a.slug)}</code></td>
+      <td><span class="badge badge-blue">${esc(a.period_id||'')}</span></td>
+      <td>${a.published ? '<span class="badge badge-green">Terbit</span>' : '<span class="badge badge-gray">Draft</span>'}</td>
+      <td>${fmtDate(a.created_at)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick='editArt(${JSON.stringify(a)})'><i class="fa fa-pen"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="delArt('${a.id}')"><i class="fa fa-trash"></i></button>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function editArt(a) {
+  document.getElementById('art-edit-id').value = a.id;
+  document.getElementById('art-title').value = a.title;
+  document.getElementById('art-slug').value = a.slug;
+  document.getElementById('art-excerpt').value = a.excerpt;
+  document.getElementById('art-content').value = a.content;
+  document.getElementById('art-cover').value = a.cover_url || '';
+  document.getElementById('art-pub').checked = a.published;
+  document.getElementById('art-period').value = a.period_id || currentPeriod;
+  document.getElementById('form-art').classList.add('open');
+}
+
+async function saveArt() {
+  const id = document.getElementById('art-edit-id').value;
   const body = {
-    sejarah:      document.getElementById('ts-sejarah').value.trim(),
-    visi:         document.getElementById('ts-visi').value.trim(),
-    misi,
-    stat_members: document.getElementById('ts-stat-members').value.trim(),
-    stat_dept:    document.getElementById('ts-stat-dept').value.trim(),
-    stat_proker:  document.getElementById('ts-stat-proker').value.trim(),
+    title: document.getElementById('art-title').value,
+    slug: document.getElementById('art-slug').value,
+    excerpt: document.getElementById('art-excerpt').value,
+    content: document.getElementById('art-content').value,
+    cover_url: document.getElementById('art-cover').value,
+    published: document.getElementById('art-pub').checked,
+    period_id: currentPeriod,
   };
-  try { await api('PUT','/api/cms/site-setting',body); toast('Tentang Kami disimpan'); }
-  catch(e){ toast(e.message,true); }
+  const res = id
+    ? await api('PUT', '/api/cms/articles/' + id, body)
+    : await api('POST', '/api/cms/articles', body);
+  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-art','art-edit-id'); loadArt(); }
+  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
 }
 
-// ═══════════════════════════════════════════════════════════════ DEPARTEMEN
-async function loadDept(){
-  const items = await api('GET','/api/cms/departments');
+async function delArt(id) {
+  if (!confirm('Hapus artikel ini?')) return;
+  const res = await api('DELETE', '/api/cms/articles/' + id);
+  if (res.ok) { toast('Dihapus'); loadArt(); }
+  else toast('Gagal hapus', true);
+}
+
+// ── SITE SETTING ──────────────────────────────────────────────────────────────
+async function loadSiteSetting() {
+  const res = await fetch('/api/cms/site-setting?period=' + encodeURIComponent(currentPeriod));
+  const s = await res.json();
+  document.getElementById('ss-sejarah').value = s.sejarah || '';
+  document.getElementById('ss-visi').value = s.visi || '';
+  document.getElementById('ss-misi').value = s.misi || '';
+}
+
+async function saveSiteSetting() {
+  const body = {
+    sejarah: document.getElementById('ss-sejarah').value,
+    visi: document.getElementById('ss-visi').value,
+    misi: document.getElementById('ss-misi').value,
+    period_id: currentPeriod,
+  };
+  const res = await api('PUT', '/api/cms/site-setting?period=' + encodeURIComponent(currentPeriod), body);
+  if (res.ok) toast('Tersimpan ✓');
+  else toast('Gagal simpan', true);
+}
+
+// ── DEPARTEMEN ────────────────────────────────────────────────────────────────
+async function loadDept() {
+  const res = await fetch('/api/cms/departments?period=' + encodeURIComponent(currentPeriod));
+  const items = await res.json();
   const tb = document.getElementById('dept-tbody');
-  if(!items.length){ tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:20px">Belum ada departemen</td></tr>'; return; }
-  tb.innerHTML = items.map(d=>`
-    <tr>
+  tb.innerHTML = '';
+  (items || []).forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td>${esc(d.name)}</td>
-      <td><i class="fa ${esc(d.icon_class)} fa-fw"></i> <code style="font-size:.78rem">${esc(d.icon_class)}</code></td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.description)}</td>
+      <td><span class="badge badge-blue">${esc(d.period_id||'')}</span></td>
       <td>${d.sort_order}</td>
-      <td>
-        <button class="btn btn-secondary btn-sm" onclick="editDept(${JSON.stringify(d).replace(/"/g,'&quot;')})"><i class="fa fa-pen"></i></button>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick='editDept(${JSON.stringify(d)})'><i class="fa fa-pen"></i></button>
         <button class="btn btn-danger btn-sm" onclick="delDept('${d.id}')"><i class="fa fa-trash"></i></button>
-      </td>
-    </tr>`).join('');
+      </td>`;
+    tb.appendChild(tr);
+  });
 }
 
-function openDeptForm(){ ['dept-id','dept-name','dept-icon','dept-desc','dept-order'].forEach(id=>document.getElementById(id).value=''); document.getElementById('dept-form-panel').classList.add('open'); }
-function closeDeptForm(){ document.getElementById('dept-form-panel').classList.remove('open'); }
-
-function editDept(d){
-  document.getElementById('dept-id').value   = d.id;
+function editDept(d) {
+  document.getElementById('dept-edit-id').value = d.id;
   document.getElementById('dept-name').value = d.name;
-  document.getElementById('dept-icon').value = d.icon_class;
   document.getElementById('dept-desc').value = d.description;
-  document.getElementById('dept-order').value= d.sort_order;
-  document.getElementById('dept-form-panel').classList.add('open');
-  document.getElementById('dept-form-panel').scrollIntoView({behavior:'smooth'});
+  document.getElementById('dept-icon').value = d.icon_class || '';
+  document.getElementById('dept-order').value = d.sort_order;
+  document.getElementById('dept-period').value = d.period_id || currentPeriod;
+  document.getElementById('form-dept').classList.add('open');
 }
 
-async function saveDept(){
-  const id = document.getElementById('dept-id').value;
+async function saveDept() {
+  const id = document.getElementById('dept-edit-id').value;
   const body = {
-    name:        document.getElementById('dept-name').value.trim(),
-    icon_class:  document.getElementById('dept-icon').value.trim(),
-    description: document.getElementById('dept-desc').value.trim(),
-    sort_order:  parseInt(document.getElementById('dept-order').value)||0,
+    name: document.getElementById('dept-name').value,
+    description: document.getElementById('dept-desc').value,
+    icon_class: document.getElementById('dept-icon').value,
+    sort_order: parseInt(document.getElementById('dept-order').value) || 0,
+    period_id: currentPeriod,
   };
-  if(!body.name){ toast('Nama departemen tidak boleh kosong',true); return; }
-  try {
-    if(id) await api('PUT',`/api/cms/departments/${id}`,body);
-    else   await api('POST','/api/cms/departments',body);
-    toast(id?'Departemen diperbarui':'Departemen ditambahkan');
-    closeDeptForm(); loadDept();
-  } catch(e){ toast(e.message,true); }
+  const res = id
+    ? await api('PUT', '/api/cms/departments/' + id, body)
+    : await api('POST', '/api/cms/departments', body);
+  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-dept','dept-edit-id'); loadDept(); }
+  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
 }
 
-async function delDept(id){
-  if(!confirm('Hapus departemen ini?')) return;
-  try { await api('DELETE',`/api/cms/departments/${id}`); toast('Departemen dihapus'); loadDept(); }
-  catch(e){ toast(e.message,true); }
+async function delDept(id) {
+  if (!confirm('Hapus departemen ini?')) return;
+  const res = await api('DELETE', '/api/cms/departments/' + id);
+  if (res.ok) { toast('Dihapus'); loadDept(); }
+  else toast('Gagal hapus', true);
 }
 
-// ═══════════════════════════════════════════════════════════════ PENGURUS
-async function loadOfficers(){
-  const items = await api('GET','/api/cms/officers');
-  const tb = document.getElementById('officer-tbody');
-  if(!items.length){ tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px">Belum ada pengurus</td></tr>'; return; }
-  tb.innerHTML = items.map(o=>`
-    <tr>
+// ── PENGURUS ──────────────────────────────────────────────────────────────────
+async function loadOff() {
+  const res = await fetch('/api/cms/officers?period=' + encodeURIComponent(currentPeriod));
+  const items = await res.json();
+  const tb = document.getElementById('off-tbody');
+  tb.innerHTML = '';
+  (items || []).forEach(o => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td>${esc(o.name)}</td>
       <td>${esc(o.role)}</td>
-      <td>${o.tier==='inti'?'<span class="badge badge-blue">Inti</span>':'<span class="badge badge-gray">Departemen</span>'}</td>
-      <td>${o.sort_order}</td>
-      <td>
-        <button class="btn btn-secondary btn-sm" onclick="editOfficer(${JSON.stringify(o).replace(/"/g,'&quot;')})"><i class="fa fa-pen"></i></button>
-        <button class="btn btn-danger btn-sm" onclick="delOfficer('${o.id}')"><i class="fa fa-trash"></i></button>
-      </td>
-    </tr>`).join('');
+      <td>${esc(o.department)}</td>
+      <td><span class="badge ${o.tier==='inti'?'badge-blue':'badge-gray'}">${esc(o.tier)}</span></td>
+      <td><span class="badge badge-blue">${esc(o.period_id||'')}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick='editOff(${JSON.stringify(o)})'><i class="fa fa-pen"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="delOff('${o.id}')"><i class="fa fa-trash"></i></button>
+      </td>`;
+    tb.appendChild(tr);
+  });
 }
 
-function openOfficerForm(){ ['off-id','off-name','off-role','off-dept','off-photo','off-order'].forEach(id=>document.getElementById(id).value=''); document.getElementById('off-tier').value='inti'; document.getElementById('officer-form-panel').classList.add('open'); }
-function closeOfficerForm(){ document.getElementById('officer-form-panel').classList.remove('open'); }
-
-function editOfficer(o){
-  document.getElementById('off-id').value    = o.id;
-  document.getElementById('off-name').value  = o.name;
-  document.getElementById('off-role').value  = o.role;
-  document.getElementById('off-tier').value  = o.tier;
-  document.getElementById('off-dept').value  = o.department;
-  document.getElementById('off-photo').value = o.photo_url;
+function editOff(o) {
+  document.getElementById('off-edit-id').value = o.id;
+  document.getElementById('off-name').value = o.name;
+  document.getElementById('off-role').value = o.role;
+  document.getElementById('off-dept').value = o.department;
+  document.getElementById('off-tier').value = o.tier || 'inti';
+  document.getElementById('off-photo').value = o.photo_url || '';
   document.getElementById('off-order').value = o.sort_order;
-  document.getElementById('officer-form-panel').classList.add('open');
-  document.getElementById('officer-form-panel').scrollIntoView({behavior:'smooth'});
+  document.getElementById('off-period').value = o.period_id || currentPeriod;
+  document.getElementById('form-off').classList.add('open');
 }
 
-async function saveOfficer(){
-  const id = document.getElementById('off-id').value;
+async function saveOff() {
+  const id = document.getElementById('off-edit-id').value;
   const body = {
-    name:       document.getElementById('off-name').value.trim(),
-    role:       document.getElementById('off-role').value.trim(),
-    tier:       document.getElementById('off-tier').value,
-    department: document.getElementById('off-dept').value.trim(),
-    photo_url:  document.getElementById('off-photo').value.trim(),
-    sort_order: parseInt(document.getElementById('off-order').value)||0,
+    name: document.getElementById('off-name').value,
+    role: document.getElementById('off-role').value,
+    department: document.getElementById('off-dept').value,
+    tier: document.getElementById('off-tier').value,
+    photo_url: document.getElementById('off-photo').value,
+    sort_order: parseInt(document.getElementById('off-order').value) || 0,
+    period_id: currentPeriod,
   };
-  if(!body.name){ toast('Nama tidak boleh kosong',true); return; }
-  try {
-    if(id) await api('PUT',`/api/cms/officers/${id}`,body);
-    else   await api('POST','/api/cms/officers',body);
-    toast(id?'Pengurus diperbarui':'Pengurus ditambahkan');
-    closeOfficerForm(); loadOfficers();
-  } catch(e){ toast(e.message,true); }
+  const res = id
+    ? await api('PUT', '/api/cms/officers/' + id, body)
+    : await api('POST', '/api/cms/officers', body);
+  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-off','off-edit-id'); loadOff(); }
+  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
 }
 
-async function delOfficer(id){
-  if(!confirm('Hapus pengurus ini?')) return;
-  try { await api('DELETE',`/api/cms/officers/${id}`); toast('Pengurus dihapus'); loadOfficers(); }
-  catch(e){ toast(e.message,true); }
+async function delOff(id) {
+  if (!confirm('Hapus pengurus ini?')) return;
+  const res = await api('DELETE', '/api/cms/officers/' + id);
+  if (res.ok) { toast('Dihapus'); loadOff(); }
+  else toast('Gagal hapus', true);
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtDate(s){ if(!s) return '-'; try{ return new Date(s).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}); }catch{ return s; } }
+// ── PERIODE ───────────────────────────────────────────────────────────────────
+async function loadPeriodeTab() {
+  const res = await fetch('/api/cms/periods');
+  const items = await res.json();
+  const tb = document.getElementById('period-tbody');
+  tb.innerHTML = '';
+  (items || []).forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${esc(p.label)}</strong></td>
+      <td>${esc(p.display_name)}</td>
+      <td>${p.is_active ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-gray">Tidak Aktif</span>'}</td>
+      <td>${fmtDate(p.created_at)}</td>
+      <td>${!p.is_active ? `<button class="btn btn-success btn-sm" onclick="activatePeriod('${p.label}')"><i class="fa fa-check"></i> Aktifkan</button>` : ''}</td>`;
+    tb.appendChild(tr);
+  });
+}
 
-// ── init ──────────────────────────────────────────────────────────────────────
-switchTab('{{.Tab}}');
+async function savePeriod() {
+  const body = {
+    label: document.getElementById('np-label').value.trim(),
+    display_name: document.getElementById('np-display').value.trim(),
+    is_active: false,
+  };
+  if (!body.label) { toast('Label wajib diisi', true); return; }
+  const res = await api('POST', '/api/cms/periods', body);
+  if (res.ok) {
+    toast('Periode ditambahkan ✓');
+    document.getElementById('np-label').value = '';
+    document.getElementById('np-display').value = '';
+    toggleForm('form-period-new');
+    loadPeriodeTab();
+    await loadPeriods(); // refresh topbar dropdown
+  } else { const d = await res.json(); toast(d.error || 'Gagal', true); }
+}
+
+async function activatePeriod(label) {
+  if (!confirm('Aktifkan periode ' + label + '? Periode aktif saat ini akan dinonaktifkan.')) return;
+  const res = await api('PUT', '/api/cms/periods/' + encodeURIComponent(label) + '/activate');
+  if (res.ok) {
+    toast('Periode ' + label + ' kini aktif ✓');
+    loadPeriodeTab();
+    await loadPeriods(); // refresh dropdown
+  } else toast('Gagal aktifkan', true);
+}
+
+// ── AKUN ──────────────────────────────────────────────────────────────────────
+async function loadAcc() {
+  const res = await fetch('/api/cms/accounts');
+  const items = await res.json();
+  const tb = document.getElementById('acc-tbody');
+  tb.innerHTML = '';
+  (items || []).forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${esc(u.username)}</td>
+      <td><span class="badge ${u.role==='superadmin'?'badge-blue':'badge-gray'}">${esc(u.role)}</span></td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick='editAcc(${JSON.stringify(u)})'><i class="fa fa-pen"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="delAcc('${u.id}')"><i class="fa fa-trash"></i></button>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function editAcc(u) {
+  document.getElementById('acc-edit-id').value = u.id;
+  document.getElementById('acc-username').value = u.username;
+  document.getElementById('acc-role').value = u.role;
+  document.getElementById('acc-password').value = '';
+  document.getElementById('acc-pw-hint').style.display = 'inline';
+  document.getElementById('form-acc').classList.add('open');
+}
+
+async function saveAcc() {
+  const id = document.getElementById('acc-edit-id').value;
+  const body = {
+    username: document.getElementById('acc-username').value,
+    role: document.getElementById('acc-role').value,
+    password: document.getElementById('acc-password').value,
+  };
+  if (!id && !body.password) { toast('Password wajib untuk akun baru', true); return; }
+  const res = id
+    ? await api('PUT', '/api/cms/accounts/' + id, body)
+    : await api('POST', '/api/cms/accounts', body);
+  if (res.ok) { toast('Tersimpan ✓'); cancelForm('form-acc','acc-edit-id'); loadAcc(); }
+  else { const d = await res.json(); toast(d.error || 'Gagal', true); }
+}
+
+async function delAcc(id) {
+  if (!confirm('Hapus akun ini?')) return;
+  const res = await api('DELETE', '/api/cms/accounts/' + id);
+  if (res.ok) { toast('Dihapus'); loadAcc(); }
+  else toast('Gagal hapus', true);
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(s) { if (!s) return '—'; return new Date(s).toLocaleDateString('id-ID',{year:'numeric',month:'short',day:'numeric'}); }
 </script>
 </body>
 </html>

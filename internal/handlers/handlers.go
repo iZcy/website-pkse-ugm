@@ -4,6 +4,7 @@ import (
 "encoding/json"
 "log"
 "net/http"
+"strings"
 "text/template"
 
 "webapp/internal/db"
@@ -18,22 +19,29 @@ tmpl := template.Must(template.ParseGlob("templates/*.html"))
 return &Handler{templates: tmpl}
 }
 
+func activePeriod() string {
+p, err := db.GetActivePeriod()
+if err != nil {
+return ""
+}
+return p.Label
+}
+
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 if r.URL.Path != "/" {
 http.NotFound(w, r)
 return
 }
+pid := activePeriod()
 data := map[string]interface{}{"Title": "Beranda"}
 
-ss, err := db.GetSiteSetting()
-if err != nil {
+if ss, err := db.GetSiteSetting(pid); err != nil {
 log.Printf("db GetSiteSetting: %v", err)
 } else {
 data["SiteSetting"] = ss
 }
 
-announcements, err := db.GetAnnouncements(5, true)
-if err != nil {
+if announcements, err := db.GetAnnouncements(5, true, pid); err != nil {
 log.Printf("db GetAnnouncements: %v", err)
 } else {
 items := make([]map[string]interface{}, 0, len(announcements))
@@ -48,32 +56,35 @@ items = append(items, map[string]interface{}{
 data["Announcements"] = items
 }
 
+if articles, err := db.GetArticles(true, pid); err != nil {
+log.Printf("db GetArticles: %v", err)
+} else {
+data["Articles"] = articles
+}
+
 h.templates.ExecuteTemplate(w, "index.html", data)
 }
 
 func (h *Handler) About(w http.ResponseWriter, r *http.Request) {
+pid := activePeriod()
 data := map[string]interface{}{"Title": "Tentang Kami"}
 
-ss, err := db.GetSiteSetting()
-if err != nil {
+if ss, err := db.GetSiteSetting(pid); err != nil {
 log.Printf("db GetSiteSetting: %v", err)
 } else {
 data["SiteSetting"] = ss
 }
 
-depts, err := db.GetDepartments()
-if err != nil {
+if depts, err := db.GetDepartments(pid); err != nil {
 log.Printf("db GetDepartments: %v", err)
 } else {
 data["Departments"] = depts
 }
 
-officers, err := db.GetOfficers()
-if err != nil {
+if officers, err := db.GetOfficers(pid); err != nil {
 log.Printf("db GetOfficers: %v", err)
 } else {
-var inti []db.Officer
-var dept []db.Officer
+var inti, dept []db.Officer
 for _, o := range officers {
 if o.Tier == "departemen" {
 dept = append(dept, o)
@@ -89,25 +100,50 @@ h.templates.ExecuteTemplate(w, "about.html", data)
 }
 
 func (h *Handler) Announcements(w http.ResponseWriter, r *http.Request) {
-data := map[string]interface{}{"Title": "Pengumuman"}
-h.templates.ExecuteTemplate(w, "announcements.html", data)
+h.templates.ExecuteTemplate(w, "announcements.html", map[string]interface{}{"Title": "Pengumuman"})
+}
+
+func (h *Handler) Articles(w http.ResponseWriter, r *http.Request) {
+pid := activePeriod()
+data := map[string]interface{}{"Title": "Artikel"}
+if articles, err := db.GetArticles(true, pid); err != nil {
+log.Printf("db GetArticles: %v", err)
+} else {
+data["Articles"] = articles
+}
+h.templates.ExecuteTemplate(w, "articles.html", data)
+}
+
+func (h *Handler) ArticleDetail(w http.ResponseWriter, r *http.Request) {
+slug := strings.TrimPrefix(r.URL.Path, "/artikel/")
+if slug == "" {
+http.Redirect(w, r, "/artikel", http.StatusFound)
+return
+}
+article, err := db.GetArticleBySlug(slug)
+if err != nil || !article.Published {
+http.NotFound(w, r)
+return
+}
+h.templates.ExecuteTemplate(w, "article-detail.html", map[string]interface{}{
+"Title":   article.Title,
+"Article": article,
+})
 }
 
 func (h *Handler) Contact(w http.ResponseWriter, r *http.Request) {
-data := map[string]interface{}{"Title": "Hubungi Kami"}
-h.templates.ExecuteTemplate(w, "contact.html", data)
+h.templates.ExecuteTemplate(w, "contact.html", map[string]interface{}{"Title": "Hubungi Kami"})
 }
 
 func (h *Handler) AnnouncementsAPI(w http.ResponseWriter, r *http.Request) {
+pid := activePeriod()
 w.Header().Set("Content-Type", "application/json")
-
-announcements, err := db.GetAnnouncements(0, true)
+announcements, err := db.GetAnnouncements(0, true, pid)
 if err != nil {
 log.Printf("db GetAnnouncements: %v", err)
 json.NewEncoder(w).Encode([]interface{}{})
 return
 }
-
 results := make([]map[string]interface{}, 0, len(announcements))
 for _, a := range announcements {
 results = append(results, map[string]interface{}{
