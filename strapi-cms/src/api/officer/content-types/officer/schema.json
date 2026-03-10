@@ -1,0 +1,19 @@
+{
+  "kind": "collectionType",
+  "collectionName": "officers",
+  "info": { "singularName": "officer", "pluralName": "officers", "displayName": "Officer" },
+  "options": { "draftAndPublish": false },
+  "attributes": {
+    "name":       { "type": "string", "required": true },
+    "role":       { "type": "string", "required": true },
+    "department": { "type": "string" },
+    "photo_url":  { "type": "string" },
+    "tier": {
+      "type": "enumeration",
+      "enum": ["inti", "departemen"],
+      "default": "inti",
+      "required": true
+    },
+    "sort_order": { "type": "integer", "default": 0 }
+  }
+}

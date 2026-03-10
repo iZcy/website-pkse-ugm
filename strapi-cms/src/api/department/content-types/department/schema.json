@@ -1,0 +1,12 @@
+{
+  "kind": "collectionType",
+  "collectionName": "departments",
+  "info": { "singularName": "department", "pluralName": "departments", "displayName": "Department" },
+  "options": { "draftAndPublish": false },
+  "attributes": {
+    "name":        { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "icon_class":  { "type": "string", "default": "fas fa-star" },
+    "sort_order":  { "type": "integer", "default": 0 }
+  }
+}

@@ -100,12 +100,15 @@
                 <div class="pill bg-primary/10 text-primary mb-6">Sejarah</div>
                 <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-6">Perjalanan Paguyuban Karya Salemba Empat UGM</h2>
                 <div class="prose-like space-y-4 text-gray-500 text-[15px] leading-relaxed">
-                    <p>Paguyuban Karya Salemba Empat UGM (Paguyuban Karya Salemba Empat UGM) merupakan komunitas penerima beasiswa Karya Salemba Empat di lingkungan Universitas Gadjah Mada.</p>
-                    <!-- ★ MISSING: Sejarah lengkap / tahun berdiri / latar belakang -->
+                    {{if and .SiteSetting .SiteSetting.Sejarah}}
+                    <p>{{.SiteSetting.Sejarah}}</p>
+                    {{else}}
+                    <p>Paguyuban Karya Salemba Empat UGM adalah komunitas penerima beasiswa Karya Salemba Empat di lingkungan Universitas Gadjah Mada.</p>
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm flex items-start gap-3">
                         <i class="fas fa-pen-to-square mt-0.5 text-amber-500 flex-shrink-0"></i>
                         <span><strong>Konten dibutuhkan:</strong> Narasi sejarah pendirian Paguyuban Karya Salemba Empat UGM — tahun berdiri, latar belakang, tokoh pendiri, dan perkembangan hingga kini.</span>
                     </div>
+                    {{end}}
                 </div>
             </div>
 
@@ -173,11 +176,14 @@
                         </div>
                         <h3 class="text-xl font-extrabold text-gray-900">Visi</h3>
                     </div>
-                    <!-- ★ MISSING: Visi resmi kabinet 2025/2026 -->
+                    {{if and .SiteSetting .SiteSetting.Visi}}
+                    <p class="text-gray-600 leading-relaxed text-[15px]">{{.SiteSetting.Visi}}</p>
+                    {{else}}
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm flex items-start gap-3">
                         <i class="fas fa-pen-to-square mt-0.5 text-amber-500 flex-shrink-0"></i>
                         <span><strong>Konten dibutuhkan:</strong> Pernyataan visi resmi Kabinet 2025/2026.</span>
                     </div>
+                    {{end}}
                 </div>
             </div>
             <!-- Misi -->
@@ -190,11 +196,18 @@
                         </div>
                         <h3 class="text-xl font-extrabold text-gray-900">Misi</h3>
                     </div>
-                    <!-- ★ MISSING: Poin-poin misi kabinet 2025/2026 -->
+                    {{if and .SiteSetting .SiteSetting.Misi}}
+                    <ul class="space-y-2.5 text-gray-600 text-[15px]">
+                        {{range .SiteSetting.Misi}}
+                        <li class="flex items-start gap-2"><i class="fas fa-check text-primary text-xs mt-1 flex-shrink-0"></i><span>{{.}}</span></li>
+                        {{end}}
+                    </ul>
+                    {{else}}
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm flex items-start gap-3">
                         <i class="fas fa-pen-to-square mt-0.5 text-amber-500 flex-shrink-0"></i>
                         <span><strong>Konten dibutuhkan:</strong> Poin-poin misi resmi Kabinet 2025/2026.</span>
                     </div>
+                    {{end}}
                 </div>
             </div>
         </div>
@@ -213,9 +226,20 @@
             <div class="text-gray-400 text-sm">Data departemen belum tersedia</div>
         </div>
 
-        <!-- Placeholder cards -->
+        {{if .Departments}}
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- ★ MISSING: Nama & deskripsi setiap departemen -->
+            {{range .Departments}}
+            <div class="bg-white rounded-2xl p-7 card-lift border border-surface">
+                <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                    <i class="{{.IconClass}} text-primary"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 text-[15px] mb-2">{{.Name}}</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">{{.Description}}</p>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div class="border-2 border-dashed border-surface rounded-2xl p-7 flex flex-col items-center justify-center text-center gap-3 min-h-[140px]">
                 <i class="fas fa-plus-circle text-gray-300 text-2xl"></i>
                 <p class="text-gray-400 text-sm font-medium">Departemen dibutuhkan</p>
@@ -229,6 +253,7 @@
                 <p class="text-gray-400 text-sm font-medium">Departemen dibutuhkan</p>
             </div>
         </div>
+        {{end}}
     </div>
 </section>
 
@@ -241,11 +266,53 @@
             <p class="text-gray-500 mt-3 text-[15px] leading-relaxed">Kabinet 2025/2026</p>
         </div>
 
+        {{if .IntiOfficers}}
         <!-- Pengurus Inti -->
         <div class="mb-10">
             <div class="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-6">Pengurus Inti</div>
             <div class="flex flex-wrap justify-center gap-5">
-                <!-- ★ MISSING: Nama ketua, wakil, sekretaris, bendahara + foto -->
+                {{range .IntiOfficers}}
+                <div class="bg-white rounded-2xl p-5 text-center w-48 card-lift border border-white">
+                    {{if .PhotoURL}}
+                    <img src="{{.PhotoURL}}" alt="{{.Name}}" class="w-16 h-16 rounded-2xl mx-auto mb-3 object-cover">
+                    {{else}}
+                    <div class="w-16 h-16 bg-surface rounded-2xl mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-user text-gray-300 text-2xl"></i>
+                    </div>
+                    {{end}}
+                    <div class="font-bold text-gray-900 text-sm">{{.Name}}</div>
+                    <div class="text-xs text-gray-400 mt-1">{{.Role}}</div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{if .DeptOfficers}}
+        <!-- Pengurus Departemen -->
+        <div class="mt-10">
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-6">Pengurus Departemen</div>
+            <div class="flex flex-wrap justify-center gap-5">
+                {{range .DeptOfficers}}
+                <div class="bg-white rounded-2xl p-5 text-center w-48 card-lift border border-white">
+                    {{if .PhotoURL}}
+                    <img src="{{.PhotoURL}}" alt="{{.Name}}" class="w-16 h-16 rounded-2xl mx-auto mb-3 object-cover">
+                    {{else}}
+                    <div class="w-16 h-16 bg-surface rounded-2xl mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-user text-gray-300 text-2xl"></i>
+                    </div>
+                    {{end}}
+                    <div class="font-bold text-gray-900 text-sm">{{.Name}}</div>
+                    <div class="text-xs text-gray-400 mt-1">{{.Role}}</div>
+                    {{if .Department}}<div class="text-[10px] text-primary font-semibold mt-1">{{.Department}}</div>{{end}}
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+        {{else}}
+        <!-- Pengurus Inti -->
+        <div class="mb-10">
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-6">Pengurus Inti</div>
+            <div class="flex flex-wrap justify-center gap-5">
                 <div class="bg-white rounded-2xl p-5 text-center w-48 card-lift border border-white">
                     <div class="w-16 h-16 bg-surface rounded-2xl mx-auto mb-3 flex items-center justify-center">
                         <i class="fas fa-user text-gray-300 text-2xl"></i>
@@ -253,35 +320,14 @@
                     <div class="font-bold text-gray-900 text-sm text-xs text-gray-400">Ketua</div>
                     <div class="text-xs text-gray-400 mt-1">Nama dibutuhkan</div>
                 </div>
-                <div class="bg-white rounded-2xl p-5 text-center w-48 card-lift border border-white">
-                    <div class="w-16 h-16 bg-surface rounded-2xl mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-user text-gray-300 text-2xl"></i>
-                    </div>
-                    <div class="font-bold text-gray-900 text-sm text-xs text-gray-400">Wakil Ketua</div>
-                    <div class="text-xs text-gray-400 mt-1">Nama dibutuhkan</div>
-                </div>
-                <div class="bg-white rounded-2xl p-5 text-center w-48 card-lift border border-white">
-                    <div class="w-16 h-16 bg-surface rounded-2xl mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-user text-gray-300 text-2xl"></i>
-                    </div>
-                    <div class="font-bold text-gray-900 text-sm text-xs text-gray-400">Sekretaris</div>
-                    <div class="text-xs text-gray-400 mt-1">Nama dibutuhkan</div>
-                </div>
-                <div class="bg-white rounded-2xl p-5 text-center w-48 card-lift border border-white">
-                    <div class="w-16 h-16 bg-surface rounded-2xl mx-auto mb-3 flex items-center justify-center">
-                        <i class="fas fa-user text-gray-300 text-2xl"></i>
-                    </div>
-                    <div class="font-bold text-gray-900 text-sm text-xs text-gray-400">Bendahara</div>
-                    <div class="text-xs text-gray-400 mt-1">Nama dibutuhkan</div>
-                </div>
             </div>
         </div>
-
         <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center max-w-2xl mx-auto">
             <i class="fas fa-sitemap text-amber-400 text-2xl mb-3"></i>
             <p class="text-amber-800 font-semibold text-sm mb-1">Bagan organisasi belum tersedia</p>
             <p class="text-amber-700 text-xs">Diperlukan: Nama dan jabatan seluruh pengurus beserta foto masing-masing.</p>
         </div>
+        {{end}}
     </div>
 </section>
 

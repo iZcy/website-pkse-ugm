@@ -159,15 +159,15 @@
             <!-- Stats mosaic -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-primary rounded-2xl p-6 text-white card-lift">
-                    <div class="text-4xl font-extrabold stat-num mb-1" id="stat-members">65+</div>
+                    <div class="text-4xl font-extrabold stat-num mb-1" id="stat-members">{{if and .SiteSetting .SiteSetting.StatMembers}}{{.SiteSetting.StatMembers}}{{else}}65+{{end}}</div>
                     <div class="text-white/70 text-sm">Anggota Aktif</div>
                 </div>
                 <div class="bg-surface rounded-2xl p-6 card-lift">
-                    <div class="text-4xl font-extrabold stat-num text-primary mb-1" id="stat-dept">—</div>
+                    <div class="text-4xl font-extrabold stat-num text-primary mb-1" id="stat-dept">{{if and .SiteSetting .SiteSetting.StatDept}}{{.SiteSetting.StatDept}}{{else}}—{{end}}</div>
                     <div class="text-gray-500 text-sm">Departemen</div>
                 </div>
                 <div class="bg-surface rounded-2xl p-6 card-lift">
-                    <div class="text-4xl font-extrabold stat-num text-primary mb-1" id="stat-proker">—</div>
+                    <div class="text-4xl font-extrabold stat-num text-primary mb-1" id="stat-proker">{{if and .SiteSetting .SiteSetting.StatProker}}{{.SiteSetting.StatProker}}{{else}}—{{end}}</div>
                     <div class="text-gray-500 text-sm">Program Kerja</div>
                 </div>
                 <div class="bg-primary/10 rounded-2xl p-6 card-lift border border-primary/15">

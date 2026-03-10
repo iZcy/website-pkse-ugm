@@ -34,6 +34,15 @@ data := map[string]interface{}{
 "Title": "Beranda",
 }
 
+// Fetch site settings for homepage stats
+ss, err := h.strapi.GetSiteSetting()
+if err != nil {
+log.Printf("strapi GetSiteSetting: %v", err)
+} else {
+data["SiteSetting"] = ss
+}
+
+// Fetch latest announcements
 announcements, err := h.strapi.GetAnnouncements(5)
 if err != nil {
 log.Printf("strapi GetAnnouncements: %v", err)
@@ -55,6 +64,41 @@ h.templates.ExecuteTemplate(w, "index.html", data)
 
 func (h *Handler) About(w http.ResponseWriter, r *http.Request) {
 data := map[string]interface{}{"Title": "Tentang Kami"}
+
+// Site settings (sejarah, visi, misi, stats)
+ss, err := h.strapi.GetSiteSetting()
+if err != nil {
+log.Printf("strapi GetSiteSetting: %v", err)
+} else {
+data["SiteSetting"] = ss
+}
+
+// Departments
+depts, err := h.strapi.GetDepartments()
+if err != nil {
+log.Printf("strapi GetDepartments: %v", err)
+} else {
+data["Departments"] = depts
+}
+
+// Officers — split into inti and departemen
+officers, err := h.strapi.GetOfficers()
+if err != nil {
+log.Printf("strapi GetOfficers: %v", err)
+} else {
+var inti []strapi.Officer
+var dept []strapi.Officer
+for _, o := range officers {
+if o.Tier == "departemen" {
+dept = append(dept, o)
+} else {
+inti = append(inti, o)
+}
+}
+data["IntiOfficers"] = inti
+data["DeptOfficers"] = dept
+}
+
 h.templates.ExecuteTemplate(w, "about.html", data)
 }
 
@@ -68,8 +112,7 @@ data := map[string]interface{}{"Title": "Hubungi Kami"}
 h.templates.ExecuteTemplate(w, "contact.html", data)
 }
 
-// AnnouncementsAPI proxies Strapi announcements as JSON in the legacy format
-// expected by the frontend JS (id, title, content, created_at).
+// AnnouncementsAPI proxies Strapi announcements as JSON.
 func (h *Handler) AnnouncementsAPI(w http.ResponseWriter, r *http.Request) {
 w.Header().Set("Content-Type", "application/json")
 
