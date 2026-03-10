@@ -1,44 +1,41 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"webapp/internal/config"
 	"webapp/internal/handlers"
-
-	_ "github.com/mattn/go-sqlite3"
+	"webapp/internal/strapi"
 )
 
 func main() {
-	cfg := config.Load()
-
-	db, err := sql.Open("sqlite3", cfg.DatabasePath)
-	if err != nil {
-		log.Fatal(err)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
-	defer db.Close()
 
-	if err := config.RunMigrations(db); err != nil {
-		log.Fatal(err)
+	strapiURL := os.Getenv("STRAPI_URL")
+	if strapiURL == "" {
+		strapiURL = "http://127.0.0.1:1337"
 	}
+
+	sc := strapi.New(strapiURL)
 
 	mux := http.NewServeMux()
 
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fs))
 
-	h := handlers.New(db)
+	h := handlers.New(sc)
 	mux.HandleFunc("/", h.Home)
 	mux.HandleFunc("/about", h.About)
 	mux.HandleFunc("/announcements", h.Announcements)
 	mux.HandleFunc("/contact", h.Contact)
-	mux.HandleFunc("/tentang-rani", h.ProfileRani)
 	mux.HandleFunc("/api/announcements", h.AnnouncementsAPI)
 
-	addr := fmt.Sprintf(":%s", cfg.Port)
+	addr := fmt.Sprintf(":%s", port)
 	fmt.Printf("Server running at http://localhost%s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
