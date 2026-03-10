@@ -2,8 +2,13 @@ package cms
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"webapp/internal/auth"
 	"webapp/internal/db"
@@ -572,4 +577,54 @@ func Accounts(w http.ResponseWriter, r *http.Request) {
 	default:
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 	}
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+
+func Upload(w http.ResponseWriter, r *http.Request) {
+_, _, ok := requireAny(w, r)
+if !ok {
+return
+}
+if r.Method != http.MethodPost {
+writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+return
+}
+r.ParseMultipartForm(5 << 20) // 5 MB
+file, header, err := r.FormFile("file")
+if err != nil {
+writeJSON(w, 400, map[string]string{"error": "file required"})
+return
+}
+defer file.Close()
+
+ext := filepath.Ext(header.Filename)
+base := strings.TrimSuffix(filepath.Base(header.Filename), ext)
+safeName := fmt.Sprintf("%d_%s%s", time.Now().UnixMilli(), sanitizeUploadName(base), ext)
+
+os.MkdirAll("./static/uploads", 0755)
+dst, err := os.Create("./static/uploads/" + safeName)
+if err != nil {
+writeJSON(w, 500, map[string]string{"error": "cannot create file"})
+return
+}
+defer dst.Close()
+io.Copy(dst, file)
+
+writeJSON(w, 200, map[string]string{"url": "/static/uploads/" + safeName})
+}
+
+func sanitizeUploadName(s string) string {
+var b strings.Builder
+for _, c := range s {
+if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' {
+b.WriteRune(c)
+} else {
+b.WriteRune('_')
+}
+}
+r := b.String()
+if len(r) > 60 { r = r[:60] }
+if r == "" { r = "upload" }
+return r
 }

@@ -70,6 +70,7 @@ mux.HandleFunc("/api/cms/periods", cms.Periods)
 mux.HandleFunc("/api/cms/periods/", cms.Periods)
 mux.HandleFunc("/api/cms/accounts", cms.Accounts)
 mux.HandleFunc("/api/cms/accounts/", cms.Accounts)
+	mux.HandleFunc("/api/cms/upload", cms.Upload)
 
 addr := fmt.Sprintf(":%s", port)
 fmt.Printf("Server running at http://localhost%s\n", addr)
