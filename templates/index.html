@@ -1,185 +1,187 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
   {{template "head" .}}
-  <title>{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}} - Beranda</title>
+  <title>{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}} — Beranda</title>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-  {{template "navbar" .}}
+<body class="bg-white text-gray-900 antialiased">
+{{template "navbar" .}}
 
-  <!-- Hero Section -->
-  <section class="bg-gradient-to-br from-primary-xdark via-blue-800 to-primary-dark text-white py-24 px-4">
-    <div class="max-w-4xl mx-auto text-center">
+<!-- HERO -->
+<section class="relative bg-primary overflow-hidden">
+  <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:48px 48px"></div>
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 right-0 w-[480px] h-[480px] rounded-full opacity-20" style="background:radial-gradient(circle,#6b9fd4 0%,transparent 70%);transform:translate(30%,-30%)"></div>
+    <div class="absolute bottom-0 left-0 w-[320px] h-[320px] rounded-full opacity-10" style="background:radial-gradient(circle,#a8c8f0 0%,transparent 70%);transform:translate(-30%,30%)"></div>
+  </div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8 py-24 md:py-36">
+    <div class="max-w-3xl">
       {{if .ActivePeriod}}
-      <span class="inline-block bg-primary text-[#dde9f5] text-sm font-medium px-4 py-1 rounded-full mb-4">{{.ActivePeriod.DisplayName}}</span>
+      <div class="pill bg-white/15 text-white/90 mb-8" style="letter-spacing:0.15em">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0"></span>
+        {{.ActivePeriod.DisplayName}}
+      </div>
       {{end}}
-      <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-        {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}
-      </h1>
-      <p class="text-[#dde9f5] text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
-        Pusat Kajian dan Studi Ekonomi — wadah mahasiswa untuk tumbuh dalam riset, diskusi, dan kontribusi nyata bagi perekonomian Indonesia.
-      </p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="/tentang-kami" class="bg-white text-primary-xdark font-semibold px-6 py-3 rounded-lg hover:bg-primary-light transition shadow-md">Tentang Kami</a>
-        <a href="/artikel" class="border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white hover:text-primary-xdark transition">Baca Artikel</a>
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6">{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</h1>
+      <p class="text-white/75 text-lg md:text-xl max-w-2xl leading-relaxed mb-10">Sharing, Networking, Developing — wadah penerima beasiswa Karya Salemba Empat di Universitas Gadjah Mada.</p>
+      <div class="flex flex-wrap gap-3">
+        <a href="/tentang-kami" class="px-6 py-3 rounded-xl font-bold bg-white text-primary hover:bg-surface transition-colors duration-150 shadow-lg">Tentang Kami</a>
+        <a href="/artikel" class="px-6 py-3 rounded-xl font-bold border-2 border-white/60 text-white hover:bg-white/10 transition-colors duration-150">Baca Artikel</a>
       </div>
     </div>
-  </section>
+  </div>
+  <div class="absolute bottom-0 left-0 right-0 h-10" style="background:linear-gradient(transparent,white)"></div>
+</section>
 
-  <!-- Visi Misi Section -->
-  {{if .PeriodAbout}}
-  {{if or .PeriodAbout.Visi .PeriodAbout.Misi}}
-  <section class="py-16 px-4 bg-white">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-primary-xdark">Visi &amp; Misi</h2>
-        {{if .ActivePeriod}}<p class="text-slate-500 mt-2">{{.ActivePeriod.DisplayName}}</p>{{end}}
-      </div>
-      <div class="grid md:grid-cols-2 gap-8">
-        {{if .PeriodAbout.Visi}}
-        <div class="bg-primary-light rounded-2xl p-8 border border-[#dde9f5]">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-            </div>
-            <h3 class="text-xl font-bold text-primary-xdark">Visi</h3>
-          </div>
-          <p class="text-slate-700 leading-relaxed">{{.PeriodAbout.Visi}}</p>
-        </div>
-        {{end}}
-        {{if .PeriodAbout.Misi}}
-        <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800">Misi</h3>
-          </div>
-          <p class="text-slate-700 leading-relaxed whitespace-pre-line">{{.PeriodAbout.Misi}}</p>
-        </div>
-        {{end}}
-      </div>
+<!-- VISI MISI -->
+{{if .PeriodAbout}}{{if or .PeriodAbout.Visi .PeriodAbout.Misi}}
+<section id="visi-misi" class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <div class="pill bg-primary/10 text-primary mx-auto mb-5">Arah Organisasi</div>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Visi &amp; Misi</h2>
+      {{if .ActivePeriod}}<p class="text-gray-500 mt-3 text-[15px]">{{.ActivePeriod.DisplayName}}</p>{{end}}
     </div>
-  </section>
-  {{end}}
-  {{end}}
-
-  <!-- Departments Section -->
-  {{if .Departments}}
-  <section class="py-16 px-4 bg-slate-50">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-primary-xdark">Departemen</h2>
-        {{if .ActivePeriod}}<p class="text-slate-500 mt-2">Struktur Organisasi {{.ActivePeriod.DisplayName}}</p>{{end}}
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {{range .Departments}}
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition">
-          <div class="w-10 h-10 bg-[#dde9f5] rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-5 h-5 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    <div class="grid md:grid-cols-2 gap-6">
+      {{if .PeriodAbout.Visi}}
+      <div class="bg-white rounded-2xl overflow-hidden card-lift border border-surface">
+        <div class="h-1.5 bg-primary"></div>
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-eye text-primary"></i></div>
+            <h3 class="text-xl font-extrabold text-gray-900">Visi</h3>
           </div>
-          <h3 class="font-semibold text-slate-800 text-lg mb-2">{{.Name}}</h3>
-          {{if .Description}}<p class="text-slate-500 text-sm">{{.Description}}</p>{{end}}
+          <p class="text-gray-600 leading-relaxed text-[15px]">{{.PeriodAbout.Visi}}</p>
         </div>
-        {{end}}
       </div>
+      {{end}}
+      {{if .PeriodAbout.Misi}}
+      <div class="bg-white rounded-2xl overflow-hidden card-lift border border-surface">
+        <div class="h-1.5 bg-primary/40"></div>
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-bullseye text-primary"></i></div>
+            <h3 class="text-xl font-extrabold text-gray-900">Misi</h3>
+          </div>
+          <p class="text-gray-600 leading-relaxed text-[15px] whitespace-pre-line">{{.PeriodAbout.Misi}}</p>
+        </div>
+      </div>
+      {{end}}
     </div>
-  </section>
-  {{end}}
+  </div>
+</section>
+{{end}}{{end}}
 
-  <!-- Members Showcase -->
-  {{if .Members}}
-  <section class="py-16 px-4 bg-white">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-primary-xdark">Pengurus Aktif</h2>
-        {{if .ActivePeriod}}<p class="text-slate-500 mt-2">{{.ActivePeriod.DisplayName}}</p>{{end}}
+<!-- DEPARTMENTS -->
+{{if .Departments}}
+<section class="py-20 bg-surface">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <div class="pill bg-white text-primary mx-auto mb-5">Struktur</div>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Departemen</h2>
+      {{if .ActivePeriod}}<p class="text-gray-500 mt-3 text-[15px]">{{.ActivePeriod.DisplayName}}</p>{{end}}
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {{range .Departments}}
+      <div class="bg-white rounded-2xl p-7 card-lift border border-surface">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4"><i class="fas fa-users text-primary"></i></div>
+        <h3 class="font-bold text-gray-900 text-[15px] mb-2">{{.Name}}</h3>
+        {{if .Description}}<p class="text-gray-500 text-sm leading-relaxed">{{.Description}}</p>{{end}}
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
-        {{range .Members}}
-        <div class="text-center">
-          <div class="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden bg-slate-200 border-2 border-[#dde9f5]">
-            {{if .PhotoURL}}
-            <img src="{{.PhotoURL}}" alt="{{.Nickname}}" class="w-full h-full object-cover">
-            {{else}}
-            <div class="w-full h-full flex items-center justify-center text-slate-400">
-              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            </div>
-            {{end}}
-          </div>
-          <p class="font-semibold text-slate-800 text-sm">{{.Nickname}}</p>
-          <p class="text-primary text-xs">{{.Position}}</p>
-        </div>
-        {{end}}
+      {{end}}
+    </div>
+  </div>
+</section>
+{{end}}
+
+<!-- MEMBERS SHOWCASE -->
+{{if .Members}}
+<section class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <div class="pill bg-primary/10 text-primary mb-5">Tim</div>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Pengurus Aktif</h2>
+        {{if .ActivePeriod}}<p class="text-gray-500 mt-2 text-[15px]">{{.ActivePeriod.DisplayName}}</p>{{end}}
       </div>
+      <a href="/anggota" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary-dark transition-colors flex-shrink-0">Lihat Semua →</a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-5">
+      {{range .Members}}
       <div class="text-center">
-        <a href="/anggota" class="inline-flex items-center gap-2 bg-primary-xdark text-white font-semibold px-6 py-3 rounded-lg hover:bg-primary-dark transition">
-          Lihat Semua Anggota
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-        </a>
+        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl overflow-hidden bg-surface border-2 border-surface">
+          {{if .PhotoURL}}<img src="{{.PhotoURL}}" alt="{{.Nickname}}" class="w-full h-full object-cover">
+          {{else}}<div class="w-full h-full flex items-center justify-center text-gray-300"><i class="fas fa-user text-2xl"></i></div>{{end}}
+        </div>
+        <p class="font-bold text-gray-900 text-xs leading-tight">{{.Nickname}}</p>
+        <p class="text-primary text-[10px] mt-0.5 font-semibold">{{.Position}}</p>
       </div>
+      {{end}}
     </div>
-  </section>
-  {{end}}
+  </div>
+</section>
+{{end}}
 
-  <!-- Latest Articles -->
-  {{if .Articles}}
-  <section class="py-16 px-4 bg-slate-50">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex justify-between items-center mb-12">
-        <h2 class="text-3xl font-bold text-primary-xdark">Artikel Terbaru</h2>
-        <a href="/artikel" class="text-primary hover:underline text-sm font-medium">Lihat semua &rarr;</a>
+<!-- LATEST ARTICLES -->
+{{if .Articles}}
+<section class="py-20 bg-surface">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <div class="pill bg-white text-primary mb-5">Tulisan</div>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Artikel Terbaru</h2>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {{range .Articles}}
-        <article class="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition group">
-          {{if .CoverURL}}
-          <div class="h-48 overflow-hidden">
-            <img src="{{.CoverURL}}" alt="{{.Title}}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-          </div>
-          {{end}}
-          <div class="p-6">
-            <span class="text-xs text-primary font-medium bg-primary-light px-2 py-1 rounded">{{.PeriodLabel}}</span>
-            <h3 class="font-bold text-slate-800 mt-3 mb-2 text-lg leading-snug">
-              <a href="/artikel/{{.Slug}}" class="hover:text-primary-dark transition">{{.Title}}</a>
-            </h3>
-            {{if .Excerpt}}<p class="text-slate-500 text-sm mb-4 line-clamp-2">{{.Excerpt}}</p>{{end}}
-            <a href="/artikel/{{.Slug}}" class="text-primary text-sm font-medium hover:underline">Baca selengkapnya &rarr;</a>
-          </div>
-        </article>
+      <a href="/artikel" class="text-primary text-sm font-bold hover:text-primary-dark transition flex-shrink-0">Lihat semua artikel →</a>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      {{range .Articles}}
+      <article class="bg-white rounded-2xl overflow-hidden card-lift border border-surface flex flex-col">
+        {{if .CoverURL}}
+        <div class="h-48 overflow-hidden"><img src="{{.CoverURL}}" alt="{{.Title}}" class="w-full h-full object-cover"></div>
+        {{else}}
+        <div class="h-48 bg-primary/10 flex items-center justify-center"><i class="fas fa-newspaper text-primary/30 text-4xl"></i></div>
         {{end}}
-      </div>
+        <div class="p-6 flex flex-col flex-1">
+          <span class="pill bg-primary/10 text-primary mb-3 w-fit">{{.PeriodLabel}}</span>
+          <h3 class="font-bold text-gray-900 text-[15px] mb-2 leading-snug flex-1"><a href="/artikel/{{.Slug}}" class="hover:text-primary transition-colors">{{.Title}}</a></h3>
+          {{if .Excerpt}}<p class="text-gray-500 text-sm mb-4 line-clamp-2">{{.Excerpt}}</p>{{end}}
+          <a href="/artikel/{{.Slug}}" class="text-primary text-sm font-bold hover:text-primary-dark transition-colors mt-auto">Baca selengkapnya →</a>
+        </div>
+      </article>
+      {{end}}
     </div>
-  </section>
-  {{end}}
+  </div>
+</section>
+{{end}}
 
-  <!-- Announcements -->
-  {{if .Announcements}}
-  <section class="py-16 px-4 bg-white">
-    <div class="max-w-4xl mx-auto">
-      <div class="flex justify-between items-center mb-10">
-        <h2 class="text-3xl font-bold text-primary-xdark">Pengumuman Terkini</h2>
-        <a href="/pengumuman" class="text-primary hover:underline text-sm font-medium">Lihat semua &rarr;</a>
+<!-- ANNOUNCEMENTS -->
+{{if .Announcements}}
+<section class="py-20 bg-white">
+  <div class="max-w-4xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <div class="pill bg-primary/10 text-primary mb-5">Info</div>
+        <h2 class="text-3xl font-extrabold text-gray-900">Pengumuman Terkini</h2>
       </div>
-      <div class="space-y-4">
-        {{range .Announcements}}
-        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 hover:border-[#6b9ec9] transition">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#dde9f5] rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-            </div>
-            <div>
-              <h3 class="font-semibold text-slate-800 mb-1">{{.Title}}</h3>
-              <p class="text-slate-500 text-sm line-clamp-2">{{.Content}}</p>
-            </div>
+      <a href="/pengumuman" class="text-primary text-sm font-bold hover:text-primary-dark transition flex-shrink-0">Lihat semua →</a>
+    </div>
+    <div class="space-y-4">
+      {{range .Announcements}}
+      <div class="bg-surface rounded-2xl p-6 card-lift fade-up">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-surface"><i class="fas fa-bullhorn text-primary text-sm"></i></div>
+          <div>
+            <h3 class="font-bold text-gray-900 mb-1">{{.Title}}</h3>
+            <p class="text-gray-500 text-sm leading-relaxed line-clamp-2">{{.Content}}</p>
           </div>
         </div>
-        {{end}}
       </div>
+      {{end}}
     </div>
-  </section>
-  {{end}}
+  </div>
+</section>
+{{end}}
 
-  {{template "footer" .}}
+{{template "footer" .}}
 </body>
 </html>

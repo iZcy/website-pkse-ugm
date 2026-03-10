@@ -1,64 +1,65 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
   {{template "head" .}}
-  <title>Pengumuman - {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
+  <title>Pengumuman — {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-  {{template "navbar" .}}
+<body class="bg-white text-gray-900 antialiased">
+{{template "navbar" .}}
 
-  <div class="bg-gradient-to-r from-primary-xdark to-primary-dark text-white py-16 px-4">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-4xl font-bold mb-2">Pengumuman</h1>
-      <p class="text-[#b8d0e8]">Informasi dan pengumuman terkini dari PKSE UGM</p>
+<section class="relative bg-primary overflow-hidden">
+  <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:48px 48px"></div>
+  <div class="absolute top-0 right-0 w-[360px] h-[360px] opacity-15 pointer-events-none" style="background:radial-gradient(circle,#6b9fd4,transparent 70%);transform:translate(30%,-30%)"></div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8 py-16 md:py-20">
+    <div class="text-white/60 text-xs font-medium mb-3 flex items-center gap-2">
+      <a href="/" class="hover:text-white transition-colors">Beranda</a>
+      <i class="fas fa-chevron-right text-[8px]"></i>
+      <span class="text-white">Pengumuman</span>
     </div>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-3">Pengumuman</h1>
+    <p class="text-white/75 text-[15px] leading-relaxed">Informasi dan pengumuman terkini</p>
   </div>
+  <div class="absolute bottom-0 left-0 right-0 h-8" style="background:linear-gradient(transparent,white)"></div>
+</section>
 
-  <div class="max-w-4xl mx-auto px-4 py-12">
-
-    <!-- Period Filter -->
-    {{if .Periods}}
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-8">
-      <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Filter Periode</h3>
-      <div class="flex flex-wrap gap-2">
-        {{range .Periods}}
-        <a href="/pengumuman?period={{.Label}}"
-          class="px-4 py-2 rounded-lg text-sm font-medium transition {{if eq $.FilterPeriod .Label}}bg-primary text-white{{else}}bg-slate-100 text-slate-600 hover:bg-primary-light hover:text-primary-dark{{end}}">
-          {{.DisplayName}}{{if .IsActive}} ✦{{end}}
-        </a>
-        {{end}}
-      </div>
-    </div>
-    {{end}}
-
-    <!-- Announcements List -->
-    {{if .Announcements}}
-    <div class="space-y-4">
-      {{range .Announcements}}
-      <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:border-[#6b9ec9] hover:shadow-md transition">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 bg-[#dde9f5] rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-6 h-6 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-start justify-between gap-4 mb-2">
-              <h2 class="font-bold text-slate-800 text-lg leading-snug">{{.Title}}</h2>
-              <span class="text-xs text-primary font-medium bg-primary-light px-2 py-1 rounded flex-shrink-0">{{.PeriodLabel}}</span>
-            </div>
-            <p class="text-slate-600 leading-relaxed">{{.Content}}</p>
-          </div>
-        </div>
-      </div>
+<main class="max-w-4xl mx-auto px-5 sm:px-8 py-16">
+  {{if .Periods}}
+  <div class="bg-surface rounded-2xl p-6 mb-12">
+    <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Filter Periode</div>
+    <div class="flex flex-wrap gap-2">
+      {{range .Periods}}
+      <a href="/pengumuman?period={{.Label}}" class="px-4 py-2 rounded-xl text-sm font-bold transition-colors {{if eq $.FilterPeriod .Label}}bg-primary text-white{{else}}bg-white text-gray-600 hover:text-primary hover:bg-primary/5 border border-surface{{end}}">
+        {{.DisplayName}}{{if .IsActive}} ✦{{end}}
+      </a>
       {{end}}
     </div>
-    {{else}}
-    <div class="text-center py-16 text-slate-400">
-      <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
-      <p class="text-lg">Belum ada pengumuman untuk periode ini.</p>
+  </div>
+  {{end}}
+
+  {{if .Announcements}}
+  <div class="space-y-4">
+    {{range .Announcements}}
+    <div class="bg-white rounded-2xl p-7 card-lift border border-surface fade-up">
+      <div class="flex items-start gap-5">
+        <div class="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-bullhorn text-primary"></i></div>
+        <div class="flex-1">
+          <div class="flex items-start justify-between gap-4 mb-2">
+            <h2 class="font-extrabold text-gray-900 text-[15px] leading-snug">{{.Title}}</h2>
+            <span class="pill bg-primary/10 text-primary flex-shrink-0">{{.PeriodLabel}}</span>
+          </div>
+          <p class="text-gray-500 text-sm leading-relaxed">{{.Content}}</p>
+        </div>
+      </div>
     </div>
     {{end}}
   </div>
-
-  {{template "footer" .}}
+  {{else}}
+  <div class="text-center py-24 text-gray-400">
+    <i class="fas fa-bullhorn text-6xl mb-4 opacity-30"></i>
+    <p class="text-lg font-medium">Belum ada pengumuman untuk periode ini.</p>
+  </div>
+  {{end}}
+</main>
+{{template "footer" .}}
 </body>
 </html>

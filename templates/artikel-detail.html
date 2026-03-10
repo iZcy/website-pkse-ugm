@@ -1,56 +1,45 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
   {{template "head" .}}
-  <title>{{if .Article}}{{.Article.Title}} - {{end}}{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
+  <title>{{if .Article}}{{.Article.Title}} — {{end}}{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-  {{template "navbar" .}}
+<body class="bg-white text-gray-900 antialiased">
+{{template "navbar" .}}
 
-  {{if .Article}}
-  {{if .Article.CoverURL}}
-  <div class="w-full h-72 md:h-96 overflow-hidden">
-    <img src="{{.Article.CoverURL}}" alt="{{.Article.Title}}" class="w-full h-full object-cover">
-  </div>
+{{if .Article}}
+{{if .Article.CoverURL}}
+<div class="w-full h-72 md:h-96 overflow-hidden">
+  <img src="{{.Article.CoverURL}}" alt="{{.Article.Title}}" class="w-full h-full object-cover">
+</div>
+{{else}}
+<div class="w-full h-32 bg-primary/10"></div>
+{{end}}
+
+<main class="max-w-3xl mx-auto px-5 sm:px-8 py-12">
+  <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark text-sm font-bold mb-8 transition-colors">
+    <i class="fas fa-arrow-left text-xs"></i> Kembali ke Artikel
+  </a>
+  <span class="pill bg-primary/10 text-primary mb-5 block w-fit">{{.Article.PeriodLabel}}</span>
+  <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-5">{{.Article.Title}}</h1>
+  {{if .Article.Excerpt}}
+  <p class="text-xl text-gray-500 italic border-l-4 border-primary pl-4 mb-8 leading-relaxed">{{.Article.Excerpt}}</p>
   {{end}}
-
-  <div class="max-w-3xl mx-auto px-4 py-12">
-    <div class="mb-6">
-      <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:underline text-sm mb-6">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        Kembali ke Artikel
-      </a>
-      <span class="inline-block text-xs text-primary font-medium bg-primary-light px-3 py-1 rounded-full mb-4">{{.Article.PeriodLabel}}</span>
-      <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-4">{{.Article.Title}}</h1>
-      {{if .Article.Excerpt}}
-      <p class="text-xl text-slate-500 italic border-l-4 border-blue-300 pl-4">{{.Article.Excerpt}}</p>
-      {{end}}
-    </div>
-
-    <hr class="border-slate-200 my-8">
-
-    <div class="prose max-w-none text-slate-700 leading-relaxed text-lg">
-      {{.Article.Content}}
-    </div>
-
-    <hr class="border-slate-200 my-10">
-    <div class="flex justify-between items-center">
-      <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:underline text-sm">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        Kembali ke Artikel
-      </a>
-      <a href="/artikel?period={{.Article.PeriodLabel}}" class="text-primary hover:underline text-sm">
-        Artikel {{.Article.PeriodLabel}} lainnya &rarr;
-      </a>
-    </div>
+  <hr class="border-surface my-8">
+  <div class="prose-content text-gray-700 leading-relaxed text-[17px]">{{.Article.Content}}</div>
+  <hr class="border-surface my-10">
+  <div class="flex justify-between items-center">
+    <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark text-sm font-bold transition-colors"><i class="fas fa-arrow-left text-xs"></i> Kembali ke Artikel</a>
+    <a href="/artikel?period={{.Article.PeriodLabel}}" class="text-primary hover:text-primary-dark text-sm font-bold transition-colors">Artikel {{.Article.PeriodLabel}} lainnya →</a>
   </div>
-  {{else}}
-  <div class="text-center py-24 text-slate-400">
-    <p class="text-lg">Artikel tidak ditemukan.</p>
-    <a href="/artikel" class="text-primary hover:underline mt-4 inline-block">Kembali ke daftar artikel</a>
-  </div>
-  {{end}}
-
-  {{template "footer" .}}
+</main>
+{{else}}
+<div class="text-center py-24 text-gray-400">
+  <i class="fas fa-file-slash text-6xl mb-4 opacity-30"></i>
+  <p class="text-lg font-medium">Artikel tidak ditemukan.</p>
+  <a href="/artikel" class="text-primary hover:text-primary-dark font-bold mt-4 inline-block transition-colors">Kembali ke daftar artikel</a>
+</div>
+{{end}}
+{{template "footer" .}}
 </body>
 </html>

@@ -1,52 +1,55 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
   {{template "head" .}}
-  <title>Sejarah Periode - {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
+  <title>Sejarah Periode — {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-  {{template "navbar" .}}
+<body class="bg-white text-gray-900 antialiased">
+{{template "navbar" .}}
 
-  <div class="bg-gradient-to-r from-primary-xdark to-primary-dark text-white py-16 px-4">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-4xl font-bold mb-2">Sejarah Periode Kepengurusan</h1>
-      <p class="text-[#b8d0e8]">Rekam jejak perjalanan organisasi PKSE UGM</p>
+<section class="relative bg-primary overflow-hidden">
+  <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:48px 48px"></div>
+  <div class="absolute top-0 right-0 w-[360px] h-[360px] opacity-15 pointer-events-none" style="background:radial-gradient(circle,#6b9fd4,transparent 70%);transform:translate(30%,-30%)"></div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8 py-16 md:py-20">
+    <div class="text-white/60 text-xs font-medium mb-3 flex items-center gap-2">
+      <a href="/" class="hover:text-white transition-colors">Beranda</a>
+      <i class="fas fa-chevron-right text-[8px]"></i>
+      <span class="text-white">Sejarah Periode</span>
     </div>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-3">Sejarah Periode</h1>
+    <p class="text-white/75 text-[15px] leading-relaxed">Rekam jejak perjalanan organisasi</p>
   </div>
+  <div class="absolute bottom-0 left-0 right-0 h-8" style="background:linear-gradient(transparent,white)"></div>
+</section>
 
-  <div class="max-w-4xl mx-auto px-4 py-12">
-    {{if .Periods}}
-    <div class="space-y-4">
-      {{range .Periods}}
-      <a href="/periode/{{.Label}}" class="block bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:border-[#6b9ec9] hover:shadow-md transition group">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-{{if .IsActive}}600{{else}}100{{end}} rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 {{if .IsActive}}text-white{{else}}text-primary{{end}}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            </div>
-            <div>
-              <h2 class="font-bold text-slate-800 text-xl group-hover:text-primary-dark transition">{{.DisplayName}}</h2>
-              <p class="text-slate-500 text-sm">Kode: {{.Label}}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            {{if .IsActive}}
-            <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">Aktif</span>
-            {{end}}
-            <svg class="w-5 h-5 text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
+<main class="max-w-4xl mx-auto px-5 sm:px-8 py-16">
+  {{if .Periods}}
+  <div class="space-y-4">
+    {{range .Periods}}
+    <a href="/periode/{{.Label}}" class="group flex items-center justify-between bg-white rounded-2xl p-6 card-lift border border-surface">
+      <div class="flex items-center gap-5">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 {{if .IsActive}}bg-primary{{else}}bg-primary/10{{end}}">
+          <i class="fas fa-calendar {{if .IsActive}}text-white{{else}}text-primary{{end}}"></i>
         </div>
-      </a>
-      {{end}}
-    </div>
-    {{else}}
-    <div class="text-center py-16 text-slate-400">
-      <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      <p class="text-lg">Belum ada data periode.</p>
-    </div>
+        <div>
+          <h2 class="font-extrabold text-gray-900 text-lg group-hover:text-primary transition-colors">{{.DisplayName}}</h2>
+          <p class="text-gray-500 text-sm mt-0.5">Kode: {{.Label}}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        {{if .IsActive}}<span class="pill bg-green-100 text-green-700">Aktif</span>{{end}}
+        <i class="fas fa-chevron-right text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all text-sm"></i>
+      </div>
+    </a>
     {{end}}
   </div>
-
-  {{template "footer" .}}
+  {{else}}
+  <div class="text-center py-24 text-gray-400">
+    <i class="fas fa-calendar-xmark text-6xl mb-4 opacity-30"></i>
+    <p class="text-lg font-medium">Belum ada data periode.</p>
+  </div>
+  {{end}}
+</main>
+{{template "footer" .}}
 </body>
 </html>

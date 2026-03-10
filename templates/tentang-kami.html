@@ -1,79 +1,110 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
   {{template "head" .}}
-  <title>Tentang Kami - {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
+  <title>Tentang Kami — {{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}}</title>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans">
-  {{template "navbar" .}}
+<body class="bg-white text-gray-900 antialiased">
+{{template "navbar" .}}
 
-  <!-- Page Header -->
-  <div class="bg-gradient-to-r from-primary-xdark to-primary-dark text-white py-16 px-4">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-4xl font-bold mb-2">Tentang Kami</h1>
-      {{if .ActivePeriod}}<p class="text-[#b8d0e8]">{{.ActivePeriod.DisplayName}}</p>{{end}}
+<!-- PAGE HERO -->
+<section class="relative bg-primary overflow-hidden">
+  <div class="absolute inset-0" style="background-image:linear-gradient(rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.05) 1px,transparent 1px);background-size:48px 48px"></div>
+  <div class="absolute top-0 right-0 w-[360px] h-[360px] opacity-15 pointer-events-none" style="background:radial-gradient(circle,#6b9fd4,transparent 70%);transform:translate(30%,-30%)"></div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8 py-16 md:py-20">
+    <div class="text-white/60 text-xs font-medium mb-3 flex items-center gap-2">
+      <a href="/" class="hover:text-white transition-colors">Beranda</a>
+      <i class="fas fa-chevron-right text-[8px]"></i>
+      <span class="text-white">Tentang Kami</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-3">Tentang Kami</h1>
+    <p class="text-white/75 text-[15px] max-w-xl leading-relaxed">Mengenal lebih dekat Paguyuban Karya Salemba Empat Universitas Gadjah Mada.</p>
+    <div class="flex flex-wrap gap-2 mt-8">
+      <a href="#profil" class="px-4 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold rounded-full transition-colors backdrop-blur-sm">Profil</a>
+      <a href="#visi-misi" class="px-4 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold rounded-full transition-colors backdrop-blur-sm">Visi &amp; Misi</a>
     </div>
   </div>
+  <div class="absolute bottom-0 left-0 right-0 h-8" style="background:linear-gradient(transparent,white)"></div>
+</section>
 
-  <div class="max-w-5xl mx-auto px-4 py-12 space-y-12">
+<main class="pb-20">
 
-    <!-- Global About -->
-    {{if and .GlobalSetting .GlobalSetting.AboutHTML}}
-    <section class="bg-white rounded-2xl shadow-sm p-8 border border-slate-100">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-        </div>
-        <h2 class="text-2xl font-bold text-primary-xdark">Profil Organisasi</h2>
+<!-- PROFIL ORGANISASI -->
+{{if and .GlobalSetting .GlobalSetting.AboutHTML}}
+<section id="profil" class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-5 gap-12 items-start">
+      <div class="lg:col-span-3">
+        <div class="pill bg-primary/10 text-primary mb-6">Profil</div>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-6">Profil Organisasi</h2>
+        <div class="prose-content text-gray-500 text-[15px] leading-relaxed">{{.GlobalSetting.AboutHTML}}</div>
       </div>
-      <div class="prose max-w-none text-slate-700 leading-relaxed">{{.GlobalSetting.AboutHTML}}</div>
-    </section>
-    {{end}}
-
-    <!-- Period-specific About -->
-    {{if .PeriodAbout}}
-    {{if .PeriodAbout.Sejarah}}
-    <section class="bg-white rounded-2xl shadow-sm p-8 border border-slate-100">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-        <h2 class="text-2xl font-bold text-primary-xdark">Sejarah Kepengurusan{{if .ActivePeriod}} {{.ActivePeriod.DisplayName}}{{end}}</h2>
-      </div>
-      <p class="text-slate-700 leading-relaxed">{{.PeriodAbout.Sejarah}}</p>
-    </section>
-    {{end}}
-
-    {{if or .PeriodAbout.Visi .PeriodAbout.Misi}}
-    <section class="grid md:grid-cols-2 gap-6">
-      {{if .PeriodAbout.Visi}}
-      <div class="bg-primary-light rounded-2xl p-8 border border-[#dde9f5]">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+      <div class="lg:col-span-2">
+        <div class="bg-surface rounded-2xl p-7">
+          <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-5">Info Singkat</div>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3"><i class="fas fa-university text-primary mt-0.5 text-sm flex-shrink-0"></i><div><div class="font-bold text-gray-900 text-sm">Universitas Gadjah Mada</div><div class="text-gray-500 text-xs mt-0.5">Bulaksumur, Yogyakarta</div></div></div>
+            <div class="flex items-start gap-3"><i class="fas fa-award text-primary mt-0.5 text-sm flex-shrink-0"></i><div><div class="font-bold text-gray-900 text-sm">Karya Salemba Empat</div><div class="text-gray-500 text-xs mt-0.5">Penerima beasiswa KSE</div></div></div>
+            {{if .ActivePeriod}}<div class="flex items-start gap-3"><i class="fas fa-calendar text-primary mt-0.5 text-sm flex-shrink-0"></i><div><div class="font-bold text-gray-900 text-sm">Kabinet Aktif</div><div class="text-gray-500 text-xs mt-0.5">{{.ActivePeriod.DisplayName}}</div></div></div>{{end}}
           </div>
-          <h2 class="text-xl font-bold text-primary-xdark">Visi</h2>
         </div>
-        <p class="text-slate-700 leading-relaxed">{{.PeriodAbout.Visi}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+{{end}}
+
+<!-- SEJARAH -->
+{{if and .PeriodAbout .PeriodAbout.Sejarah}}
+<section id="sejarah" class="py-20 bg-surface">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="pill bg-white text-primary mb-6">Sejarah</div>
+    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-6">Sejarah Kepengurusan</h2>
+    <p class="text-gray-500 text-[15px] leading-relaxed max-w-3xl">{{.PeriodAbout.Sejarah}}</p>
+  </div>
+</section>
+{{end}}
+
+<!-- VISI MISI -->
+{{if and .PeriodAbout (or .PeriodAbout.Visi .PeriodAbout.Misi)}}
+<section id="visi-misi" class="py-20 bg-white">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <div class="pill bg-primary/10 text-primary mx-auto mb-5">Arah Organisasi</div>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Visi &amp; Misi</h2>
+      {{if .ActivePeriod}}<p class="text-gray-500 mt-3 text-[15px]">{{.ActivePeriod.DisplayName}}</p>{{end}}
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      {{if .PeriodAbout.Visi}}
+      <div class="bg-white rounded-2xl overflow-hidden card-lift border border-surface">
+        <div class="h-1.5 bg-primary"></div>
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-eye text-primary"></i></div>
+            <h3 class="text-xl font-extrabold text-gray-900">Visi</h3>
+          </div>
+          <p class="text-gray-600 leading-relaxed text-[15px]">{{.PeriodAbout.Visi}}</p>
+        </div>
       </div>
       {{end}}
       {{if .PeriodAbout.Misi}}
-      <div class="bg-slate-50 rounded-2xl p-8 border border-slate-200">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <div class="bg-white rounded-2xl overflow-hidden card-lift border border-surface">
+        <div class="h-1.5 bg-primary/40"></div>
+        <div class="p-8">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-11 h-11 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0"><i class="fas fa-bullseye text-primary"></i></div>
+            <h3 class="text-xl font-extrabold text-gray-900">Misi</h3>
           </div>
-          <h2 class="text-xl font-bold text-slate-800">Misi</h2>
+          <p class="text-gray-600 leading-relaxed text-[15px] whitespace-pre-line">{{.PeriodAbout.Misi}}</p>
         </div>
-        <p class="text-slate-700 leading-relaxed whitespace-pre-line">{{.PeriodAbout.Misi}}</p>
       </div>
       {{end}}
-    </section>
-    {{end}}
-    {{end}}
-
+    </div>
   </div>
+</section>
+{{end}}
 
-  {{template "footer" .}}
+</main>
+{{template "footer" .}}
 </body>
 </html>
