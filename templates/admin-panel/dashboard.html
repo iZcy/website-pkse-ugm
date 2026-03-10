@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin — KSE UGM</title>
+<style>
+  @font-face { font-family:'Plus Jakarta Sans'; src:url('/static/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype'); font-weight:200 800; }
+  *,*::before,*::after { box-sizing:border-box; font-family:'Plus Jakarta Sans',system-ui,sans-serif; margin:0; padding:0; }
+  :root { --p:#385F8C; --pd:#2c4d73; --s:#E9E9E9; }
+  body { background:#f0f4f9; min-height:100vh; }
+
+  /* ── top nav ── */
+  .topbar { background:#fff; border-bottom:1px solid #e5e7eb; padding:0 24px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand-dot { width:32px; height:32px; background:var(--p); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; color:#fff; }
+  .brand-name { font-weight:800; font-size:14px; color:var(--p); }
+  .brand-sub { font-size:10px; color:#9ca3af; font-weight:600; letter-spacing:.07em; text-transform:uppercase; }
+  .top-actions { display:flex; align-items:center; gap:12px; }
+  .btn-sm { font-size:12px; font-weight:700; padding:6px 14px; border-radius:8px; border:none; cursor:pointer; transition:all .15s; }
+  .btn-outline { background:transparent; border:1.5px solid #e5e7eb; color:#6b7280; }
+  .btn-outline:hover { border-color:var(--p); color:var(--p); }
+  .btn-primary { background:var(--p); color:#fff; }
+  .btn-primary:hover { background:var(--pd); }
+  .btn-danger { background:#fee2e2; color:#dc2626; }
+  .btn-danger:hover { background:#fecaca; }
+
+  /* ── layout ── */
+  .shell { max-width:900px; margin:28px auto; padding:0 16px; }
+
+  /* ── tabs ── */
+  .tabs { display:flex; gap:4px; background:#fff; border-radius:14px; padding:6px; margin-bottom:24px; box-shadow:0 1px 8px rgba(56,95,140,0.08); }
+  .tab { flex:1; text-align:center; padding:9px 8px; border-radius:10px; font-size:13px; font-weight:600; color:#6b7280; cursor:pointer; border:none; background:transparent; transition:all .15s; }
+  .tab.active { background:var(--p); color:#fff; }
+  .tab:hover:not(.active) { background:#f0f4f9; color:var(--p); }
+
+  /* ── panels ── */
+  .panel { display:none; }
+  .panel.active { display:block; }
+
+  /* ── card ── */
+  .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 1px 8px rgba(56,95,140,0.07); margin-bottom:16px; }
+  .card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .card-title { font-size:16px; font-weight:800; color:#111; }
+  .card-desc { font-size:12px; color:#6b7280; margin-top:2px; }
+
+  /* ── form ── */
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px; }
+  .field .hint { font-size:11px; color:#9ca3af; margin-top:4px; font-weight:400; text-transform:none; letter-spacing:0; }
+  input[type=text], input[type=url], textarea, select {
+    width:100%; padding:10px 13px; border:1.5px solid #e5e7eb; border-radius:10px;
+    font-size:13px; outline:none; transition:border .15s; background:#fafafa; color:#111;
+    font-family:inherit;
+  }
+  input[type=text]:focus, input[type=url]:focus, textarea:focus, select:focus {
+    border-color:var(--p); background:#fff;
+  }
+  textarea { resize:vertical; min-height:90px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  .save-row { display:flex; align-items:center; gap:10px; }
+  .save-ok { font-size:13px; color:#16a34a; font-weight:600; display:none; }
+
+  /* ── list items ── */
+  .item { border:1.5px solid #e5e7eb; border-radius:12px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:flex-start; gap:12px; background:#fafafa; }
+  .item-body { flex:1; min-width:0; }
+  .item-title { font-weight:700; font-size:14px; color:#111; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item-meta { font-size:11px; color:#9ca3af; }
+  .item-actions { display:flex; gap:6px; flex-shrink:0; }
+  .badge { display:inline-flex; align-items:center; font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; letter-spacing:.05em; text-transform:uppercase; }
+  .badge-green { background:#dcfce7; color:#16a34a; }
+  .badge-gray  { background:#f3f4f6; color:#6b7280; }
+
+  /* ── inline edit form ── */
+  .inline-form { border:1.5px solid var(--p); border-radius:12px; padding:16px; background:#fff; margin-bottom:10px; }
+  .inline-form .form-title { font-size:13px; font-weight:800; color:var(--p); margin-bottom:14px; }
+  .inline-actions { display:flex; gap:8px; margin-top:14px; }
+
+  /* ── empty state ── */
+  .empty { text-align:center; padding:40px 20px; color:#9ca3af; }
+  .empty h3 { font-size:14px; font-weight:700; margin-bottom:4px; color:#6b7280; }
+  .loading { text-align:center; padding:24px; color:#9ca3af; font-size:13px; }
+
+  /* ── toast ── */
+  #toast { position:fixed; bottom:24px; right:24px; background:#111; color:#fff; padding:12px 18px; border-radius:12px; font-size:13px; font-weight:600; opacity:0; transform:translateY(8px); transition:all .25s; pointer-events:none; z-index:999; }
+  #toast.show { opacity:1; transform:none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-dot">KSE</div>
+    <div>
+      <div class="brand-name">Panel Admin</div>
+      <div class="brand-sub">Paguyuban KSE UGM</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <a href="/" target="_blank"><button class="btn-sm btn-outline">Lihat Website ↗</button></a>
+    <a href="/admin/logout"><button class="btn-sm btn-danger">Keluar</button></a>
+  </div>
+</div>
+
+<div class="shell">
+  <div class="tabs">
+    <button class="tab" data-tab="pengumuman" onclick="switchTab('pengumuman')">📢 Pengumuman</button>
+    <button class="tab" data-tab="tentang"    onclick="switchTab('tentang')">📖 Tentang Kami</button>
+    <button class="tab" data-tab="departemen" onclick="switchTab('departemen')">🏢 Departemen</button>
+    <button class="tab" data-tab="pengurus"   onclick="switchTab('pengurus')">👥 Pengurus</button>
+  </div>
+
+  <!-- ═══════════════════ PENGUMUMAN ══════════════════════════════════════ -->
+  <div class="panel" id="tab-pengumuman">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Pengumuman</div>
+          <div class="card-desc">Kelola pengumuman yang ditampilkan di website.</div>
+        </div>
+        <button class="btn-sm btn-primary" onclick="showAnnouncementForm()">+ Tambah</button>
+      </div>
+      <div id="ann-form-container"></div>
+      <div id="ann-list"><div class="loading">Memuat...</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ TENTANG KAMI ══════════════════════════════════ -->
+  <div class="panel" id="tab-tentang">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Tentang Kami</div>
+          <div class="card-desc">Visi, misi, dan sejarah organisasi.</div>
+        </div>
+      </div>
+      <div id="tentang-loading" class="loading">Memuat...</div>
+      <div id="tentang-form" style="display:none">
+        <div class="field">
+          <label>Visi</label>
+          <textarea id="t-visi" rows="3" placeholder="Pernyataan visi organisasi..."></textarea>
+        </div>
+        <div class="field">
+          <label>Misi</label>
+          <textarea id="t-misi" rows="5" placeholder="Tulis satu poin per baris:&#10;Meningkatkan kualitas anggota...&#10;Membangun jaringan alumni..."></textarea>
+          <div class="hint">Tulis satu poin misi per baris.</div>
+        </div>
+        <div class="field">
+          <label>Sejarah</label>
+          <textarea id="t-sejarah" rows="6" placeholder="Narasi sejarah pendirian dan perjalanan organisasi..."></textarea>
+        </div>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:18px 0">
+        <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Statistik Beranda</div>
+        <div class="row3">
+          <div class="field">
+            <label>Anggota Aktif</label>
+            <input type="text" id="t-members" placeholder="65+">
+          </div>
+          <div class="field">
+            <label>Jumlah Departemen</label>
+            <input type="text" id="t-dept" placeholder="7">
+          </div>
+          <div class="field">
+            <label>Program Kerja</label>
+            <input type="text" id="t-proker" placeholder="15+">
+          </div>
+        </div>
+        <div class="save-row" style="margin-top:4px">
+          <button class="btn-sm btn-primary" onclick="saveTentang()">Simpan Perubahan</button>
+          <span class="save-ok" id="tentang-ok">✓ Tersimpan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ DEPARTEMEN ════════════════════════════════════ -->
+  <div class="panel" id="tab-departemen">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Departemen</div>
+          <div class="card-desc">Daftar departemen yang ditampilkan di halaman Tentang Kami.</div>
+        </div>
+        <button class="btn-sm btn-primary" onclick="showDeptForm()">+ Tambah</button>
+      </div>
+      <div id="dept-form-container"></div>
+      <div id="dept-list"><div class="loading">Memuat...</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ PENGURUS ══════════════════════════════════════ -->
+  <div class="panel" id="tab-pengurus">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Pengurus</div>
+          <div class="card-desc">Daftar pengurus inti dan departemen.</div>
+        </div>
+        <button class="btn-sm btn-primary" onclick="showOfficerForm()">+ Tambah</button>
+      </div>
+      <div id="officer-form-container"></div>
+      <div id="officer-list"><div class="loading">Memuat...</div></div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<div id="toast"></div>
+
+<script>
+// ── helpers ────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function toast(msg, ok=true) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#16a34a' : '#dc2626';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── tabs ───────────────────────────────────────────────────────────────────────
+const TABS = ['pengumuman','tentang','departemen','pengurus'];
+const LOADERS = {pengumuman: loadAnnouncements, tentang: loadTentang, departemen: loadDepts, pengurus: loadOfficers};
+function switchTab(name) {
+  TABS.forEach(t => {
+    document.querySelector(`[data-tab=${t}]`).classList.toggle('active', t===name);
+    $(`tab-${t}`).classList.toggle('active', t===name);
+  });
+  if (LOADERS[name]) LOADERS[name]();
+}
+
+// ── API proxy ──────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('/admin/proxy' + path, opts);
+  return r.json();
+}
+
+// ─────────────────────────── PENGUMUMAN ───────────────────────────────────────
+async function loadAnnouncements() {
+  $('ann-list').innerHTML = '<div class="loading">Memuat...</div>';
+  const d = await api('GET', '/api/announcements?sort=createdAt:desc&pagination[limit]=50&publicationState=preview');
+  const items = d.data || [];
+  if (!items.length) {
+    $('ann-list').innerHTML = '<div class="empty"><h3>Belum ada pengumuman</h3><p>Klik "+ Tambah" untuk membuat pengumuman pertama.</p></div>';
+    return;
+  }
+  $('ann-list').innerHTML = items.map(item => {
+    const a = item.attributes;
+    const pub = !!a.publishedAt;
+    const date = a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : 'Draft';
+    return `<div class="item">
+      <div class="item-body">
+        <div class="item-title">${esc(a.title)}</div>
+        <div class="item-meta">${date} &nbsp;·&nbsp; <span class="badge ${pub?'badge-green':'badge-gray'}">${pub?'Dipublikasikan':'Draft'}</span></div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm btn-outline" onclick="editAnnouncement(${item.id})">Edit</button>
+        <button class="btn-sm btn-danger"  onclick="deleteAnnouncement(${item.id})">Hapus</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAnnouncementForm(id, title='', content='', published=false) {
+  $('ann-form-container').innerHTML = `
+    <div class="inline-form">
+      <div class="form-title">${id ? 'Edit Pengumuman' : 'Pengumuman Baru'}</div>
+      <div class="field"><label>Judul</label><input type="text" id="af-title" value="${esc(title)}" placeholder="Judul pengumuman..."></div>
+      <div class="field"><label>Isi</label><textarea id="af-content" rows="5" placeholder="Isi pengumuman lengkap...">${esc(content)}</textarea></div>
+      <div class="field">
+        <label>Status</label>
+        <select id="af-status">
+          <option value="draft" ${!published?'selected':''}>Draft (tidak tampil di website)</option>
+          <option value="published" ${published?'selected':''}>Dipublikasikan (tampil di website)</option>
+        </select>
+      </div>
+      <div class="inline-actions">
+        <button class="btn-sm btn-primary" onclick="saveAnnouncement(${id||0})">Simpan</button>
+        <button class="btn-sm btn-outline" onclick="closeAnnForm()">Batal</button>
+      </div>
+    </div>`;
+  $('af-title').focus();
+}
+
+function closeAnnForm() { $('ann-form-container').innerHTML = ''; }
+
+async function editAnnouncement(id) {
+  const d = await api('GET', `/api/announcements/${id}`);
+  const a = d.data?.attributes || {};
+  showAnnouncementForm(id, a.title, a.content, !!a.publishedAt);
+}
+
+async function saveAnnouncement(id) {
+  const title   = $('af-title').value.trim();
+  const content = $('af-content').value.trim();
+  const pub     = $('af-status').value === 'published';
+  if (!title || !content) { toast('Judul dan isi wajib diisi.', false); return; }
+
+  const body = { title, content, publishedAt: pub ? new Date().toISOString() : null };
+  let res;
+  if (id) {
+    res = await api('PUT', `/api/announcements/${id}`, body);
+  } else {
+    res = await api('POST', '/api/announcements', body);
+  }
+  if (res.error) { toast('Gagal menyimpan: ' + (res.error?.message||''), false); return; }
+  toast('Pengumuman tersimpan!');
+  closeAnnForm();
+  loadAnnouncements();
+}
+
+async function deleteAnnouncement(id) {
+  if (!confirm('Hapus pengumuman ini?')) return;
+  const res = await api('DELETE', `/api/announcements/${id}`);
+  if (res.error) { toast('Gagal menghapus.', false); return; }
+  toast('Pengumuman dihapus.');
+  loadAnnouncements();
+}
+
+// ─────────────────────────── TENTANG KAMI ─────────────────────────────────────
+async function loadTentang() {
+  $('tentang-loading').style.display = 'block';
+  $('tentang-form').style.display = 'none';
+  const d = await api('GET', '/api/site-setting');
+  const a = d.data?.attributes || {};
+  // misi might be an array or null
+  const misiArr = Array.isArray(a.misi) ? a.misi : [];
+  $('t-visi').value    = a.visi || '';
+  $('t-misi').value   = misiArr.join('\n');
+  $('t-sejarah').value = a.sejarah || '';
+  $('t-members').value = a.stat_members || '';
+  $('t-dept').value    = a.stat_dept || '';
+  $('t-proker').value  = a.stat_proker || '';
+  $('tentang-loading').style.display = 'none';
+  $('tentang-form').style.display = 'block';
+}
+
+async function saveTentang() {
+  const misiLines = $('t-misi').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  const body = {
+    visi:         $('t-visi').value.trim(),
+    misi:         misiLines,
+    sejarah:      $('t-sejarah').value.trim(),
+    stat_members: $('t-members').value.trim(),
+    stat_dept:    $('t-dept').value.trim(),
+    stat_proker:  $('t-proker').value.trim(),
+  };
+  const res = await api('PUT', '/api/site-setting', body);
+  if (res.error) { toast('Gagal menyimpan: ' + (res.error?.message||''), false); return; }
+  toast('Tersimpan!');
+  const ok = $('tentang-ok');
+  ok.style.display='inline';
+  setTimeout(() => ok.style.display='none', 3000);
+}
+
+// ─────────────────────────── DEPARTEMEN ───────────────────────────────────────
+async function loadDepts() {
+  $('dept-list').innerHTML = '<div class="loading">Memuat...</div>';
+  const d = await api('GET', '/api/departments?sort=sort_order:asc&pagination[limit]=50');
+  const items = d.data || [];
+  if (!items.length) {
+    $('dept-list').innerHTML = '<div class="empty"><h3>Belum ada departemen</h3><p>Klik "+ Tambah" untuk menambahkan departemen.</p></div>';
+    return;
+  }
+  $('dept-list').innerHTML = items.map(item => {
+    const a = item.attributes;
+    return `<div class="item">
+      <div class="item-body">
+        <div class="item-title"><i class="${esc(a.icon_class||'fas fa-star')}" style="margin-right:6px;color:#385F8C"></i>${esc(a.name)}</div>
+        <div class="item-meta">${esc(a.description||'—')} &nbsp;·&nbsp; Urutan: ${a.sort_order||0}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm btn-outline" onclick="editDept(${item.id})">Edit</button>
+        <button class="btn-sm btn-danger"  onclick="deleteDept(${item.id})">Hapus</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showDeptForm(id, name='', desc='', icon='fas fa-star', order=0) {
+  $('dept-form-container').innerHTML = `
+    <div class="inline-form">
+      <div class="form-title">${id ? 'Edit Departemen' : 'Departemen Baru'}</div>
+      <div class="row2">
+        <div class="field"><label>Nama Departemen</label><input type="text" id="df-name" value="${esc(name)}" placeholder="Dept. Sosial Masyarakat"></div>
+        <div class="field"><label>Urutan Tampil</label><input type="text" id="df-order" value="${order}" placeholder="0"></div>
+      </div>
+      <div class="field">
+        <label>Kelas Ikon Font Awesome</label>
+        <input type="text" id="df-icon" value="${esc(icon)}" placeholder="fas fa-star">
+        <div class="hint">Cari ikon di <a href="https://fontawesome.com/icons" target="_blank" style="color:#385F8C">fontawesome.com/icons</a>, lalu salin kelasnya. Contoh: <code>fas fa-heart</code></div>
+      </div>
+      <div class="field"><label>Deskripsi Singkat</label><textarea id="df-desc" rows="2" placeholder="Penjelasan singkat tentang departemen ini...">${esc(desc)}</textarea></div>
+      <div class="inline-actions">
+        <button class="btn-sm btn-primary" onclick="saveDept(${id||0})">Simpan</button>
+        <button class="btn-sm btn-outline" onclick="closeDeptForm()">Batal</button>
+      </div>
+    </div>`;
+  $('df-name').focus();
+}
+
+function closeDeptForm() { $('dept-form-container').innerHTML = ''; }
+
+async function editDept(id) {
+  const d = await api('GET', `/api/departments/${id}`);
+  const a = d.data?.attributes || {};
+  showDeptForm(id, a.name, a.description, a.icon_class, a.sort_order);
+}
+
+async function saveDept(id) {
+  const name = $('df-name').value.trim();
+  if (!name) { toast('Nama departemen wajib diisi.', false); return; }
+  const body = { name, description: $('df-desc').value.trim(), icon_class: $('df-icon').value.trim()||'fas fa-star', sort_order: parseInt($('df-order').value)||0 };
+  const res = id ? await api('PUT', `/api/departments/${id}`, body) : await api('POST', '/api/departments', body);
+  if (res.error) { toast('Gagal: ' + (res.error?.message||''), false); return; }
+  toast('Departemen tersimpan!'); closeDeptForm(); loadDepts();
+}
+
+async function deleteDept(id) {
+  if (!confirm('Hapus departemen ini?')) return;
+  const res = await api('DELETE', `/api/departments/${id}`);
+  if (res.error) { toast('Gagal menghapus.', false); return; }
+  toast('Departemen dihapus.'); loadDepts();
+}
+
+// ─────────────────────────── PENGURUS ─────────────────────────────────────────
+async function loadOfficers() {
+  $('officer-list').innerHTML = '<div class="loading">Memuat...</div>';
+  const d = await api('GET', '/api/officers?sort=sort_order:asc&pagination[limit]=100');
+  const items = d.data || [];
+  if (!items.length) {
+    $('officer-list').innerHTML = '<div class="empty"><h3>Belum ada pengurus</h3><p>Klik "+ Tambah" untuk menambahkan pengurus.</p></div>';
+    return;
+  }
+  const inti = items.filter(i => i.attributes.tier !== 'departemen');
+  const dept = items.filter(i => i.attributes.tier === 'departemen');
+  function renderGroup(label, arr) {
+    if (!arr.length) return '';
+    return `<div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px">${label}</div>`
+      + arr.map(item => {
+        const a = item.attributes;
+        return `<div class="item">
+          <div class="item-body">
+            <div class="item-title">${esc(a.name)} <span style="font-weight:500;color:#6b7280">· ${esc(a.role)}</span></div>
+            <div class="item-meta">${esc(a.department||'Pengurus Inti')} &nbsp;·&nbsp; Urutan: ${a.sort_order||0}</div>
+          </div>
+          <div class="item-actions">
+            <button class="btn-sm btn-outline" onclick="editOfficer(${item.id})">Edit</button>
+            <button class="btn-sm btn-danger"  onclick="deleteOfficer(${item.id})">Hapus</button>
+          </div>
+        </div>`;
+      }).join('');
+  }
+  $('officer-list').innerHTML = renderGroup('Pengurus Inti', inti) + renderGroup('Pengurus Departemen', dept);
+}
+
+function showOfficerForm(id, name='', role='', dept='', tier='inti', photo='', order=0) {
+  $('officer-form-container').innerHTML = `
+    <div class="inline-form">
+      <div class="form-title">${id ? 'Edit Pengurus' : 'Pengurus Baru'}</div>
+      <div class="row2">
+        <div class="field"><label>Nama Lengkap</label><input type="text" id="of-name" value="${esc(name)}" placeholder="Budi Santoso"></div>
+        <div class="field"><label>Jabatan</label><input type="text" id="of-role" value="${esc(role)}" placeholder="Ketua Umum"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Level</label>
+          <select id="of-tier">
+            <option value="inti" ${tier==='inti'?'selected':''}>Pengurus Inti (Ketua, Wakil, dll)</option>
+            <option value="departemen" ${tier==='departemen'?'selected':''}>Pengurus Departemen</option>
+          </select>
+        </div>
+        <div class="field"><label>Urutan Tampil</label><input type="text" id="of-order" value="${order}" placeholder="0"></div>
+      </div>
+      <div class="field"><label>Departemen <span style="font-weight:400;color:#9ca3af">(opsional, untuk pengurus departemen)</span></label><input type="text" id="of-dept" value="${esc(dept)}" placeholder="Dept. Sosial Masyarakat"></div>
+      <div class="field"><label>URL Foto <span style="font-weight:400;color:#9ca3af">(opsional)</span></label><input type="url" id="of-photo" value="${esc(photo)}" placeholder="https://..."></div>
+      <div class="inline-actions">
+        <button class="btn-sm btn-primary" onclick="saveOfficer(${id||0})">Simpan</button>
+        <button class="btn-sm btn-outline" onclick="closeOfficerForm()">Batal</button>
+      </div>
+    </div>`;
+  $('of-name').focus();
+}
+
+function closeOfficerForm() { $('officer-form-container').innerHTML = ''; }
+
+async function editOfficer(id) {
+  const d = await api('GET', `/api/officers/${id}`);
+  const a = d.data?.attributes || {};
+  showOfficerForm(id, a.name, a.role, a.department, a.tier, a.photo_url, a.sort_order);
+}
+
+async function saveOfficer(id) {
+  const name = $('of-name').value.trim();
+  const role = $('of-role').value.trim();
+  if (!name || !role) { toast('Nama dan jabatan wajib diisi.', false); return; }
+  const body = { name, role, department: $('of-dept').value.trim(), tier: $('of-tier').value, photo_url: $('of-photo').value.trim(), sort_order: parseInt($('of-order').value)||0 };
+  const res = id ? await api('PUT', `/api/officers/${id}`, body) : await api('POST', '/api/officers', body);
+  if (res.error) { toast('Gagal: ' + (res.error?.message||''), false); return; }
+  toast('Pengurus tersimpan!'); closeOfficerForm(); loadOfficers();
+}
+
+async function deleteOfficer(id) {
+  if (!confirm('Hapus pengurus ini?')) return;
+  const res = await api('DELETE', `/api/officers/${id}`);
+  if (res.error) { toast('Gagal menghapus.', false); return; }
+  toast('Pengurus dihapus.'); loadOfficers();
+}
+
+// ── init ───────────────────────────────────────────────────────────────────────
+switchTab('{{.Tab}}');
+</script>
+</body>
+</html>
