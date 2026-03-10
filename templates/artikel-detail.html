@@ -18,7 +18,7 @@
 
 <main class="max-w-3xl mx-auto px-5 sm:px-8 py-12">
   <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark text-sm font-bold mb-8 transition-colors">
-    <i class="fas fa-arrow-left text-xs"></i> Kembali ke Artikel
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg> Kembali ke Artikel
   </a>
   <span class="pill bg-primary/10 text-primary mb-5 block w-fit">{{.Article.PeriodLabel}}</span>
   <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-5">{{.Article.Title}}</h1>
@@ -29,13 +29,15 @@
   <div class="prose-content text-gray-700 leading-relaxed text-[17px]">{{.Article.Content}}</div>
   <hr class="border-surface my-10">
   <div class="flex justify-between items-center">
-    <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark text-sm font-bold transition-colors"><i class="fas fa-arrow-left text-xs"></i> Kembali ke Artikel</a>
+    <a href="/artikel" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark text-sm font-bold transition-colors">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg> Kembali ke Artikel
+    </a>
     <a href="/artikel?period={{.Article.PeriodLabel}}" class="text-primary hover:text-primary-dark text-sm font-bold transition-colors">Artikel {{.Article.PeriodLabel}} lainnya →</a>
   </div>
 </main>
 {{else}}
 <div class="text-center py-24 text-gray-400">
-  <i class="fas fa-file-slash text-6xl mb-4 opacity-30"></i>
+  <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
   <p class="text-lg font-medium">Artikel tidak ditemukan.</p>
   <a href="/artikel" class="text-primary hover:text-primary-dark font-bold mt-4 inline-block transition-colors">Kembali ke daftar artikel</a>
 </div>
