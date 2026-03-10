@@ -6,22 +6,16 @@ import (
 "net/http"
 "text/template"
 
-"webapp/internal/strapi"
+"webapp/internal/db"
 )
 
-// Handler holds shared dependencies for all HTTP handlers.
 type Handler struct {
-strapi    *strapi.Client
 templates *template.Template
 }
 
-// New returns a Handler backed by the given Strapi client.
-func New(sc *strapi.Client) *Handler {
+func New() *Handler {
 tmpl := template.Must(template.ParseGlob("templates/*.html"))
-return &Handler{
-strapi:    sc,
-templates: tmpl,
-}
+return &Handler{templates: tmpl}
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
@@ -29,31 +23,26 @@ if r.URL.Path != "/" {
 http.NotFound(w, r)
 return
 }
+data := map[string]interface{}{"Title": "Beranda"}
 
-data := map[string]interface{}{
-"Title": "Beranda",
-}
-
-// Fetch site settings for homepage stats
-ss, err := h.strapi.GetSiteSetting()
+ss, err := db.GetSiteSetting()
 if err != nil {
-log.Printf("strapi GetSiteSetting: %v", err)
+log.Printf("db GetSiteSetting: %v", err)
 } else {
 data["SiteSetting"] = ss
 }
 
-// Fetch latest announcements
-announcements, err := h.strapi.GetAnnouncements(5)
+announcements, err := db.GetAnnouncements(5, true)
 if err != nil {
-log.Printf("strapi GetAnnouncements: %v", err)
+log.Printf("db GetAnnouncements: %v", err)
 } else {
 items := make([]map[string]interface{}, 0, len(announcements))
 for _, a := range announcements {
 items = append(items, map[string]interface{}{
-"ID":        a.ID,
+"ID":        a.ID.Hex(),
 "Title":     a.Title,
 "Content":   a.Content,
-"CreatedAt": a.CreatedAt,
+"CreatedAt": a.CreatedAt.Format("2006-01-02"),
 })
 }
 data["Announcements"] = items
@@ -65,29 +54,26 @@ h.templates.ExecuteTemplate(w, "index.html", data)
 func (h *Handler) About(w http.ResponseWriter, r *http.Request) {
 data := map[string]interface{}{"Title": "Tentang Kami"}
 
-// Site settings (sejarah, visi, misi, stats)
-ss, err := h.strapi.GetSiteSetting()
+ss, err := db.GetSiteSetting()
 if err != nil {
-log.Printf("strapi GetSiteSetting: %v", err)
+log.Printf("db GetSiteSetting: %v", err)
 } else {
 data["SiteSetting"] = ss
 }
 
-// Departments
-depts, err := h.strapi.GetDepartments()
+depts, err := db.GetDepartments()
 if err != nil {
-log.Printf("strapi GetDepartments: %v", err)
+log.Printf("db GetDepartments: %v", err)
 } else {
 data["Departments"] = depts
 }
 
-// Officers — split into inti and departemen
-officers, err := h.strapi.GetOfficers()
+officers, err := db.GetOfficers()
 if err != nil {
-log.Printf("strapi GetOfficers: %v", err)
+log.Printf("db GetOfficers: %v", err)
 } else {
-var inti []strapi.Officer
-var dept []strapi.Officer
+var inti []db.Officer
+var dept []db.Officer
 for _, o := range officers {
 if o.Tier == "departemen" {
 dept = append(dept, o)
@@ -112,13 +98,12 @@ data := map[string]interface{}{"Title": "Hubungi Kami"}
 h.templates.ExecuteTemplate(w, "contact.html", data)
 }
 
-// AnnouncementsAPI proxies Strapi announcements as JSON.
 func (h *Handler) AnnouncementsAPI(w http.ResponseWriter, r *http.Request) {
 w.Header().Set("Content-Type", "application/json")
 
-announcements, err := h.strapi.GetAllAnnouncements()
+announcements, err := db.GetAnnouncements(0, true)
 if err != nil {
-log.Printf("strapi GetAllAnnouncements: %v", err)
+log.Printf("db GetAnnouncements: %v", err)
 json.NewEncoder(w).Encode([]interface{}{})
 return
 }
@@ -126,10 +111,10 @@ return
 results := make([]map[string]interface{}, 0, len(announcements))
 for _, a := range announcements {
 results = append(results, map[string]interface{}{
-"id":         a.ID,
+"id":         a.ID.Hex(),
 "title":      a.Title,
 "content":    a.Content,
-"created_at": a.CreatedAt,
+"created_at": a.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 })
 }
 json.NewEncoder(w).Encode(results)
