@@ -47,7 +47,15 @@ mux.HandleFunc("/pengumuman", h.Pengumuman)
 mux.HandleFunc("/periode", h.Periode)
 mux.HandleFunc("/periode/", h.PeriodeDetail)
 
+
+// New pages
+mux.HandleFunc("/program", h.Program)
+mux.HandleFunc("/faq-beasiswa", h.FAQ)
+mux.HandleFunc("/statistik", h.Statistik)
+mux.HandleFunc("/alumni", h.Alumni)
+
 // Public API
+
 mux.HandleFunc("/api/announcements", h.AnnouncementsAPI)
 
 // Admin panel
@@ -56,11 +64,22 @@ mux.HandleFunc("/admin/logout", admin.Logout)
 mux.HandleFunc("/admin/dashboard", admin.Dashboard)
 
 // CMS API
+
+// CMS newly added API
+mux.HandleFunc("/api/cms/programs", cms.Programs)
+mux.HandleFunc("/api/cms/programs/", cms.Programs)
+mux.HandleFunc("/api/cms/faqs", cms.FAQs)
+mux.HandleFunc("/api/cms/faqs/", cms.FAQs)
+mux.HandleFunc("/api/cms/stats", cms.Stats)
+mux.HandleFunc("/api/cms/stats/", cms.Stats)
+
 mux.HandleFunc("/api/cms/global-setting", cms.GlobalSettingHandler)
 mux.HandleFunc("/api/cms/period-about", cms.PeriodAboutHandler)
 mux.HandleFunc("/api/cms/departments", cms.Departments)
 mux.HandleFunc("/api/cms/departments/", cms.Departments)
-mux.HandleFunc("/api/cms/members", cms.Members)
+mux.HandleFunc("/api/cms/batch-update-members", cms.BatchUpdateMembers)
+	mux.HandleFunc("/api/cms/batch-update-departments", cms.BatchUpdateDepartments)
+	mux.HandleFunc("/api/cms/members", cms.Members)
 mux.HandleFunc("/api/cms/members/", cms.Members)
 mux.HandleFunc("/api/cms/announcements", cms.Announcements)
 mux.HandleFunc("/api/cms/announcements/", cms.Announcements)

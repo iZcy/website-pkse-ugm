@@ -413,6 +413,10 @@
         <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>
         <textarea id="dept-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
       </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Urutan</label>
+        <input type="number" id="dept-order" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
       <div class="flex gap-3 pt-2">
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
         <button type="button" onclick="closeModal('modalDepartemen')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
@@ -450,33 +454,6 @@
       <div class="flex gap-3 pt-2">
         <button onclick="submitAnggota()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
         <button type="button" onclick="closeModal('modalAnggota')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Assign Member -->
-<div id="modalAssignMember" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 class="text-lg font-bold">Assign Anggota ke Departemen</h3>
-      <button onclick="closeModal('modalAssignMember')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="p-6 space-y-4">
-      <input type="hidden" id="assign-dept-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Anggota</label>
-        <select id="assign-member-id" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></select>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Jabatan</label>
-        <input type="text" id="assign-member-position" placeholder="Contoh: Koordinator" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button onclick="submitAssignMember()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Assign</button>
-        <button type="button" onclick="closeModal('modalAssignMember')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
       </div>
     </div>
   </div>
@@ -970,183 +947,36 @@ async function saveStruktur() {
 }
 
 // ── DEPARTEMEN ───────────────────────────────────────────────────────────────
-let deptSortInstance = null;
-let memberSortInstances = [];
-let deptCache = [];
-let memberCache = [];
-
-function getMembersByDept(deptName) {
-  return memberCache
-    .filter(m => (m.department || '') === deptName)
-    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-}
-
-function renderDeptMemberItem(m) {
-  return `<li class="dept-member-item flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2" data-member-id="${m.id}">
-    <div class="flex items-center gap-2 min-w-0">
-      <button type="button" class="member-drag text-slate-400 hover:text-slate-600" title="Geser urutan">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 15h8"/></svg>
-      </button>
-      ${m.photo_url
-        ? `<img src="${m.photo_url}" class="w-8 h-8 rounded-full object-cover">`
-        : `<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-xs">N/A</div>`}
-      <div class="min-w-0">
-        <p class="text-sm font-medium text-slate-800 truncate">${escHtml(m.full_name || '')}</p>
-        <p class="text-xs text-slate-500 truncate">${escHtml(m.position || '-')}</p>
-      </div>
-    </div>
-    <button onclick="unassignMember('${m.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium">Lepas</button>
-  </li>`;
-}
-
-function destroyDeptSortables() {
-  if (deptSortInstance) {
-    deptSortInstance.destroy();
-    deptSortInstance = null;
-  }
-  memberSortInstances.forEach(s => s.destroy());
-  memberSortInstances = [];
-}
-
-async function persistDepartmentOrderFromDom() {
-  const cards = Array.from(document.querySelectorAll('#dept-cards .dept-card'));
-  if (!cards.length) return;
-  for (let idx = 0; idx < cards.length; idx++) {
-    const id = cards[idx].dataset.deptId;
-    await api('PUT', `/api/cms/departments/${id}`, { sort_order: idx });
-  }
-}
-
-async function persistMemberOrderFromList(ul, deptName) {
-  const ids = Array.from(ul.querySelectorAll('.dept-member-item')).map(li => li.dataset.memberId);
-  if (!ids.length) return;
-  for (let idx = 0; idx < ids.length; idx++) {
-    await api('PUT', `/api/cms/members/${ids[idx]}`, {
-      sort_order: idx,
-      department: deptName
-    });
-  }
-}
-
-async function handleMemberDrop(evt) {
-  const movedId = evt.item?.dataset?.memberId;
-  const fromDept = evt.from?.dataset?.deptName || '';
-  const toDept = evt.to?.dataset?.deptName || '';
-  if (!movedId) return;
-
-  if (fromDept !== toDept) {
-    const moved = memberCache.find(m => m.id === movedId);
-    await api('PUT', `/api/cms/members/${movedId}`, {
-      department: toDept,
-      position: moved?.position || '',
-      sort_order: evt.newIndex || 0
-    });
-  }
-
-  if (evt.from && evt.from.classList.contains('dept-member-list')) {
-    await persistMemberOrderFromList(evt.from, fromDept);
-  }
-  if (evt.to && evt.to.classList.contains('dept-member-list') && evt.to !== evt.from) {
-    await persistMemberOrderFromList(evt.to, toDept);
-  }
-  await loadDepartemen();
-  await loadAnggota();
-}
-
-function initDeptSortables() {
-  destroyDeptSortables();
-  const deptCards = document.getElementById('dept-cards');
-  if (deptCards) {
-    deptSortInstance = Sortable.create(deptCards, {
-      animation: 180,
-      handle: '.dept-drag',
-      draggable: '.dept-card',
-      onEnd: async () => {
-        try {
-          await persistDepartmentOrderFromDom();
-          await loadDepartemen();
-        } catch (ex) {
-          alert('Gagal menyimpan urutan departemen: ' + ex.message);
-        }
-      }
-    });
-  }
-
-  document.querySelectorAll('.dept-member-list').forEach(ul => {
-    const sortable = Sortable.create(ul, {
-      group: 'members-cross-dept',
-      animation: 180,
-      handle: '.member-drag',
-      draggable: '.dept-member-item',
-      onEnd: async evt => {
-        try {
-          await handleMemberDrop(evt);
-        } catch (ex) {
-          alert('Gagal menyimpan urutan anggota: ' + ex.message);
-        }
-      }
-    });
-    memberSortInstances.push(sortable);
-  });
-}
-
 async function loadDepartemen() {
   const el = document.getElementById('list-departemen');
   try {
-    const [depts, members] = await Promise.all([
-      api('GET', `/api/cms/departments?period=${PERIOD}`),
-      api('GET', `/api/cms/members?period=${PERIOD}`)
-    ]);
-    deptCache = depts || [];
-    memberCache = members || [];
-
-    if (!deptCache.length) {
-      el.innerHTML = emptyHtml('Belum ada departemen.');
-      destroyDeptSortables();
-      return;
-    }
-
-    el.innerHTML = `<div id="dept-cards" class="space-y-3">${deptCache.map(d => {
-      const deptMembers = getMembersByDept(d.name);
-      return `<div class="dept-card bg-white rounded-xl p-5 shadow-sm border border-slate-200 space-y-3" data-dept-id="${d.id}" data-dept-name="${escHtml(d.name)}">
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex items-start gap-2 min-w-0">
-            <button type="button" class="dept-drag mt-0.5 text-slate-400 hover:text-slate-600" title="Geser urutan departemen">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 15h8"/></svg>
-            </button>
-            <div class="min-w-0">
-              <h3 class="font-semibold text-slate-800">${escHtml(d.name)}</h3>
-              ${d.description ? `<p class="text-slate-500 text-sm">${escHtml(d.description)}</p>` : ''}
-            </div>
-          </div>
-          <div class="flex gap-2 flex-shrink-0">
-            <button onclick="openAssignMemberModal('${d.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium">Assign Anggota</button>
-            <button onclick='editDept(${JSON.stringify(d)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            </button>
-            <button onclick="deleteDept('${d.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-          </div>
+    const items = await api('GET', `/api/cms/departments?period=${PERIOD}`);
+    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada departemen.'); return; }
+    el.innerHTML = items.map(d => `
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between gap-4">
+        <div>
+          <h3 class="font-semibold text-slate-800">${escHtml(d.name)}</h3>
+          ${d.description ? `<p class="text-slate-500 text-sm">${escHtml(d.description)}</p>` : ''}
         </div>
-        <ul class="dept-member-list space-y-2 min-h-[40px] rounded-lg bg-slate-50 p-2" data-dept-name="${escHtml(d.name)}">
-          ${deptMembers.length
-            ? deptMembers.map(renderDeptMemberItem).join('')
-            : '<li class="text-xs text-slate-400 p-2">Belum ada anggota di departemen ini.</li>'}
-        </ul>
-      </div>`;
-    }).join('')}</div>`;
-
-    initDeptSortables();
-  } catch (e) {
-    el.innerHTML = errHtml(e.message);
-  }
+        <div class="flex gap-2 flex-shrink-0">
+          <button onclick='editDept(${JSON.stringify(d)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button onclick="deleteDept('${d.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+    const dl = document.getElementById('deptSuggestions');
+    if (dl) dl.innerHTML = items.map(d => `<option value="${escHtml(d.name)}">`).join('');
+  } catch(e) { el.innerHTML = errHtml(e.message); }
 }
 
 function resetDeptForm() {
   document.getElementById('dept-id').value = '';
   document.getElementById('dept-name').value = '';
   document.getElementById('dept-desc').value = '';
+  document.getElementById('dept-order').value = '0';
   document.getElementById('modalDeptTitle').textContent = 'Tambah Departemen';
 }
 
@@ -1154,6 +984,7 @@ function editDept(d) {
   document.getElementById('dept-id').value = d.id;
   document.getElementById('dept-name').value = d.name;
   document.getElementById('dept-desc').value = d.description || '';
+  document.getElementById('dept-order').value = d.sort_order || 0;
   document.getElementById('modalDeptTitle').textContent = 'Edit Departemen';
   openModal('modalDepartemen');
 }
@@ -1161,7 +992,7 @@ function editDept(d) {
 async function deleteDept(id) {
   if (!confirm('Hapus departemen ini?')) return;
   await api('DELETE', `/api/cms/departments/${id}`);
-  await loadDepartemen();
+  loadDepartemen();
 }
 
 document.getElementById('formDepartemen').addEventListener('submit', async e => {
@@ -1170,78 +1001,30 @@ document.getElementById('formDepartemen').addEventListener('submit', async e => 
   const body = {
     name: document.getElementById('dept-name').value,
     description: document.getElementById('dept-desc').value,
+    sort_order: parseInt(document.getElementById('dept-order').value) || 0,
     period_label: PERIOD
   };
-  if (!id) body.sort_order = deptCache.length;
   try {
     if (id) await api('PUT', `/api/cms/departments/${id}`, body);
     else await api('POST', '/api/cms/departments', body);
     closeModal('modalDepartemen');
     resetDeptForm();
-    await loadDepartemen();
-  } catch (ex) { alert('Error: ' + ex.message); }
+    loadDepartemen();
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
-
-function openAssignMemberModal(deptId) {
-  const dept = deptCache.find(d => d.id === deptId);
-  if (!dept) return;
-  const available = memberCache.filter(m => !(m.department || ''));
-  const sel = document.getElementById('assign-member-id');
-  document.getElementById('assign-dept-id').value = deptId;
-  document.getElementById('assign-member-position').value = '';
-
-  if (!available.length) {
-    sel.innerHTML = '<option value="">Tidak ada anggota yang belum ditempatkan</option>';
-  } else {
-    sel.innerHTML = available.map(m => `<option value="${m.id}">${escHtml(m.full_name)}${m.nickname ? ` (${escHtml(m.nickname)})` : ''}</option>`).join('');
-  }
-  openModal('modalAssignMember');
-}
-
-async function submitAssignMember() {
-  const deptId = document.getElementById('assign-dept-id').value;
-  const memberId = document.getElementById('assign-member-id').value;
-  const position = document.getElementById('assign-member-position').value.trim();
-  const dept = deptCache.find(d => d.id === deptId);
-  if (!dept || !memberId) {
-    alert('Pilih anggota yang valid.');
-    return;
-  }
-
-  const currentCount = getMembersByDept(dept.name).length;
-  await api('PUT', `/api/cms/members/${memberId}`, {
-    department: dept.name,
-    position,
-    sort_order: currentCount
-  });
-  closeModal('modalAssignMember');
-  await loadDepartemen();
-  await loadAnggota();
-}
-
-async function unassignMember(memberId) {
-  if (!confirm('Lepas anggota dari departemen?')) return;
-  await api('PUT', `/api/cms/members/${memberId}`, {
-    department: '',
-    position: '',
-    sort_order: 0
-  });
-  await loadDepartemen();
-  await loadAnggota();
-}
 
 // ── ANGGOTA ──────────────────────────────────────────────────────────────────
 async function loadAnggota() {
   const el = document.getElementById('list-anggota');
   try {
     const items = await api('GET', `/api/cms/members?period=${PERIOD}`);
-    memberCache = items || [];
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada anggota.'); return; }
     el.innerHTML = `<table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-500 text-xs uppercase tracking-wider">
         <th class="pb-3 pr-4 font-medium">Foto</th>
         <th class="pb-3 pr-4 font-medium">Nama</th>
-        <th class="pb-3 pr-4 font-medium">Penempatan</th>
+        <th class="pb-3 pr-4 font-medium">Jabatan</th>
+        <th class="pb-3 pr-4 font-medium">Departemen</th>
         <th class="pb-3 font-medium">Aksi</th>
       </tr></thead>
       <tbody class="divide-y divide-slate-100">
@@ -1250,16 +1033,14 @@ async function loadAnggota() {
           <td class="py-3 pr-4">
             ${m.photo_url
               ? `<img src="${m.photo_url}" class="w-10 h-10 rounded-full object-cover">`
-              : `<div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-xs">N/A</div>`}
+              : `<div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-lg">👤</div>`}
           </td>
           <td class="py-3 pr-4">
             <div class="font-medium text-slate-800">${escHtml(m.full_name)}</div>
             ${m.nickname ? `<div class="text-xs text-slate-400">${escHtml(m.nickname)}</div>` : ''}
           </td>
-          <td class="py-3 pr-4 text-slate-600">
-            ${m.department ? `<div class="text-sm">${escHtml(m.department)}</div>` : '<div class="text-xs text-amber-600">Belum ditempatkan</div>'}
-            ${m.position ? `<div class="text-xs text-slate-400">${escHtml(m.position)}</div>` : ''}
-          </td>
+          <td class="py-3 pr-4 text-slate-600">${escHtml(m.position)}</td>
+          <td class="py-3 pr-4 text-slate-600">${escHtml(m.department)}</td>
           <td class="py-3">
             <div class="flex gap-1">
               <button onclick='editAnggota(${JSON.stringify(m)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
@@ -1273,13 +1054,16 @@ async function loadAnggota() {
         </tr>`).join('')}
       </tbody>
     </table>`;
-  } catch (e) { el.innerHTML = errHtml(e.message); }
+  } catch(e) { el.innerHTML = errHtml(e.message); }
 }
 
 function openAnggotaModal() {
   document.getElementById('anggota-id').value = '';
   document.getElementById('anggota-fullname').value = '';
   document.getElementById('anggota-nickname').value = '';
+  document.getElementById('anggota-position').value = '';
+  document.getElementById('anggota-department').value = '';
+  document.getElementById('anggota-order').value = '0';
   document.getElementById('modalAnggotaTitle').textContent = 'Tambah Anggota';
   createImagePicker('picker-anggota-photo');
   openModal('modalAnggota');
@@ -1289,6 +1073,9 @@ function editAnggota(m) {
   document.getElementById('anggota-id').value = m.id;
   document.getElementById('anggota-fullname').value = m.full_name;
   document.getElementById('anggota-nickname').value = m.nickname || '';
+  document.getElementById('anggota-position').value = m.position;
+  document.getElementById('anggota-department').value = m.department || '';
+  document.getElementById('anggota-order').value = m.sort_order || 0;
   document.getElementById('modalAnggotaTitle').textContent = 'Edit Anggota';
   createImagePicker('picker-anggota-photo', { initialUrl: m.photo_url || '' });
   openModal('modalAnggota');
@@ -1299,24 +1086,25 @@ async function submitAnggota() {
   const body = {
     full_name: document.getElementById('anggota-fullname').value,
     nickname: document.getElementById('anggota-nickname').value,
+    position: document.getElementById('anggota-position').value,
+    department: document.getElementById('anggota-department').value,
     photo_url: pickerGetUrl('picker-anggota-photo'),
+    sort_order: parseInt(document.getElementById('anggota-order').value) || 0,
     period_label: PERIOD
   };
-  if (!body.full_name) { alert('Nama harus diisi'); return; }
+  if (!body.full_name || !body.position) { alert('Nama dan jabatan harus diisi'); return; }
   try {
     if (id) await api('PUT', `/api/cms/members/${id}`, body);
     else await api('POST', '/api/cms/members', body);
     closeModal('modalAnggota');
-    await loadAnggota();
-    await loadDepartemen();
-  } catch (ex) { alert('Error: ' + ex.message); }
+    loadAnggota();
+  } catch(ex) { alert('Error: ' + ex.message); }
 }
 
 async function deleteAnggota(id) {
   if (!confirm('Hapus anggota ini?')) return;
   await api('DELETE', `/api/cms/members/${id}`);
-  await loadAnggota();
-  await loadDepartemen();
+  loadAnggota();
 }
 
 // ── MANAJEMEN PERIODE ────────────────────────────────────────────────────────

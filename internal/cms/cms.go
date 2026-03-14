@@ -593,6 +593,9 @@ return
 r.ParseMultipartForm(5 << 20) // 5 MB
 file, header, err := r.FormFile("file")
 if err != nil {
+file, header, err = r.FormFile("files[0]")
+}
+if err != nil {
 writeJSON(w, 400, map[string]string{"error": "file required"})
 return
 }
@@ -627,4 +630,188 @@ r := b.String()
 if len(r) > 60 { r = r[:60] }
 if r == "" { r = "upload" }
 return r
+}
+
+
+// ── Batch Updates ────────────────────────────────────────────────────────────
+
+func BatchUpdateMembers(w http.ResponseWriter, r *http.Request) {
+        _, _, ok := requireAny(w, r)
+        if !ok { return }
+        if r.Method != http.MethodPut {
+                writeJSON(w, 405, map[string]string{"error": "Method not allowed"})
+                return
+        }
+        var req []map[string]any
+        if err := readJSON(r, &req); err != nil {
+                writeJSON(w, 400, map[string]string{"error": err.Error()})
+                return
+        }
+        for _, m := range req {
+                id, ok := m["id"].(string)
+                if !ok { continue }
+                delete(m, "id")
+                db.UpdateMember(id, m)
+        }
+        writeJSON(w, 200, map[string]string{"status": "ok"})
+}
+
+func BatchUpdateDepartments(w http.ResponseWriter, r *http.Request) {
+        _, _, ok := requireAny(w, r)
+        if !ok { return }
+        if r.Method != http.MethodPut {
+                writeJSON(w, 405, map[string]string{"error": "Method not allowed"})
+                return
+        }
+        var req []map[string]any
+        if err := readJSON(r, &req); err != nil {
+                writeJSON(w, 400, map[string]string{"error": err.Error()})
+                return
+        }
+        for _, d := range req {
+                id, ok := d["id"].(string)
+                if !ok { continue }
+                delete(d, "id")
+                db.UpdateDepartment(id, d)
+        }
+        writeJSON(w, 200, map[string]string{"status": "ok"})
+}
+
+
+// --- PROGRAMS ---
+func Programs(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case http.MethodGet:
+        pl := r.URL.Query().Get("period")
+        items, err := db.GetPrograms(pl)
+        if err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(items)
+    case http.MethodPost:
+        var p db.Program
+        if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.InsertProgram(&p); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(p)
+    case http.MethodPut:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/programs/")
+        var p db.Program
+        if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.UpdateProgram(id, &p); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    case http.MethodDelete:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/programs/")
+        if err := db.DeleteProgram(id); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    default:
+        http.Error(w, "Method not allowed", 405)
+    }
+}
+
+// --- FAQS ---
+func FAQs(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case http.MethodGet:
+        pl := r.URL.Query().Get("period")
+        items, err := db.GetFAQs(pl)
+        if err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(items)
+    case http.MethodPost:
+        var f db.FAQ
+        if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.InsertFAQ(&f); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(f)
+    case http.MethodPut:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/faqs/")
+        var f db.FAQ
+        if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.UpdateFAQ(id, &f); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    case http.MethodDelete:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/faqs/")
+        if err := db.DeleteFAQ(id); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    default:
+        http.Error(w, "Method not allowed", 405)
+    }
+}
+
+// --- STATS ---
+func Stats(w http.ResponseWriter, r *http.Request) {
+    switch r.Method {
+    case http.MethodGet:
+        pl := r.URL.Query().Get("period")
+        items, err := db.GetStats(pl)
+        if err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(items)
+    case http.MethodPost:
+        var s db.StatData
+        if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.InsertStat(&s); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(s)
+    case http.MethodPut:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
+        var s db.StatData
+        if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.UpdateStat(id, &s); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    case http.MethodDelete:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
+        if err := db.DeleteStat(id); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    default:
+        http.Error(w, "Method not allowed", 405)
+    }
 }

@@ -1,0 +1,44 @@
+{{define "statistik.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+{{template "head" .}}
+<title>Statistik - PKSE UGM</title>
+</head>
+<body class="bg-gray-50 text-gray-800">
+{{template "navbar" .}}
+<main class="container mx-auto px-4 py-8 mt-24 max-w-5xl">
+<h1 class="text-4xl font-bold mb-8 w-full text-center text-primary">Statistik Komunitas</h1>
+
+<div class="mb-8 flex justify-center">
+  <form id="periodForm" class="flex items-center space-x-3 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+    <label for="periodSelect" class="text-sm font-medium text-gray-600">Pilih Periode:</label>
+    <div class="relative">
+      <select id="periodSelect" name="period" onchange="document.getElementById('periodForm').submit()" class="appearance-none bg-gray-50 border border-gray-200 text-gray-800 py-2 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer font-medium">
+        {{range .Periods}}
+        <option value="{{.Label}}" {{if eq .Label $.SelectedPeriod}}selected{{end}}>{{.DisplayName}}</option>
+        {{end}}
+      </select>
+    </div>
+  </form>
+</div>
+
+{{if eq (len .Stats) 0}}
+  <div class="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
+    <p class="text-gray-500">Belum ada data statistik pada periode ini.</p>
+  </div>
+{{else}}
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+    {{range .Stats}}
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform duration-300">
+      <div class="text-4xl font-extrabold text-accent mb-2">{{.Value}}</div>
+      <div class="text-sm text-gray-500 uppercase tracking-wider font-semibold">{{.Label}}</div>
+    </div>
+    {{end}}
+  </div>
+{{end}}
+</main>
+{{template "footer" .}}
+</body>
+</html>
+{{end}}

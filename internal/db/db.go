@@ -557,3 +557,184 @@ return err
 _, err = col("articles").DeleteOne(ctx, bson.M{"_id": oid})
 return err
 }
+
+
+type Program struct {
+ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+PeriodLabel string             `bson:"period_label"  json:"period_label"`
+Title       string             `bson:"title"         json:"title"`
+Description string             `bson:"description"   json:"description"`
+Order       int                `bson:"order"         json:"order"`
+}
+
+type FAQ struct {
+ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+PeriodLabel string             `bson:"period_label"  json:"period_label"`
+Question    string             `bson:"question"      json:"question"`
+Answer      string             `bson:"answer"        json:"answer"`
+Order       int                `bson:"order"         json:"order"`
+}
+
+type StatData struct {
+ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+PeriodLabel string             `bson:"period_label"  json:"period_label"`
+Label       string             `bson:"label"         json:"label"`
+Value       string             `bson:"value"         json:"value"`
+Order       int                `bson:"order"         json:"order"`
+}
+
+// --- DB FUNCS FOR PROGRAMS ---
+func GetPrograms(periodLabel string) ([]Program, error) {
+col := database.Collection("programs")
+filter := bson.M{}
+if periodLabel != "" {
+filter["period_label"] = periodLabel
+}
+opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
+cur, err := col.Find(context.Background(), filter, opts)
+if err != nil {
+return nil, err
+}
+var res []Program
+err = cur.All(context.Background(), &res)
+if res == nil {
+res = []Program{}
+}
+return res, err
+}
+func InsertProgram(p *Program) error {
+col := database.Collection("programs")
+res, err := col.InsertOne(context.Background(), p)
+if err == nil {
+p.ID = res.InsertedID.(primitive.ObjectID)
+}
+return err
+}
+func UpdateProgram(id string, p *Program) error {
+oid, err := primitive.ObjectIDFromHex(id)
+if err != nil {
+return err
+}
+col := database.Collection("programs")
+update := bson.M{"$set": bson.M{
+"period_label": p.PeriodLabel,
+"title":        p.Title,
+"description":  p.Description,
+"order":        p.Order,
+}}
+_, err = col.UpdateByID(context.Background(), oid, update)
+return err
+}
+func DeleteProgram(id string) error {
+oid, err := primitive.ObjectIDFromHex(id)
+if err != nil {
+return err
+}
+col := database.Collection("programs")
+_, err = col.DeleteOne(context.Background(), bson.M{"_id": oid})
+return err
+}
+
+// --- DB FUNCS FOR FAQS ---
+func GetFAQs(periodLabel string) ([]FAQ, error) {
+col := database.Collection("faqs")
+filter := bson.M{}
+if periodLabel != "" {
+filter["period_label"] = periodLabel
+}
+opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
+cur, err := col.Find(context.Background(), filter, opts)
+if err != nil {
+return nil, err
+}
+var res []FAQ
+err = cur.All(context.Background(), &res)
+if res == nil {
+res = []FAQ{}
+}
+return res, err
+}
+func InsertFAQ(f *FAQ) error {
+col := database.Collection("faqs")
+res, err := col.InsertOne(context.Background(), f)
+if err == nil {
+f.ID = res.InsertedID.(primitive.ObjectID)
+}
+return err
+}
+func UpdateFAQ(id string, f *FAQ) error {
+oid, err := primitive.ObjectIDFromHex(id)
+if err != nil {
+return err
+}
+col := database.Collection("faqs")
+update := bson.M{"$set": bson.M{
+"period_label": f.PeriodLabel,
+"question":     f.Question,
+"answer":       f.Answer,
+"order":        f.Order,
+}}
+_, err = col.UpdateByID(context.Background(), oid, update)
+return err
+}
+func DeleteFAQ(id string) error {
+oid, err := primitive.ObjectIDFromHex(id)
+if err != nil {
+return err
+}
+col := database.Collection("faqs")
+_, err = col.DeleteOne(context.Background(), bson.M{"_id": oid})
+return err
+}
+
+// --- DB FUNCS FOR STATS ---
+func GetStats(periodLabel string) ([]StatData, error) {
+col := database.Collection("stats")
+filter := bson.M{}
+if periodLabel != "" {
+filter["period_label"] = periodLabel
+}
+opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
+cur, err := col.Find(context.Background(), filter, opts)
+if err != nil {
+return nil, err
+}
+var res []StatData
+err = cur.All(context.Background(), &res)
+if res == nil {
+res = []StatData{}
+}
+return res, err
+}
+func InsertStat(s *StatData) error {
+col := database.Collection("stats")
+res, err := col.InsertOne(context.Background(), s)
+if err == nil {
+s.ID = res.InsertedID.(primitive.ObjectID)
+}
+return err
+}
+func UpdateStat(id string, s *StatData) error {
+oid, err := primitive.ObjectIDFromHex(id)
+if err != nil {
+return err
+}
+col := database.Collection("stats")
+update := bson.M{"$set": bson.M{
+"period_label": s.PeriodLabel,
+"label":        s.Label,
+"value":        s.Value,
+"order":        s.Order,
+}}
+_, err = col.UpdateByID(context.Background(), oid, update)
+return err
+}
+func DeleteStat(id string) error {
+oid, err := primitive.ObjectIDFromHex(id)
+if err != nil {
+return err
+}
+col := database.Collection("stats")
+_, err = col.DeleteOne(context.Background(), bson.M{"_id": oid})
+return err
+}

@@ -178,3 +178,50 @@ return
 w.Header().Set("Content-Type", "application/json")
 json.NewEncoder(w).Encode(items)
 }
+
+func (h *Handler) Program(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+sel := r.URL.Query().Get("period")
+if sel == "" {
+    sel = h.activePeriodLabel()
+}
+data["SelectedPeriod"] = sel
+items, _ := db.GetPrograms(sel)
+data["Programs"] = items
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+h.render(w, "program.html", data)
+}
+
+func (h *Handler) FAQ(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+sel := r.URL.Query().Get("period")
+if sel == "" {
+    sel = h.activePeriodLabel()
+}
+data["SelectedPeriod"] = sel
+items, _ := db.GetFAQs(sel)
+data["FAQs"] = items
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+h.render(w, "faq.html", data)
+}
+
+func (h *Handler) Statistik(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+sel := r.URL.Query().Get("period")
+if sel == "" {
+    sel = h.activePeriodLabel()
+}
+data["SelectedPeriod"] = sel
+items, _ := db.GetStats(sel)
+data["Stats"] = items
+periods, _ := db.GetPeriods()
+data["Periods"] = periods
+h.render(w, "statistik.html", data)
+}
+
+func (h *Handler) Alumni(w http.ResponseWriter, r *http.Request) {
+data := h.baseData()
+h.render(w, "alumni.html", data)
+}
