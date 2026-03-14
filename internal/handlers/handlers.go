@@ -14,7 +14,12 @@ tmpl *template.Template
 }
 
 func New() *Handler {
-tmpl := template.Must(template.ParseGlob("templates/*.html"))
+funcMap := template.FuncMap{
+    "add": func(a, b int) int { return a + b },
+    "sub": func(a, b int) int { return a - b },
+    "mod": func(a, b int) int { return a % b },
+}
+tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 return &Handler{tmpl: tmpl}
 }
 

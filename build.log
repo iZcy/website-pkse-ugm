@@ -1,0 +1,48 @@
+Compose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+#0 building with "default" instance using docker driver
+
+#1 [go-frontend internal] load build definition from Dockerfile
+#1 transferring dockerfile: 869B done
+#1 DONE 0.1s
+
+#2 [go-frontend internal] load metadata for docker.io/library/golang:1.24-alpine
+#2 DONE 0.0s
+
+#3 [go-frontend internal] load metadata for docker.io/library/alpine:3.21
+#3 DONE 1.6s
+
+#4 [go-frontend internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.2s
+
+#5 [go-frontend build 1/6] FROM docker.io/library/golang:1.24-alpine
+#5 DONE 0.0s
+
+#6 [go-frontend stage-1 1/6] FROM docker.io/library/alpine:3.21@sha256:c3f8e73fdb79deaebaa2037150150191b9dcbfba68b4a46d70103204c53f4709
+#6 DONE 0.0s
+
+#7 [go-frontend internal] load build context
+#7 transferring context: 36.38kB 0.1s done
+#7 DONE 0.2s
+
+#8 [go-frontend build 2/6] WORKDIR /app
+#8 CACHED
+
+#9 [go-frontend build 3/6] COPY go.mod ./
+#9 CACHED
+
+#10 [go-frontend build 4/6] RUN go mod download
+#10 CACHED
+
+#11 [go-frontend build 5/6] COPY . .
+#11 DONE 2.5s
+
+#12 [go-frontend build 6/6] RUN GOMAXPROCS=1 GOCACHE=off CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o webapp-prod .
+#12 5.198 build cache is disabled by GOCACHE=off, but required as of Go 1.12
+#12 ERROR: process "/bin/sh -c GOMAXPROCS=1 GOCACHE=off CGO_ENABLED=0 GOOS=linux go build -ldflags=\"-s -w\" -o webapp-prod ." did not complete successfully: exit code: 1
+------
+ > [go-frontend build 6/6] RUN GOMAXPROCS=1 GOCACHE=off CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o webapp-prod .:
+5.198 build cache is disabled by GOCACHE=off, but required as of Go 1.12
+------
+failed to solve: process "/bin/sh -c GOMAXPROCS=1 GOCACHE=off CGO_ENABLED=0 GOOS=linux go build -ldflags=\"-s -w\" -o webapp-prod ." did not complete successfully: exit code: 1

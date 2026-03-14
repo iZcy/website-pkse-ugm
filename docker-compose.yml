@@ -25,6 +25,8 @@ services:
       MONGO_DB: webapp
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
+    volumes:
+      - ./templates:/app/templates
     depends_on:
       mongo:
         condition: service_healthy
