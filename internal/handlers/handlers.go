@@ -202,17 +202,31 @@ func (h *Handler) FAQ(w http.ResponseWriter, r *http.Request) {
 	data := h.baseData()
 	sel := h.activePeriodLabel()
 	data["SelectedPeriod"] = sel
-	
-	itemsPeriod, _ := db.GetFAQs(sel)
-	itemsGlobal, _ := db.GetFAQs("GLOBAL")
-	
+
 	var combined []db.FAQ
-	combined = append(combined, itemsPeriod...)
+	if sel != "" {
+		itemsPeriod, _ := db.GetFAQs(sel)
+		combined = append(combined, itemsPeriod...)
+	}
+	itemsGlobal, _ := db.GetFAQs("GLOBAL")
 	combined = append(combined, itemsGlobal...)
-	
 	data["FAQs"] = combined
 	// we do NOT provide data["Periods"] so frontend won't have a selector (if it relies on it)
 	h.render(w, "faq.html", data)
+}
+
+func (h *Handler) ShortLinkRedirect(w http.ResponseWriter, r *http.Request) {
+	code := strings.Trim(strings.TrimPrefix(r.URL.Path, "/l/"), "/")
+	if code == "" {
+		http.NotFound(w, r)
+		return
+	}
+	item, err := db.GetShortLinkByCode(code)
+	if err != nil || item == nil || item.TargetURL == "" {
+		http.NotFound(w, r)
+		return
+	}
+	http.Redirect(w, r, item.TargetURL, http.StatusFound)
 }
 
 func (h *Handler) Statistik(w http.ResponseWriter, r *http.Request) {

@@ -16,26 +16,62 @@
   
 
   <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100" x-data="{ active: null }">
+    <div class="mb-5">
+      <input
+        id="faq-search-input"
+        type="text"
+        placeholder="Cari pertanyaan atau jawaban..."
+        class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+      >
+    </div>
     {{if eq (len .FAQs) 0}}
       <div class="text-center text-gray-400 py-8">Belum ada FAQ.</div>
     {{else}}
-      <div class="space-y-4">
+      <div id="faq-list" class="space-y-4">
         {{range $index, $faq := .FAQs}}
-        <div class="border border-gray-100 rounded-2xl overflow-hidden transition-all" :class="active === {{$index}} ? 'bg-brand-50 border-brand-200' : 'bg-white'">
+        <div
+          class="faq-item border border-gray-100 rounded-2xl overflow-hidden transition-all"
+          data-faq-text="{{printf "%s %s" .Question .Answer}}"
+          :class="active === {{$index}} ? 'bg-brand-50 border-brand-200' : 'bg-white'"
+        >
           <button @click="active !== {{$index}} ? active = {{$index}} : active = null" class="w-full text-left px-6 py-5 flex items-center justify-between font-bold text-gray-800">
-            <span>{{.Question}}</span>
+            <span class="pr-4 break-words whitespace-normal">{{.Question}}</span>
             <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" :class="active === {{$index}} ? 'rotate-180 text-brand-600' : 'text-gray-400'"></i>
           </button>
           <div x-show="active === {{$index}}" x-collapse>
-            <div class="px-6 pb-6 pt-2 text-gray-600">{{.Answer}}</div>
+            <div class="px-6 pb-6 pt-2 text-gray-600 whitespace-pre-line break-words">{{.Answer}}</div>
           </div>
         </div>
         {{end}}
       </div>
+      <div id="faq-no-results" class="hidden text-center text-gray-400 py-8">Tidak ada FAQ yang cocok dengan pencarian.</div>
     {{end}}
   </div>
 </div>
 
 {{template "footer" .}}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('faq-search-input');
+  const items = Array.from(document.querySelectorAll('#faq-list .faq-item'));
+  const empty = document.getElementById('faq-no-results');
+  if (!input || !items.length || !empty) return;
+
+  function applyFilter() {
+    const q = (input.value || '').trim().toLowerCase();
+    let visible = 0;
+    items.forEach(item => {
+      const haystack = (item.getAttribute('data-faq-text') || '').toLowerCase();
+      const ok = q === '' || haystack.includes(q);
+      item.style.display = ok ? '' : 'none';
+      if (ok) visible++;
+    });
+    empty.classList.toggle('hidden', visible > 0);
+  }
+
+  input.addEventListener('input', applyFilter);
+  applyFilter();
+});
+</script>
 </body>
 </html>

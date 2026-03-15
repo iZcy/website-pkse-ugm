@@ -1,10 +1,13 @@
 package cms
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/big"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -843,6 +846,151 @@ func FAQs(w http.ResponseWriter, r *http.Request) {
     default:
         http.Error(w, "Method not allowed", 405)
     }
+}
+
+func normalizeShortCode(raw string) string {
+	raw = strings.TrimSpace(strings.ToLower(raw))
+	if raw == "" {
+		return ""
+	}
+	var b strings.Builder
+	for _, c := range raw {
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' || c == '_' {
+			b.WriteRune(c)
+		}
+	}
+	out := b.String()
+	if len(out) > 32 {
+		out = out[:32]
+	}
+	return out
+}
+
+func randomShortCode(n int) (string, error) {
+	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
+	if n <= 0 {
+		n = 6
+	}
+	buf := make([]byte, n)
+	max := big.NewInt(int64(len(alphabet)))
+	for i := 0; i < n; i++ {
+		r, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			return "", err
+		}
+		buf[i] = alphabet[r.Int64()]
+	}
+	return string(buf), nil
+}
+
+// --- SHORTLINKS ---
+func ShortLinks(w http.ResponseWriter, r *http.Request) {
+	username, role, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	if role != "superadmin" {
+		writeJSON(w, 403, map[string]string{"error": "forbidden"})
+		return
+	}
+
+	id := strings.TrimPrefix(r.URL.Path, "/api/cms/shortlinks")
+	id = strings.Trim(id, "/")
+
+	switch r.Method {
+	case http.MethodGet:
+		items, err := db.GetShortLinks()
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, items)
+
+	case http.MethodPost:
+		var payload struct {
+			TargetURL string `json:"target_url"`
+			Label     string `json:"label"`
+			Code      string `json:"code"`
+		}
+		if err := readJSON(r, &payload); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		target := strings.TrimSpace(payload.TargetURL)
+		u, err := url.ParseRequestURI(target)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			writeJSON(w, 400, map[string]string{"error": "target_url must be valid http/https URL"})
+			return
+		}
+
+		code := normalizeShortCode(payload.Code)
+		if code == "" {
+			for i := 0; i < 12; i++ {
+				cand, err := randomShortCode(6)
+				if err != nil {
+					writeJSON(w, 500, map[string]string{"error": "cannot generate short code"})
+					return
+				}
+				exists, err := db.ShortLinkCodeExists(cand)
+				if err != nil {
+					writeJSON(w, 500, map[string]string{"error": err.Error()})
+					return
+				}
+				if !exists {
+					code = cand
+					break
+				}
+			}
+			if code == "" {
+				writeJSON(w, 500, map[string]string{"error": "failed to reserve short code"})
+				return
+			}
+		} else {
+			exists, err := db.ShortLinkCodeExists(code)
+			if err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+			if exists {
+				writeJSON(w, 409, map[string]string{"error": "short code already used"})
+				return
+			}
+		}
+
+		item := db.ShortLink{
+			Code:      code,
+			TargetURL: target,
+			Label:     strings.TrimSpace(payload.Label),
+			CreatedBy: username,
+		}
+		if err := db.InsertShortLink(&item); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 201, item)
+
+	case http.MethodDelete:
+		if id == "" {
+			if r.URL.Query().Get("all") != "1" {
+				writeJSON(w, 400, map[string]string{"error": "id required"})
+				return
+			}
+			if err := db.DeleteAllShortLinks(); err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+			writeJSON(w, 200, map[string]any{"success": true})
+			return
+		}
+		if err := db.DeleteShortLink(id); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"success": true})
+
+	default:
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+	}
 }
 
 // --- STATS ---

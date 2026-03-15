@@ -35,7 +35,7 @@
 <header class="bg-blue-900 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0">
   <div class="flex items-center gap-3">
     {{if and .GlobalSetting .GlobalSetting.LogoURL}}
-    <img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-auto object-contain brightness-0 invert" onerror="this.style.display='none'">
+    <img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-auto object-contain" onerror="this.style.display='none'">
     {{end}}
     <span class="font-bold text-lg">{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}} — Admin</span>
   </div>
@@ -116,6 +116,10 @@
 <button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
         Anggota
+      </button>
+<button onclick="switchTab('shortlink')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-shortlink">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 11-5.656-5.656l1.5-1.5m6.328-1.328a4 4 0 010-5.656l3-3a4 4 0 015.656 5.656l-1.5 1.5M8 16l8-8"/></svg>
+        Shorten Link
       </button>
 <button onclick="switchTab('faq-global')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-global">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -221,6 +225,54 @@
       </div>
       <div id="list-anggota" class="overflow-x-auto">
         <div class="text-slate-400 text-center py-8">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- SHORTEN LINK (superadmin) -->
+    <div id="tab-shortlink" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Shorten Link</h2>
+      </div>
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Buat Link Pendek</h3>
+          <form id="formShortlink" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">URL Tujuan</label>
+              <input type="url" id="shortlink-long-url" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://contoh.com/halaman-panjang">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">Kode Shortlink (Opsional)</label>
+              <input type="text" id="shortlink-code" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="misal: daftar-2026">
+              <p class="text-[11px] text-slate-500 mt-1">Jika kosong, sistem akan generate otomatis.</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">Nama (Opsional)</label>
+              <input type="text" id="shortlink-label" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Contoh: Form Pendaftaran">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Generate Short Link</button>
+          </form>
+          <p class="text-xs text-slate-500 mt-4">Shortlink dibuat di backend dan dapat diakses publik dengan format <span class="font-mono">domain-anda/l/kode</span>.</p>
+        </div>
+        <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h3 class="font-semibold text-slate-700">Riwayat Short Link</h3>
+            <button onclick="clearShortlinks()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg">Bersihkan Riwayat</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+                <tr>
+                  <th class="p-4 text-left font-medium">Nama</th>
+                  <th class="p-4 text-left font-medium">Short URL</th>
+                  <th class="p-4 text-left font-medium">Target URL</th>
+                  <th class="p-4 text-right font-medium">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="shortlink-tbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -940,6 +992,7 @@ function loadTab(name) {
   if (name === 'akun') loadAkun();
   if (name === 'global') loadGlobal();
   if (name === 'tentang') loadTentang();
+  if (name === 'shortlink') loadShortlinks();
   
   if (name === 'scholars') loadScholars();
   if (name === 'faq-global') loadFAQs('GLOBAL');
@@ -948,6 +1001,99 @@ function loadTab(name) {
   if (name === 'statistik' && currentPeriod()) loadStatistik();
 
 }
+
+// ── Shortlink ───────────────────────────────────────────────────────────────
+function shortlinkURL(code) {
+  return `${window.location.origin}/l/${encodeURIComponent(code || '')}`;
+}
+
+async function loadShortlinks() {
+  const tb = document.getElementById('shortlink-tbody');
+  if (!tb) return;
+  let rows = [];
+  try {
+    rows = await api('GET', '/api/cms/shortlinks');
+  } catch (ex) {
+    tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(toUiMessage(ex))}</td></tr>`;
+    return;
+  }
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map((row) => `
+    <tr class="border-b border-slate-100 hover:bg-slate-50">
+      <td class="p-4 align-top font-medium text-slate-700">${escHtml(row.label || '-')}</td>
+      <td class="p-4 align-top">
+        <a href="${escHtml(shortlinkURL(row.code))}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">${escHtml(shortlinkURL(row.code))}</a>
+      </td>
+      <td class="p-4 align-top text-slate-600 break-all">${escHtml(row.target_url || '')}</td>
+      <td class="p-4 align-top text-right whitespace-nowrap">
+        <button onclick="copyShortlink('${(shortlinkURL(row.code)).replace(/'/g, "&#39;")}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded mr-1">Copy</button>
+        <button onclick="deleteShortlink('${row.id || ''}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded">Hapus</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function createShortlink(targetURL, label, code) {
+  const body = {
+    target_url: targetURL,
+    label: label || '',
+    code: code || ''
+  };
+  const created = await api('POST', '/api/cms/shortlinks', body);
+  await loadShortlinks();
+  return shortlinkURL(created.code || '');
+}
+
+async function copyShortlink(url) {
+  try {
+    await navigator.clipboard.writeText(url);
+    uiAlert('Short link berhasil disalin.');
+  } catch (_) {
+    uiAlert('Gagal menyalin short link.');
+  }
+}
+
+async function deleteShortlink(id) {
+  if (!id) return;
+  if (!await uiConfirm('Hapus short link ini?', 'Konfirmasi')) return;
+  try {
+    await api('DELETE', '/api/cms/shortlinks/' + id);
+    await loadShortlinks();
+  } catch (ex) {
+    uiAlert(ex);
+  }
+}
+
+async function clearShortlinks() {
+  if (!await uiConfirm('Bersihkan seluruh riwayat short link?', 'Konfirmasi')) return;
+  try {
+    await api('DELETE', '/api/cms/shortlinks?all=1');
+    await loadShortlinks();
+  } catch (ex) {
+    uiAlert(ex);
+  }
+}
+
+document.getElementById('formShortlink')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const longURL = (document.getElementById('shortlink-long-url')?.value || '').trim();
+  const code = (document.getElementById('shortlink-code')?.value || '').trim();
+  const label = (document.getElementById('shortlink-label')?.value || '').trim();
+  if (!longURL) {
+    uiAlert('URL tujuan wajib diisi.');
+    return;
+  }
+  try {
+    const shortURL = await createShortlink(longURL, label, code);
+    uiAlert('Short link berhasil dibuat:<br><a class="text-blue-600 underline break-all" href="' + escHtml(shortURL) + '" target="_blank" rel="noopener noreferrer">' + escHtml(shortURL) + '</a>', 'Sukses');
+    document.getElementById('formShortlink').reset();
+  } catch (ex) {
+    uiAlert(ex);
+  }
+});
 
 // ── Modal helpers ────────────────────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -1056,6 +1202,28 @@ const CHART_CHOICES = [
   { value: 'table', label: 'Table' }
 ];
 
+function chartPreviewSVG(type) {
+  const s = {
+    bar: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="8" y="28" width="14" height="20" rx="2" fill="#2563eb"/><rect x="30" y="20" width="14" height="28" rx="2" fill="#60a5fa"/><rect x="52" y="12" width="14" height="36" rx="2" fill="#93c5fd"/><rect x="74" y="24" width="14" height="24" rx="2" fill="#1d4ed8"/></svg>',
+    line: '<svg viewBox="0 0 100 56" class="w-full h-10"><polyline points="6,40 24,30 42,34 60,16 78,22 94,10" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="30" r="2.5" fill="#60a5fa"/><circle cx="60" cy="16" r="2.5" fill="#60a5fa"/></svg>',
+    pie: '<svg viewBox="0 0 100 56" class="w-full h-10"><circle cx="50" cy="28" r="18" fill="#dbeafe"/><path d="M50 28 L50 10 A18 18 0 0 1 66.5 35 Z" fill="#2563eb"/><path d="M50 28 L66.5 35 A18 18 0 0 1 36 41 Z" fill="#60a5fa"/></svg>',
+    doughnut: '<svg viewBox="0 0 100 56" class="w-full h-10"><circle cx="50" cy="28" r="18" fill="none" stroke="#dbeafe" stroke-width="10"/><circle cx="50" cy="28" r="18" fill="none" stroke="#2563eb" stroke-width="10" stroke-dasharray="72 44" transform="rotate(-90 50 28)"/></svg>',
+    area: '<svg viewBox="0 0 100 56" class="w-full h-10"><path d="M6 44 L24 30 L42 34 L60 16 L78 22 L94 12 L94 48 L6 48 Z" fill="#bfdbfe"/><polyline points="6,44 24,30 42,34 60,16 78,22 94,12" fill="none" stroke="#2563eb" stroke-width="2.5"/></svg>',
+    radar: '<svg viewBox="0 0 100 56" class="w-full h-10"><polygon points="50,10 68,20 64,40 36,40 32,20" fill="#dbeafe" stroke="#93c5fd"/><polygon points="50,16 62,23 58,35 42,35 38,23" fill="#60a5fa" fill-opacity="0.55" stroke="#2563eb"/></svg>',
+    scatter: '<svg viewBox="0 0 100 56" class="w-full h-10"><circle cx="16" cy="38" r="3" fill="#2563eb"/><circle cx="30" cy="28" r="3" fill="#60a5fa"/><circle cx="44" cy="34" r="3" fill="#3b82f6"/><circle cx="58" cy="18" r="3" fill="#1d4ed8"/><circle cx="72" cy="24" r="3" fill="#93c5fd"/><circle cx="86" cy="14" r="3" fill="#2563eb"/></svg>',
+    bubble: '<svg viewBox="0 0 100 56" class="w-full h-10"><circle cx="22" cy="34" r="7" fill="#93c5fd"/><circle cx="44" cy="26" r="10" fill="#60a5fa"/><circle cx="66" cy="20" r="13" fill="#3b82f6"/><circle cx="82" cy="30" r="8" fill="#1d4ed8"/></svg>',
+    polar: '<svg viewBox="0 0 100 56" class="w-full h-10"><circle cx="50" cy="28" r="18" fill="none" stroke="#cbd5e1"/><path d="M50 28 L50 10 A18 18 0 0 1 66 34 Z" fill="#2563eb"/><path d="M50 28 L66 34 A18 18 0 0 1 38 44 Z" fill="#60a5fa"/><path d="M50 28 L38 44 A18 18 0 0 1 32 18 Z" fill="#93c5fd"/></svg>',
+    histogram: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="10" y="30" width="11" height="18" fill="#bfdbfe"/><rect x="21" y="22" width="11" height="26" fill="#93c5fd"/><rect x="32" y="16" width="11" height="32" fill="#60a5fa"/><rect x="43" y="12" width="11" height="36" fill="#3b82f6"/><rect x="54" y="18" width="11" height="30" fill="#2563eb"/><rect x="65" y="26" width="11" height="22" fill="#1d4ed8"/><rect x="76" y="32" width="11" height="16" fill="#1e40af"/></svg>',
+    stacked_bar: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="12" y="12" width="14" height="16" fill="#93c5fd"/><rect x="12" y="28" width="14" height="20" fill="#2563eb"/><rect x="38" y="18" width="14" height="14" fill="#93c5fd"/><rect x="38" y="32" width="14" height="16" fill="#2563eb"/><rect x="64" y="10" width="14" height="22" fill="#93c5fd"/><rect x="64" y="32" width="14" height="16" fill="#2563eb"/></svg>',
+    grouped_bar: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="10" y="24" width="8" height="24" fill="#2563eb"/><rect x="20" y="30" width="8" height="18" fill="#93c5fd"/><rect x="38" y="18" width="8" height="30" fill="#2563eb"/><rect x="48" y="24" width="8" height="24" fill="#93c5fd"/><rect x="66" y="14" width="8" height="34" fill="#2563eb"/><rect x="76" y="20" width="8" height="28" fill="#93c5fd"/></svg>',
+    funnel: '<svg viewBox="0 0 100 56" class="w-full h-10"><polygon points="12,12 88,12 74,22 26,22" fill="#2563eb"/><polygon points="26,24 74,24 64,34 36,34" fill="#60a5fa"/><polygon points="36,36 64,36 57,46 43,46" fill="#93c5fd"/></svg>',
+    heatmap: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="10" y="12" width="16" height="12" fill="#dbeafe"/><rect x="28" y="12" width="16" height="12" fill="#93c5fd"/><rect x="46" y="12" width="16" height="12" fill="#60a5fa"/><rect x="64" y="12" width="16" height="12" fill="#1d4ed8"/><rect x="10" y="26" width="16" height="12" fill="#93c5fd"/><rect x="28" y="26" width="16" height="12" fill="#60a5fa"/><rect x="46" y="26" width="16" height="12" fill="#2563eb"/><rect x="64" y="26" width="16" height="12" fill="#3b82f6"/><rect x="10" y="40" width="16" height="6" fill="#dbeafe"/><rect x="28" y="40" width="16" height="6" fill="#bfdbfe"/><rect x="46" y="40" width="16" height="6" fill="#93c5fd"/><rect x="64" y="40" width="16" height="6" fill="#60a5fa"/></svg>',
+    kpi: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="14" y="14" width="72" height="28" rx="6" fill="#eff6ff" stroke="#93c5fd"/><text x="50" y="31" text-anchor="middle" font-size="11" font-family="Arial, sans-serif" fill="#1d4ed8">92%</text></svg>',
+    table: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="10" y="12" width="80" height="32" rx="3" fill="#ffffff" stroke="#93c5fd"/><line x1="10" y1="23" x2="90" y2="23" stroke="#cbd5e1"/><line x1="10" y1="34" x2="90" y2="34" stroke="#cbd5e1"/><line x1="38" y1="12" x2="38" y2="44" stroke="#cbd5e1"/><line x1="64" y1="12" x2="64" y2="44" stroke="#cbd5e1"/></svg>'
+  };
+  return s[type] || s.bar;
+}
+
 function renderChartChoices(selectedValue = 'bar') {
   const wrap = document.getElementById('stat-chart-options');
   if (!wrap) return;
@@ -1063,7 +1231,10 @@ function renderChartChoices(selectedValue = 'bar') {
   document.getElementById('stat-chart-type').value = current;
   wrap.innerHTML = CHART_CHOICES.map(c => {
     const active = c.value === current;
-    return `<button type="button" class="chart-choice border rounded-lg px-2 py-2 text-xs font-medium transition ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}" data-chart-value="${c.value}">${c.label}</button>`;
+    return `<button type="button" class="chart-choice border rounded-lg p-2 text-xs font-medium transition text-left ${active ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}" data-chart-value="${c.value}">
+      <div class="rounded-md border ${active ? 'border-blue-300 bg-blue-500/10' : 'border-slate-200 bg-slate-50'} p-1.5 mb-1 overflow-hidden">${chartPreviewSVG(c.value)}</div>
+      <div class="truncate">${c.label}</div>
+    </button>`;
   }).join('');
 }
 

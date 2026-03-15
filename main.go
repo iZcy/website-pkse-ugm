@@ -53,6 +53,7 @@ mux.HandleFunc("/program", h.Program)
 mux.HandleFunc("/faq-beasiswa", h.FAQ)
 mux.HandleFunc("/statistik", h.Statistik)
 mux.HandleFunc("/alumni", h.Alumni)
+mux.HandleFunc("/l/", h.ShortLinkRedirect)
 
 // Public API
 
@@ -70,6 +71,8 @@ mux.HandleFunc("/api/cms/programs", cms.Programs)
 mux.HandleFunc("/api/cms/programs/", cms.Programs)
 mux.HandleFunc("/api/cms/faqs", cms.FAQs)
 mux.HandleFunc("/api/cms/faqs/", cms.FAQs)
+mux.HandleFunc("/api/cms/shortlinks", cms.ShortLinks)
+mux.HandleFunc("/api/cms/shortlinks/", cms.ShortLinks)
 mux.HandleFunc("/api/cms/stats", cms.Stats)
 mux.HandleFunc("/api/cms/sync-stats", cms.SyncStatsTemplate)
 mux.HandleFunc("/api/cms/stats/", cms.Stats)

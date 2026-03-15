@@ -642,6 +642,16 @@ Answer      string             `bson:"answer"        json:"answer"`
 Order       int                `bson:"order"         json:"order"`
 }
 
+type ShortLink struct {
+ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+Code      string             `bson:"code"          json:"code"`
+TargetURL string             `bson:"target_url"    json:"target_url"`
+Label     string             `bson:"label"         json:"label"`
+CreatedBy string             `bson:"created_by"    json:"created_by"`
+CreatedAt time.Time          `bson:"created_at"    json:"created_at"`
+UpdatedAt time.Time          `bson:"updated_at"    json:"updated_at"`
+}
+
 type StatData struct {
 ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 PeriodLabel string             `bson:"period_label"  json:"period_label"`
@@ -712,7 +722,16 @@ func GetFAQs(periodLabel string) ([]FAQ, error) {
 col := database.Collection("faqs")
 filter := bson.M{}
 if periodLabel != "" {
+if periodLabel == "GLOBAL" {
+filter["$or"] = []bson.M{
+{"period_label": "GLOBAL"},
+{"period_label": ""},
+{"period_label": bson.M{"$exists": false}},
+{"period_label": nil},
+}
+} else {
 filter["period_label"] = periodLabel
+}
 }
 opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
 cur, err := col.Find(context.Background(), filter, opts)
@@ -888,5 +907,68 @@ func DeleteScholar(id string) error {
 	_, err = col.DeleteOne(context.Background(), bson.M{"_id": oid})
 	// Also un-assign from periods? Or leave Member docs intact to display name from Member struct?
 	// We leave Member docs intact.
+	return err
+}
+
+// --- DB FUNCS FOR SHORTLINKS ---
+func GetShortLinks() ([]ShortLink, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cur, err := col("shortlinks").Find(ctx, bson.M{}, options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}))
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+	var res []ShortLink
+	err = cur.All(ctx, &res)
+	if res == nil {
+		res = []ShortLink{}
+	}
+	return res, err
+}
+
+func GetShortLinkByCode(code string) (*ShortLink, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var out ShortLink
+	err := col("shortlinks").FindOne(ctx, bson.M{"code": code}).Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func ShortLinkCodeExists(code string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	n, err := col("shortlinks").CountDocuments(ctx, bson.M{"code": code})
+	return n > 0, err
+}
+
+func InsertShortLink(s *ShortLink) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	now := time.Now()
+	s.CreatedAt = now
+	s.UpdatedAt = now
+	_, err := col("shortlinks").InsertOne(ctx, s)
+	return err
+}
+
+func DeleteShortLink(id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err = col("shortlinks").DeleteOne(ctx, bson.M{"_id": oid})
+	return err
+}
+
+func DeleteAllShortLinks() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := col("shortlinks").DeleteMany(ctx, bson.M{})
 	return err
 }
