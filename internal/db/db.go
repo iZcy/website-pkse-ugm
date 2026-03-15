@@ -125,7 +125,6 @@ SortOrder   int                `bson:"sort_order"    json:"sort_order"`
 
 type Member struct {
 ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-ScholarID   primitive.ObjectID `bson:"scholar_id,omitempty" json:"scholar_id"`
 PeriodLabel string             `bson:"period_label"  json:"period_label"`
 SubPeriod   string             `bson:"sub_period"    json:"sub_period"`
 FullName    string             `bson:"full_name"     json:"full_name"`
@@ -138,18 +137,6 @@ PhotoURL    string             `bson:"photo_url"     json:"photo_url"`
 Department  string             `bson:"department"    json:"department"`
 Position    string             `bson:"position"      json:"position"`
 SortOrder   int                `bson:"sort_order"    json:"sort_order"`
-}
-
-type Scholar struct {
-ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-FullName    string             `bson:"full_name"     json:"full_name"`
-Nickname    string             `bson:"nickname"      json:"nickname"`
-Gender      string             `bson:"gender"        json:"gender"`
-Major       string             `bson:"major"         json:"major"`
-Faculty     string             `bson:"faculty"       json:"faculty"`
-PhotoURL    string             `bson:"photo_url"     json:"photo_url"`
-IsActive    bool               `bson:"is_active"     json:"is_active"`
-CreatedAt   time.Time          `bson:"created_at"    json:"created_at"`
 }
 
 type Announcement struct {
@@ -862,53 +849,6 @@ _, err = col.DeleteOne(context.Background(), bson.M{"_id": oid})
 return err
 }
 
-
-// --- DB FUNCS FOR SCHOLARS ---
-func GetScholars() ([]Scholar, error) {
-	col := database.Collection("scholars")
-	cur, err := col.Find(context.Background(), bson.M{})
-	if err != nil { return nil, err }
-	var res []Scholar
-	err = cur.All(context.Background(), &res)
-	if res == nil { res = []Scholar{} }
-	return res, err
-}
-
-func InsertScholar(s *Scholar) error {
-	col := database.Collection("scholars")
-	s.CreatedAt = time.Now()
-	res, err := col.InsertOne(context.Background(), s)
-	if err == nil {
-		s.ID = res.InsertedID.(primitive.ObjectID)
-	}
-	return err
-}
-
-func UpdateScholar(id string, s *Scholar) error {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil { return err }
-	col := database.Collection("scholars")
-	_, err = col.UpdateOne(context.Background(), bson.M{"_id": oid}, bson.M{"$set": bson.M{
-		"full_name": s.FullName,
-		"nickname": s.Nickname,
-		"gender": s.Gender,
-		"major": s.Major,
-		"faculty": s.Faculty,
-		"photo_url": s.PhotoURL,
-		"is_active": s.IsActive,
-	}})
-	return err
-}
-
-func DeleteScholar(id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil { return err }
-	col := database.Collection("scholars")
-	_, err = col.DeleteOne(context.Background(), bson.M{"_id": oid})
-	// Also un-assign from periods? Or leave Member docs intact to display name from Member struct?
-	// We leave Member docs intact.
-	return err
-}
 
 // --- DB FUNCS FOR SHORTLINKS ---
 func GetShortLinks() ([]ShortLink, error) {

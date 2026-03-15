@@ -123,7 +123,7 @@ func Run() {
 		}
 	}
 
-	// Canonical people data lives in members (scholars are merged into members).
+	// Canonical people data lives in members.
 	members := []db.Member{
 		{
 			PeriodLabel:   "24.25",
