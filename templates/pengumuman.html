@@ -29,9 +29,7 @@
       <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-lg hover:border-brand-100 transition-all">
         <div class="flex flex-wrap gap-3 mb-4 items-center">
           <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold flex items-center gap-1.5"><i data-lucide="calendar" class="w-3 h-3"></i> {{.CreatedAt.Format "02 Jan 2006"}}</span>
-          {{if eq .IsImportant true}}
-            <span class="px-3 py-1 rounded-full bg-red-50 text-red-600 border border-red-100 text-xs font-bold max-w-max flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-3 h-3"></i> Penting</span>
-          {{end}}
+          
         </div>
         
         <h3 class="text-2xl font-bold text-gray-900 mb-4">{{.Title}}</h3>
@@ -39,29 +37,15 @@
           <p class="whitespace-pre-wrap leading-relaxed text-gray-600">{{.Content}}</p>
         </div>
         
-        {{if .AttachmentURL}}
-        <div class="pt-6 border-t border-gray-50">
-          <a href="{{.AttachmentURL}}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-50 hover:bg-brand-600 text-brand-700 hover:text-white font-bold rounded-xl text-sm transition-colors border border-brand-100 hover:border-brand-600">
-            <i data-lucide="download" class="w-4 h-4"></i> Unduh Lampiran
-          </a>
-        </div>
-        {{end}}
+        
       </div>
     </div>
     {{end}}
   </div>
+  {{end}}
   
   <!-- Pagination -->
-  {{if gt .TotalPages 1}}
-  <div class="flex justify-center mt-16 gap-2">
-    {{if gt .CurrentPage 1}}<a href="/pengumuman?page={{sub .CurrentPage 1}}" class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-brand-50"><i data-lucide="chevron-left" class="w-4 h-4"></i></a>{{end}}
-    <div class="px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm font-bold">Hal {{.CurrentPage}} / {{.TotalPages}}</div>
-    {{if lt .CurrentPage .TotalPages}}<a href="/pengumuman?page={{add .CurrentPage 1}}" class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:bg-brand-50"><i data-lucide="chevron-right" class="w-4 h-4"></i></a>{{end}}
   </div>
-  {{end}}
-  {{end}}
-</div>
-
 {{template "footer" .}}
 </body>
 </html>

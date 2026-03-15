@@ -219,9 +219,6 @@ func Members(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		period := periodForUser(r, username, role)
-		if period == "" {
-			period = r.URL.Query().Get("period")
-		}
 		members, err := db.GetMembers(period)
 		if err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -238,7 +235,6 @@ func Members(w http.ResponseWriter, r *http.Request) {
 		if role != "superadmin" {
 			u, _ := db.GetUserByUsername(username)
 			m.PeriodLabel = u.AssignedPeriod
-			m.ActivePeriods = nil
 		}
 		if err := db.CreateMember(m); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -255,29 +251,6 @@ func Members(w http.ResponseWriter, r *http.Request) {
 		if err := readJSON(r, &fields); err != nil {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
 			return
-		}
-		if role != "superadmin" {
-			u, err := db.GetUserByUsername(username)
-			if err != nil || u.AssignedPeriod == "" {
-				writeJSON(w, 403, map[string]string{"error": "forbidden"})
-				return
-			}
-			delete(fields, "active_periods")
-			if _, hasDept := fields["department"]; hasDept {
-				m, err := db.GetMemberByID(idSegment)
-				if err != nil {
-					writeJSON(w, 404, map[string]string{"error": "member not found"})
-					return
-				}
-				sp := ""
-				if m.ActivePeriods != nil {
-					sp = strings.TrimSpace(m.ActivePeriods[u.AssignedPeriod])
-				}
-				if sp == "" {
-					writeJSON(w, 403, map[string]string{"error": "anggota belum aktif di periode admin"})
-					return
-				}
-			}
 		}
 		if err := db.UpdateMember(idSegment, fields); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -465,10 +438,16 @@ func Periods(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
 			return
 		}
-		if len(p.SubPeriods) == 0 {
-			p.SubPeriods = []string{"Gelombang 1"}
-		}
-		if err := db.CreatePeriod(p); err != nil {
+		            if len(p.SubPeriods) == 0 {
+                p.SubPeriods = []string{"Gelombang 1"}
+            }
+                        if len(p.SubPeriods) == 0 {
+                p.SubPeriods = []string{"Gelombang 1"}
+            }
+                        if len(p.SubPeriods) == 0 {
+                p.SubPeriods = []string{"Gelombang 1"}
+            }
+            if err := db.CreatePeriod(p); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
@@ -497,51 +476,6 @@ func Periods(w http.ResponseWriter, r *http.Request) {
 		if err := readJSON(r, &fields); err != nil {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
 			return
-		}
-		if spRaw, ok := fields["sub_periods"]; ok {
-			var next []string
-			switch v := spRaw.(type) {
-			case []any:
-				for _, item := range v {
-					s, _ := item.(string)
-					s = strings.TrimSpace(s)
-					if s != "" {
-						next = append(next, s)
-					}
-				}
-			case []string:
-				for _, s := range v {
-					s = strings.TrimSpace(s)
-					if s != "" {
-						next = append(next, s)
-					}
-				}
-			}
-			if len(next) == 0 {
-				next = []string{"Gelombang 1"}
-			}
-			cur, err := db.GetPeriodByLabel(label)
-			if err == nil && cur != nil {
-				keep := map[string]bool{}
-				for _, s := range next {
-					keep[s] = true
-				}
-				for _, old := range cur.SubPeriods {
-					if keep[old] {
-						continue
-					}
-					cnt, err := db.CountMembersActiveFromSubPeriod(label, old)
-					if err != nil {
-						writeJSON(w, 500, map[string]string{"error": err.Error()})
-						return
-					}
-					if cnt > 0 {
-						writeJSON(w, 400, map[string]string{"error": "sub-periode dengan anggota aktif tidak dapat dihapus"})
-						return
-					}
-				}
-			}
-			fields["sub_periods"] = next
 		}
 		if err := db.UpdatePeriod(label, fields); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -847,191 +781,90 @@ func FAQs(w http.ResponseWriter, r *http.Request) {
 
 // --- STATS ---
 func SyncStatsTemplate(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
-	if !ok {
-		return
-	}
-	var req struct {
-		PeriodLabel string `json:"period_label"`
-	}
-	if err := readJSON(r, &req); err != nil {
-		writeJSON(w, 400, map[string]string{"error": err.Error()})
-		return
-	}
-	periodLabel := req.PeriodLabel
-	if role != "superadmin" {
-		u, err := db.GetUserByUsername(username)
-		if err != nil {
-			writeJSON(w, 403, map[string]string{"error": "forbidden"})
-			return
-		}
-		periodLabel = u.AssignedPeriod
-	}
-	if periodLabel == "" || periodLabel == "_TEMPLATE_" {
-		writeJSON(w, 400, map[string]string{"error": "period_label invalid"})
-		return
-	}
-	templates, err := db.GetStats("_TEMPLATE_")
-	if err != nil {
-		writeJSON(w, 500, map[string]string{"error": err.Error()})
-		return
-	}
-	for _, t := range templates {
-		if !t.Fillable {
-			continue
-		}
-		tid := t.ID.Hex()
-		if t.TemplateID != "" {
-			tid = t.TemplateID
-		}
-		if err := db.UpsertPeriodStatValue(periodLabel, tid, "0"); err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-	}
-	writeJSON(w, 200, map[string]string{"status": "ok"})
+    _, _, ok := requireAny(w, r)
+    if !ok { return }
+    var req struct { PeriodLabel string `json:"period_label"` }
+    if err := readJSON(r, &req); err != nil { writeJSON(w, 400, map[string]string{"error": err.Error()}); return }
+    
+    // Copy from _TEMPLATE_ to req.PeriodLabel
+    templates, _ := db.GetStats("_TEMPLATE_")
+    for _, t := range templates {
+        s := t
+        s.ID = primitive.NilObjectID
+        s.PeriodLabel = req.PeriodLabel
+        s.Value = "0"
+        db.InsertStat(&s)
+    }
+    writeJSON(w, 200, map[string]string{"status": "ok"})
+}
+
+func SyncStatsTemplate(w http.ResponseWriter, r *http.Request) {
+    _, _, ok := requireAny(w, r)
+    if !ok { return }
+    var req struct { PeriodLabel string `json:"period_label"` }
+    if err := readJSON(r, &req); err != nil { writeJSON(w, 400, map[string]string{"error": err.Error()}); return }
+    
+    // Copy from _TEMPLATE_ to req.PeriodLabel
+    templates, _ := db.GetStats("_TEMPLATE_")
+    for _, t := range templates {
+        s := t
+        s.ID = primitive.NilObjectID
+        s.PeriodLabel = req.PeriodLabel
+        s.Value = "0"
+        db.InsertStat(&s)
+    }
+    writeJSON(w, 200, map[string]string{"status": "ok"})
 }
 
 func Stats(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
-	if !ok {
-		return
-	}
-	switch r.Method {
-	case http.MethodGet:
-		pl := r.URL.Query().Get("period")
-		if role != "superadmin" {
-			u, err := db.GetUserByUsername(username)
-			if err != nil {
-				writeJSON(w, 403, map[string]string{"error": "forbidden"})
-				return
-			}
-			pl = u.AssignedPeriod
-		}
-		if pl == "" {
-			writeJSON(w, 400, map[string]string{"error": "period required"})
-			return
-		}
-		if pl == "_TEMPLATE_" {
-			items, err := db.GetStats("_TEMPLATE_")
-			if err != nil {
-				writeJSON(w, 500, map[string]string{"error": err.Error()})
-				return
-			}
-			writeJSON(w, 200, items)
-			return
-		}
-		templates, err := db.GetStats("_TEMPLATE_")
-		if err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		values, err := db.GetStats(pl)
-		if err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		byTemplate := map[string]db.StatData{}
-		for _, v := range values {
-			if v.TemplateID != "" {
-				byTemplate[v.TemplateID] = v
-			}
-		}
-		out := make([]db.StatData, 0, len(templates))
-		for _, t := range templates {
-			tid := t.ID.Hex()
-			if t.TemplateID != "" {
-				tid = t.TemplateID
-			}
-			item := t
-			item.PeriodLabel = pl
-			item.TemplateID = tid
-			if v, ok := byTemplate[tid]; ok {
-				item.ID = v.ID
-				item.Value = v.Value
-			} else {
-				item.ID = item.ID
-				item.Value = ""
-			}
-			out = append(out, item)
-		}
-		writeJSON(w, 200, out)
-
-	case http.MethodPost:
-		var s db.StatData
-		if err := readJSON(r, &s); err != nil {
-			writeJSON(w, 400, map[string]string{"error": err.Error()})
-			return
-		}
-		if s.PeriodLabel == "_TEMPLATE_" {
-			if role != "superadmin" {
-				writeJSON(w, 403, map[string]string{"error": "forbidden"})
-				return
-			}
-			if err := db.InsertStat(&s); err != nil {
-				writeJSON(w, 500, map[string]string{"error": err.Error()})
-				return
-			}
-			writeJSON(w, 201, s)
-			return
-		}
-		if role != "superadmin" {
-			u, err := db.GetUserByUsername(username)
-			if err != nil {
-				writeJSON(w, 403, map[string]string{"error": "forbidden"})
-				return
-			}
-			s.PeriodLabel = u.AssignedPeriod
-		}
-		if err := db.UpsertPeriodStatValue(s.PeriodLabel, s.TemplateID, s.Value); err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		writeJSON(w, 200, map[string]any{"success": true})
-
-	case http.MethodPut:
-		id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
-		var s db.StatData
-		if err := readJSON(r, &s); err != nil {
-			writeJSON(w, 400, map[string]string{"error": err.Error()})
-			return
-		}
-		if s.PeriodLabel == "_TEMPLATE_" {
-			if role != "superadmin" {
-				writeJSON(w, 403, map[string]string{"error": "forbidden"})
-				return
-			}
-			if err := db.UpdateStat(id, &s); err != nil {
-				writeJSON(w, 500, map[string]string{"error": err.Error()})
-				return
-			}
-			writeJSON(w, 200, map[string]any{"success": true})
-			return
-		}
-		if role != "superadmin" {
-			u, err := db.GetUserByUsername(username)
-			if err != nil {
-				writeJSON(w, 403, map[string]string{"error": "forbidden"})
-				return
-			}
-			s.PeriodLabel = u.AssignedPeriod
-		}
-		if err := db.UpsertPeriodStatValue(s.PeriodLabel, s.TemplateID, s.Value); err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		writeJSON(w, 200, map[string]any{"success": true})
-
-	case http.MethodDelete:
-		id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
-		if err := db.DeleteStat(id); err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		writeJSON(w, 200, map[string]any{"success": true})
-	default:
-		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
-	}
+    username, role, ok := requireAny(w, r)
+    if !ok {
+        return
+    }
+    _ = username
+    _ = role
+    switch r.Method {
+    case http.MethodGet:
+        pl := r.URL.Query().Get("period")
+        items, err := db.GetStats(pl)
+        if err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(items)
+    case http.MethodPost:
+        var s db.StatData
+        if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.InsertStat(&s); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(s)
+    case http.MethodPut:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
+        var s db.StatData
+        if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+            http.Error(w, err.Error(), 400)
+            return
+        }
+        if err := db.UpdateStat(id, &s); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    case http.MethodDelete:
+        id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
+        if err := db.DeleteStat(id); err != nil {
+            http.Error(w, err.Error(), 500)
+            return
+        }
+        json.NewEncoder(w).Encode(map[string]any{"success": true})
+    default:
+        http.Error(w, "Method not allowed", 405)
+    }
 }
 
 

@@ -54,49 +54,30 @@
         <div class="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg -mt-10 mb-4 mx-auto rotate-3 group-hover:rotate-0 transition-transform duration-300">
           <div class="w-full h-full rounded-xl bg-brand-50 flex items-center justify-center overflow-hidden">
             {{if .PhotoURL}}
-              <img src="{{.PhotoURL}}" alt="{{.Name}}" class="w-full h-full object-cover">
+              <img src="{{.PhotoURL}}" alt="{{.FullName}}" class="w-full h-full object-cover">
             {{else}}
               <i data-lucide="user" class="w-8 h-8 text-brand-300"></i>
             {{end}}
           </div>
         </div>
         <div class="text-center flex-1">
-          <h3 class="font-bold text-gray-900 text-lg mb-1 group-hover:text-brand-600 transition-colors">{{.Name}}</h3>
-          {{if .StudyProgram}}<p class="text-xs font-bold text-accent-600 mb-3 tracking-wide uppercase">{{.StudyProgram}}</p>{{end}}
+          <h3 class="font-bold text-gray-900 text-lg mb-1 group-hover:text-brand-600 transition-colors">{{.FullName}}</h3>
+          {{if .Department}}<p class="text-xs text-brand-600 font-medium mb-1">{{.Department}}</p>{{end}}
           <div class="space-y-2 text-sm text-gray-500 mt-4">
-            {{if .Faculty}}<div class="flex items-center justify-center gap-2"><i data-lucide="book-open" class="w-4 h-4 opacity-50"></i> {{.Faculty}}</div>{{end}}
-            {{if .Year}}<div class="flex items-center justify-center gap-2"><i data-lucide="calendar" class="w-4 h-4 opacity-50"></i> Angkatan {{.Year}}</div>{{end}}
+            {{if .Position}}<p class="text-xs text-gray-500 mb-2">{{.Position}}</p>{{end}}
+            
           </div>
         </div>
       </div>
       <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-center gap-4">
-        {{if .Instagram}}
-          <a href="{{.Instagram}}" target="_blank" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-brand-600 hover:shadow-md transition-all"><i data-lucide="instagram" class="w-4 h-4"></i></a>
-        {{end}}
-        {{if .LinkedIn}}
-          <a href="{{.LinkedIn}}" target="_blank" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-400 hover:text-brand-600 hover:shadow-md transition-all"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
-        {{end}}
+        
+        
       </div>
     </div>
     {{end}}
   </div>
   
   <!-- Pagination -->
-  {{if gt .TotalPages 1}}
-  <div class="flex justify-center mt-16 pb-8 gap-2">
-    {{if gt .CurrentPage 1}}
-    <a href="/anggota?page={{sub .CurrentPage 1}}&q={{.Query}}&sort={{.Sort}}" class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-50 hover:text-brand-600"><i data-lucide="chevron-left" class="w-4 h-4"></i></a>
-    {{end}}
-    
-    <div class="bg-white px-6 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 flex items-center">
-      Halaman {{.CurrentPage}} dari {{.TotalPages}}
-    </div>
-    
-    {{if lt .CurrentPage .TotalPages}}
-    <a href="/anggota?page={{add .CurrentPage 1}}&q={{.Query}}&sort={{.Sort}}" class="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-50 hover:text-brand-600"><i data-lucide="chevron-right" class="w-4 h-4"></i></a>
-    {{end}}
-  </div>
-  {{end}}
   {{end}}
 </div>
 

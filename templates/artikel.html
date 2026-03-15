@@ -64,20 +64,6 @@
     {{end}}
     {{end}}
   </div>
-  
-  {{if gt .TotalPages 1}}
-  <div class="flex justify-center pb-8 gap-2">
-    {{if gt .CurrentPage 1}}
-    <a href="/artikel?page={{sub .CurrentPage 1}}" class="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-50 hover:text-brand-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></a>
-    {{end}}
-    <div class="bg-white px-6 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-700 flex items-center">
-      Halaman {{.CurrentPage}} dari {{.TotalPages}}
-    </div>
-    {{if lt .CurrentPage .TotalPages}}
-    <a href="/artikel?page={{add .CurrentPage 1}}" class="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-brand-50 hover:text-brand-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></a>
-    {{end}}
-  </div>
-  {{end}}
   {{end}}
 </div>
 

@@ -199,17 +199,20 @@ h.render(w, "program.html", data)
 }
 
 func (h *Handler) FAQ(w http.ResponseWriter, r *http.Request) {
-data := h.baseData()
-sel := r.URL.Query().Get("period")
-if sel == "" {
-    sel = h.activePeriodLabel()
-}
-data["SelectedPeriod"] = sel
-items, _ := db.GetFAQs(sel)
-data["FAQs"] = items
-periods, _ := db.GetPeriods()
-data["Periods"] = periods
-h.render(w, "faq.html", data)
+	data := h.baseData()
+	sel := h.activePeriodLabel()
+	data["SelectedPeriod"] = sel
+	
+	itemsPeriod, _ := db.GetFAQs(sel)
+	itemsGlobal, _ := db.GetFAQs("GLOBAL")
+	
+	var combined []db.FAQ
+	combined = append(combined, itemsPeriod...)
+	combined = append(combined, itemsGlobal...)
+	
+	data["FAQs"] = combined
+	// we do NOT provide data["Periods"] so frontend won't have a selector (if it relies on it)
+	h.render(w, "faq.html", data)
 }
 
 func (h *Handler) Statistik(w http.ResponseWriter, r *http.Request) {

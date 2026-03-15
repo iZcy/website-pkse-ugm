@@ -1,0 +1,16 @@
+go: downloading golang.org/x/crypto v0.48.0
+go: downloading go.mongodb.org/mongo-driver v1.17.9
+go: downloading github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78
+go: downloading github.com/golang/snappy v0.0.4
+go: downloading github.com/klauspost/compress v1.16.7
+go: downloading github.com/xdg-go/scram v1.1.2
+go: downloading github.com/xdg-go/stringprep v1.0.4
+go: downloading github.com/montanaflynn/stats v0.7.1
+go: downloading github.com/xdg-go/pbkdf2 v1.0.0
+go: downloading golang.org/x/text v0.34.0
+go: downloading golang.org/x/sync v0.19.0
+# webapp/internal/cms
+internal/cms/cms.go:793:16: undefined: primitive
+internal/cms/cms.go:801:6: SyncStatsTemplate redeclared in this block
+	internal/cms/cms.go:783:6: other declaration of SyncStatsTemplate
+internal/cms/cms.go:811:16: undefined: primitive

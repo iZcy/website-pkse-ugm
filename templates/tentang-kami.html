@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,23 +8,54 @@
 <body class="bg-white text-gray-900 antialiased">
 {{template "navbar" .}}
 
-<div class="pt-32 pb-24 px-6 max-w-7xl mx-auto text-center">
+<div class="pt-32 pb-20 px-6 max-w-7xl mx-auto text-center">
+  <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-600 font-bold text-xs uppercase tracking-wider mb-6">Cerita Kami</div>
   <h1 class="text-5xl font-black text-gray-900 mb-8 tracking-tight">Kawah Candradimuka <br><span class="text-brand-600">Pemimpin Masa Depan</span></h1>
   <p class="text-xl text-gray-500 max-w-2xl mx-auto">Kami adalah keluarga yang saling mendukung untuk mencetak pemimpin berkarakter empati dan kompeten.</p>
 </div>
 
+{{if .PeriodAbout}}
 <div class="max-w-5xl mx-auto px-6 pb-24">
-  <div class="bg-gray-50 rounded-[3rem] p-12 border border-gray-100">
-    <div class="mb-12">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4 inline-flex items-center gap-2"><div class="w-2 h-8 bg-brand-500 rounded-full"></div> Visi</h2>
-      <p class="text-gray-600 text-lg ml-4">{{if .GlobalSetting}}{{.GlobalSetting.Vision}}{{else}}Visi Organisasi{{end}}</p>
+  {{if .PeriodAbout.Sejarah}}
+  <div class="mb-16">
+    <h2 class="text-3xl font-bold text-brand-900 mb-6">Sejarah Singkat</h2>
+    <div class="prose prose-lg prose-gray max-w-none text-gray-600 leading-relaxed text-justify">
+      {{.PeriodAbout.Sejarah}}
     </div>
-    <div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-4 inline-flex items-center gap-2"><div class="w-2 h-8 bg-accent-500 rounded-full"></div> Misi</h2>
-      <p class="text-gray-600 text-lg whitespace-pre-wrap ml-4">{{if .GlobalSetting}}{{.GlobalSetting.Mission}}{{else}}Misi Organisasi{{end}}</p>
+  </div>
+  {{end}}
+
+  <div class="bg-gray-50 rounded-[3rem] p-12 md:p-16 border border-gray-100 shadow-sm relative overflow-hidden">
+    <!-- decorative elements -->
+    <div class="absolute top-0 right-0 w-64 h-64 bg-brand-100/50 rounded-full blur-3xl -mr-20 -mt-20"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent-100/50 rounded-full blur-3xl -ml-20 -mb-20"></div>
+    
+    <div class="relative z-10">
+      {{if .PeriodAbout.Visi}}
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 inline-flex items-center gap-3"><div class="w-10 h-10 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center"><i data-lucide="eye" class="w-5 h-5"></i></div> Visi</h2>
+        <p class="text-gray-600 text-lg md:ml-14">{{.PeriodAbout.Visi}}</p>
+      </div>
+      {{end}}
+      {{if .PeriodAbout.Misi}}
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 inline-flex items-center gap-3"><div class="w-10 h-10 bg-accent-100 text-accent-600 rounded-xl flex items-center justify-center"><i data-lucide="target" class="w-5 h-5"></i></div> Misi</h2>
+        <div class="text-gray-600 text-lg md:ml-14 whitespace-pre-wrap leading-relaxed">{{.PeriodAbout.Misi}}</div>
+      </div>
+      {{end}}
     </div>
   </div>
 </div>
+{{end}}
+
+<!-- Team / Support section just for visual layout consistency -->
+<section class="py-20 bg-brand-900 text-white relative overflow-hidden">
+  <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center mix-blend-overlay opacity-10"></div>
+  <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+    <h2 class="text-4xl font-extrabold mb-8 leading-tight">Bersama Membangun <span class="text-accent-400">Generasi Emas</span></h2>
+    <a href="/anggota" class="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-brand-900 bg-accent-400 hover:bg-accent-300 transition-colors shadow-lg">Lihat Pengurus Kami <i data-lucide="users" class="w-4 h-4"></i></a>
+  </div>
+</section>
 
 {{template "footer" .}}
 </body>

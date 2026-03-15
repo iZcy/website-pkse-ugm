@@ -91,12 +91,10 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         Kementerian
       </button>
-      {{if ne .Role "superadmin"}}
       <button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         Anggota
       </button>
-      {{end}}
 
       <button onclick="switchTab('faq-periode')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-periode">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -113,7 +111,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         Pengaturan Global
       </button>
-<button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
+<button onclick="switchTab('scholars')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-scholars">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
         Anggota
       </button>
@@ -228,7 +226,7 @@
     <div id="tab-global-stats" class="tab-content hidden">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Template Format Statistika</h2>
-        <button onclick="openStatModalGlobal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+        <button onclick="document.getElementById('formStatistik').reset(); document.getElementById('stat-id').value=''; document.getElementById('stat-period').value='_TEMPLATE_'; openModal('modalStatistik');" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Tambah Template
         </button>
@@ -237,12 +235,8 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 text-slate-600 text-left uppercase text-xs tracking-wider">
             <tr>
-              <th class="p-4 font-semibold w-10"></th>
               <th class="p-4 font-semibold">Label/Nama Format</th>
               <th class="p-4 font-semibold">Deskripsi Format</th>
-              <th class="p-4 font-semibold">Chart</th>
-              <th class="p-4 font-semibold">Fillable</th>
-              <th class="p-4 font-semibold">Tampilkan</th>
               <th class="p-4 font-semibold text-right">Aksi</th>
             </tr>
           </thead>
@@ -436,7 +430,7 @@
     <div id="tab-periode" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Manajemen Periode</h2>
-        <button onclick="openPeriodeCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+        <button onclick="openModal('modalPeriode')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Tambah Periode
         </button>
@@ -473,27 +467,26 @@
       <button onclick="closeModal('modalStatistik')" class="text-slate-400 hover:text-slate-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
     </div>
     <form id="formStatistik" class="p-6 space-y-4">
-      <input type="hidden" id="stat-id"><input type="hidden" id="stat-period"><input type="hidden" id="stat-template-id">
+      <input type="hidden" id="stat-id"><input type="hidden" id="stat-period">
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-1">Label</label>
         <input type="text" id="stat-label" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Total Anggota">
       </div>
-      <div id="stat-value-wrap">
+      <div>
         <label class="block text-sm font-semibold text-slate-700 mb-1">Value (Angka)</label>
-        <input type="text" id="stat-value" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150+">
+        <input type="text" id="stat-value" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150+">
       </div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Tambahan</label>
         <input type="text" id="stat-desc" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Orang dari berbagai jurusan">
       </div>
       <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Chart</label>
-        <input type="hidden" id="stat-chart-type" value="bar">
-        <div id="stat-chart-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Icon (Class opsional)</label>
+        <input type="text" id="stat-icon" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="lucide:user">
       </div>
-      <div id="stat-flags-wrap" class="grid grid-cols-2 gap-3">
-        <label class="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="stat-fillable" class="rounded"> Fillable</label>
-        <label class="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="stat-visible" class="rounded" checked> Tampilkan</label>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Urutan</label>
+        <input type="number" id="stat-order" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
       </div>
       <div class="flex justify-end gap-3 mt-6">
         <button type="button" onclick="closeModal('modalStatistik')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
@@ -625,20 +618,8 @@
           <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Panggilan</label>
           <input type="text" id="anggota-nickname" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
         </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Program Studi</label>
-          <input type="text" id="anggota-program-studi" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Fakultas</label>
-          <input type="text" id="anggota-fakultas" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Angkatan</label>
-          <input type="text" id="anggota-angkatan" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="2024">
-        </div>
+        
       </div>
-      <div id="anggota-activation-wrap" class="space-y-2"></div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Foto Anggota</label>
         <div id="picker-anggota-photo"></div>
@@ -682,7 +663,7 @@
 <div id="modalPeriode" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
     <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 id="modalPeriodeTitle" class="text-lg font-bold">Tambah Periode</h3>
+      <h3 class="text-lg font-bold">Tambah Periode</h3>
       <button onclick="closeModal('modalPeriode')" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
@@ -697,10 +678,13 @@
         <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Tampilan</label>
         <input type="text" id="periode-displayname" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kepengurusan 2025/2026">
       </div>
-      <div id="periode-subperiod-editor" class="hidden">
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Sub-Periode</label>
-        <div id="periode-subperiod-list" class="space-y-2"></div>
-        <button type="button" id="btn-add-subperiod" class="mt-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg">+ Tambah Sub-Periode</button>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Sub-Periode (pisahkan dengan koma)</label>
+        <input type="text" id="periode-subperiods" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Q1 2024, Q2 2024">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Struktur Organisasi</label>
+        <div id="picker-periode-hierarchy"></div>
       </div>
       <div class="flex gap-3 pt-2">
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
@@ -848,7 +832,7 @@ async function pickerUpload(id, file) {
     if (!r.ok) throw new Error(j.error || r.status);
     pickerSetUrl(id, j.url);
   } catch(ex) {
-    uiAlert('Upload gagal: ' + ex.message);
+    alert('Upload gagal: ' + ex.message);
     prompt.classList.remove('hidden');
   } finally {
     uploading.classList.add('hidden');
@@ -953,79 +937,6 @@ function loadTab(name) {
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-let actionModalResolver = null;
-
-function toUiMessage(errLike) {
-  if (typeof errLike === 'string') return errLike;
-  if (errLike && typeof errLike.message === 'string') return errLike.message;
-  try {
-    return JSON.stringify(errLike);
-  } catch (_) {
-    return String(errLike);
-  }
-}
-
-function uiActionModal(opts = {}) {
-  const {
-    title = 'Konfirmasi',
-    message = '',
-    confirmText = 'OK',
-    cancelText = 'Batal',
-    showCancel = false,
-    danger = false
-  } = opts;
-
-  const modal = document.getElementById('modalAction');
-  const titleEl = document.getElementById('modalActionTitle');
-  const msgEl = document.getElementById('modalActionMessage');
-  const btnOk = document.getElementById('modalActionOk');
-  const btnCancel = document.getElementById('modalActionCancel');
-  if (!modal || !titleEl || !msgEl || !btnOk || !btnCancel) {
-    return Promise.resolve(showCancel ? true : undefined);
-  }
-
-  titleEl.textContent = title;
-  msgEl.textContent = toUiMessage(message);
-  btnOk.textContent = confirmText;
-  btnCancel.textContent = cancelText;
-  btnCancel.classList.toggle('hidden', !showCancel);
-  btnOk.classList.toggle('bg-red-600', !!danger);
-  btnOk.classList.toggle('hover:bg-red-700', !!danger);
-  btnOk.classList.toggle('bg-blue-600', !danger);
-  btnOk.classList.toggle('hover:bg-blue-700', !danger);
-
-  openModal('modalAction');
-
-  return new Promise(resolve => {
-    actionModalResolver = resolve;
-    btnOk.onclick = () => {
-      closeModal('modalAction');
-      actionModalResolver = null;
-      resolve(showCancel ? true : undefined);
-    };
-    btnCancel.onclick = () => {
-      closeModal('modalAction');
-      actionModalResolver = null;
-      resolve(false);
-    };
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        closeModal('modalAction');
-        actionModalResolver = null;
-        resolve(showCancel ? false : undefined);
-      }
-    };
-  });
-}
-
-async function uiAlert(message, title = 'Informasi') {
-  await uiActionModal({ title, message, confirmText: 'OK', showCancel: false });
-}
-
-async function uiConfirm(message, title = 'Konfirmasi', danger = false) {
-  return uiActionModal({ title, message, confirmText: danger ? 'Ya, lanjutkan' : 'Ya', cancelText: 'Batal', showCancel: true, danger });
-}
-
 // ── Generic fetch ────────────────────────────────────────────────────────────
 async function api(method, url, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -1037,53 +948,10 @@ async function api(method, url, body) {
 
 function errHtml(e) { return `<div class="bg-red-50 text-red-700 rounded-lg p-4 text-sm border border-red-200">${e}</div>`; }
 
-const CHART_CHOICES = [
-  { value: 'bar', label: 'Bar' },
-  { value: 'line', label: 'Line' },
-  { value: 'pie', label: 'Pie' },
-  { value: 'doughnut', label: 'Doughnut' },
-  { value: 'area', label: 'Area' },
-  { value: 'radar', label: 'Radar' },
-  { value: 'scatter', label: 'Scatter' },
-  { value: 'bubble', label: 'Bubble' },
-  { value: 'polar', label: 'Polar' },
-  { value: 'histogram', label: 'Histogram' },
-  { value: 'stacked_bar', label: 'Stacked Bar' },
-  { value: 'grouped_bar', label: 'Grouped Bar' },
-  { value: 'funnel', label: 'Funnel' },
-  { value: 'heatmap', label: 'Heatmap' },
-  { value: 'kpi', label: 'KPI Card' },
-  { value: 'table', label: 'Table' }
-];
-
-function renderChartChoices(selectedValue = 'bar') {
-  const wrap = document.getElementById('stat-chart-options');
-  if (!wrap) return;
-  const current = selectedValue || 'bar';
-  document.getElementById('stat-chart-type').value = current;
-  wrap.innerHTML = CHART_CHOICES.map(c => {
-    const active = c.value === current;
-    return `<button type="button" class="chart-choice border rounded-lg px-2 py-2 text-xs font-medium transition ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}" data-chart-value="${c.value}">${c.label}</button>`;
-  }).join('');
-}
-
-document.addEventListener('click', e => {
-  const btn = e.target.closest('.chart-choice');
-  if (!btn) return;
-  const value = btn.getAttribute('data-chart-value') || 'bar';
-  renderChartChoices(value);
-});
-
 function currentPeriod() {
     return window.customPeriodOverride || "{{.SelectedPeriod}}";
 }
 function emptyHtml(msg) { return `<div class="text-center py-12 text-slate-400"><p>${msg}</p></div>`; }
-
-function periodSubPeriods(period) {
-  const src = Array.isArray(period?.sub_periods) ? period.sub_periods : [];
-  const cleaned = src.map(s => (s || '').trim()).filter(Boolean);
-  return cleaned.length ? cleaned : ['Gelombang 1'];
-}
 
 // ── PENGUMUMAN ───────────────────────────────────────────────────────────────
 async function loadPengumuman() {
@@ -1140,17 +1008,17 @@ async function submitPengumuman() {
     published: document.getElementById('pengumuman-published').checked,
     period_label: PERIOD
   };
-  if (!body.title) { uiAlert('Judul harus diisi'); return; }
+  if (!body.title) { alert('Judul harus diisi'); return; }
   try {
     if (id) await api('PUT', `/api/cms/announcements/${id}`, body);
     else await api('POST', '/api/cms/announcements', body);
     closeModal('modalPengumuman');
     loadPengumuman();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 }
 
 async function deletePengumuman(id) {
-  if (!await uiConfirm('Hapus pengumuman ini?', 'Konfirmasi Hapus', true)) return;
+  if (!confirm('Hapus pengumuman ini?')) return;
   await api('DELETE', `/api/cms/announcements/${id}`);
   loadPengumuman();
 }
@@ -1230,17 +1098,17 @@ async function submitArtikel() {
     published: document.getElementById('artikel-published').checked,
     period_label: PERIOD
   };
-  if (!body.title || !body.slug) { uiAlert('Judul dan slug harus diisi'); return; }
+  if (!body.title || !body.slug) { alert('Judul dan slug harus diisi'); return; }
   try {
     if (id) await api('PUT', `/api/cms/articles/${id}`, body);
     else await api('POST', '/api/cms/articles', body);
     closeModal('modalArtikel');
     loadArtikel();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 }
 
 async function deleteArtikel(id) {
-  if (!await uiConfirm('Hapus artikel ini?', 'Konfirmasi Hapus', true)) return;
+  if (!confirm('Hapus artikel ini?')) return;
   await api('DELETE', `/api/cms/articles/${id}`);
   loadArtikel();
 }
@@ -1256,7 +1124,12 @@ async function loadTentang() {
     quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
-    if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
+  } catch(e) {}
+
+  try {
+    const periods = await api('GET', '/api/cms/periods');
+    const p = (periods || []).find(x => x.label === PERIOD);
+    if (p && p.hierarchy_image_url) pickerSetUrl('picker-struktur', p.hierarchy_image_url);
   } catch(e) {}
 }
 
@@ -1268,12 +1141,12 @@ document.getElementById('formTentang').addEventListener('submit', async e => {
       period_label: PERIOD,
       sejarah: quillGetHTML('editor-sejarah'),
       visi: quillGetHTML('editor-visi'),
-      misi: quillGetHTML('editor-misi'),
-      hierarchy_image_url: pickerGetUrl('picker-struktur')
+      misi: quillGetHTML('editor-misi')
     });
+    await api('PUT', `/api/cms/periods/${PERIOD}`, { hierarchy_image_url: pickerGetUrl('picker-struktur') });
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
 
 
@@ -1375,7 +1248,7 @@ function initDeptSortables() {
           await persistDepartmentOrderFromDom();
           await loadKementerian();
         } catch (ex) {
-          uiAlert('Gagal menyimpan urutan kementerian: ' + ex.message);
+          alert('Gagal menyimpan urutan kementerian: ' + ex.message);
         }
       }
     });
@@ -1391,7 +1264,7 @@ function initDeptSortables() {
         try {
           await handleMemberDrop(evt);
         } catch (ex) {
-          uiAlert('Gagal menyimpan urutan anggota: ' + ex.message);
+          alert('Gagal menyimpan urutan anggota: ' + ex.message);
         }
       }
     });
@@ -1468,7 +1341,7 @@ function editDept(d) {
 }
 
 async function deleteDept(id) {
-  if (!await uiConfirm('Hapus kementerian ini?', 'Konfirmasi Hapus', true)) return;
+  if (!confirm('Hapus kementerian ini?')) return;
   await api('DELETE', `/api/cms/departments/${id}`);
   await loadKementerian();
 }
@@ -1488,16 +1361,13 @@ document.getElementById('formKementerian').addEventListener('submit', async e =>
     closeModal('modalKementerian');
     resetDeptForm();
     await loadKementerian();
-  } catch (ex) { uiAlert('Error: ' + ex.message); }
+  } catch (ex) { alert('Error: ' + ex.message); }
 });
 
 function openAssignMemberModal(deptId) {
   const dept = deptCache.find(d => d.id === deptId);
   if (!dept) return;
-  const available = memberCache.filter(m => {
-    const active = m?.active_periods && m.active_periods[PERIOD];
-    return active && !(m.department || '');
-  });
+  const available = memberCache.filter(m => !(m.department || ''));
   const sel = document.getElementById('assign-member-id');
   document.getElementById('assign-dept-id').value = deptId;
   document.getElementById('assign-member-position').value = '';
@@ -1516,7 +1386,7 @@ async function submitAssignMember() {
   const position = document.getElementById('assign-member-position').value.trim();
   const dept = deptCache.find(d => d.id === deptId);
   if (!dept || !memberId) {
-    uiAlert('Pilih anggota yang valid.');
+    alert('Pilih anggota yang valid.');
     return;
   }
 
@@ -1532,7 +1402,7 @@ async function submitAssignMember() {
 }
 
 async function unassignMember(memberId) {
-  if (!await uiConfirm('Lepas anggota dari departemen?', 'Konfirmasi')) return;
+  if (!confirm('Lepas anggota dari departemen?')) return;
   await api('PUT', `/api/cms/members/${memberId}`, {
     department: '',
     position: '',
@@ -1543,37 +1413,6 @@ async function unassignMember(memberId) {
 }
 
 // ── ANGGOTA ──────────────────────────────────────────────────────────────────
-function renderAnggotaActivationEditor(activePeriods = {}) {
-  const wrap = document.getElementById('anggota-activation-wrap');
-  if (!wrap) return;
-  if (ROLE !== 'superadmin') {
-    wrap.innerHTML = '';
-    return;
-  }
-  wrap.innerHTML = `
-    <label class="block text-sm font-semibold text-slate-700 mb-1">Aktif per Periode/Sub-Periode</label>
-    <div class="space-y-2">${(state.periods || []).map(p => {
-      const options = periodSubPeriods(p).map(sp => `<option value="${sp}" ${activePeriods[p.label] === sp ? 'selected' : ''}>${escHtml(sp)}</option>`).join('');
-      return `<div class="grid grid-cols-2 gap-2 items-center">
-        <div class="text-xs text-slate-600 font-medium">${escHtml(p.display_name || p.label)}</div>
-        <select data-period="${p.label}" class="anggota-active-subperiod w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs">
-          <option value="">Tidak aktif</option>
-          ${options}
-        </select>
-      </div>`;
-    }).join('')}</div>`;
-}
-
-function collectAnggotaActivation() {
-  const map = {};
-  document.querySelectorAll('.anggota-active-subperiod').forEach(sel => {
-    const val = (sel.value || '').trim();
-    const p = sel.getAttribute('data-period');
-    if (p && val) map[p] = val;
-  });
-  return map;
-}
-
 async function loadAnggota() {
   const el = document.getElementById('list-anggota');
   try {
@@ -1584,8 +1423,6 @@ async function loadAnggota() {
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
         <th class="px-4 py-3 bg-slate-50 font-semibold">Foto</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Nama</th>
-        <th class="px-4 py-3 bg-slate-50 font-semibold">Profil</th>
-        <th class="px-4 py-3 bg-slate-50 font-semibold">Status Aktif</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Penempatan</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
@@ -1600,13 +1437,6 @@ async function loadAnggota() {
           <td class="px-4 py-3 border-t border-slate-100">
             <div class="font-medium text-slate-800">${escHtml(m.full_name)}</div>
             ${m.nickname ? `<div class="text-xs text-slate-400">${escHtml(m.nickname)}</div>` : ''}
-          </td>
-          <td class="px-4 py-3 text-slate-600 border-t border-slate-100">
-            <div class="text-xs">${escHtml(m.program_studi || '-')}</div>
-            <div class="text-xs text-slate-400">${escHtml(m.fakultas || '-')} • ${escHtml(m.angkatan || '-')}</div>
-          </td>
-          <td class="px-4 py-3 text-slate-600 border-t border-slate-100">
-            ${m.active_periods && m.active_periods[PERIOD] ? `<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aktif (${escHtml(m.active_periods[PERIOD])})</span>` : '<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Tidak aktif</span>'}
           </td>
           <td class="px-4 py-3 text-slate-600 border-t border-slate-100">
             ${m.department ? `<div class="text-sm">${escHtml(m.department)}</div>` : '<div class="text-xs text-amber-600">Belum ditempatkan</div>'}
@@ -1628,34 +1458,20 @@ async function loadAnggota() {
   } catch (e) { el.innerHTML = errHtml(e.message); }
 }
 
-async function openAnggotaModal() {
-  if (ROLE === 'superadmin' && (!state.periods || !state.periods.length)) {
-    try { state.periods = await api('GET', '/api/cms/periods'); } catch (_) {}
-  }
+function openAnggotaModal() {
   document.getElementById('anggota-id').value = '';
   document.getElementById('anggota-fullname').value = '';
   document.getElementById('anggota-nickname').value = '';
-  document.getElementById('anggota-program-studi').value = '';
-  document.getElementById('anggota-fakultas').value = '';
-  document.getElementById('anggota-angkatan').value = '';
   document.getElementById('modalAnggotaTitle').textContent = 'Tambah Anggota';
-  renderAnggotaActivationEditor({});
   createImagePicker('picker-anggota-photo');
   openModal('modalAnggota');
 }
 
-async function editAnggota(m) {
-  if (ROLE === 'superadmin' && (!state.periods || !state.periods.length)) {
-    try { state.periods = await api('GET', '/api/cms/periods'); } catch (_) {}
-  }
+function editAnggota(m) {
   document.getElementById('anggota-id').value = m.id;
   document.getElementById('anggota-fullname').value = m.full_name;
   document.getElementById('anggota-nickname').value = m.nickname || '';
-  document.getElementById('anggota-program-studi').value = m.program_studi || '';
-  document.getElementById('anggota-fakultas').value = m.fakultas || '';
-  document.getElementById('anggota-angkatan').value = m.angkatan || '';
   document.getElementById('modalAnggotaTitle').textContent = 'Edit Anggota';
-  renderAnggotaActivationEditor(m.active_periods || {});
   createImagePicker('picker-anggota-photo', { initialUrl: m.photo_url || '' });
   openModal('modalAnggota');
 }
@@ -1665,82 +1481,27 @@ async function submitAnggota() {
   const body = {
     full_name: document.getElementById('anggota-fullname').value,
     nickname: document.getElementById('anggota-nickname').value,
-    program_studi: document.getElementById('anggota-program-studi').value,
-    fakultas: document.getElementById('anggota-fakultas').value,
-    angkatan: document.getElementById('anggota-angkatan').value,
-    active_periods: collectAnggotaActivation(),
     photo_url: pickerGetUrl('picker-anggota-photo'),
     period_label: PERIOD
   };
-  if (!body.full_name) { uiAlert('Nama harus diisi'); return; }
+  if (!body.full_name) { alert('Nama harus diisi'); return; }
   try {
     if (id) await api('PUT', `/api/cms/members/${id}`, body);
     else await api('POST', '/api/cms/members', body);
     closeModal('modalAnggota');
     await loadAnggota();
     await loadKementerian();
-  } catch (ex) { uiAlert('Error: ' + ex.message); }
+  } catch (ex) { alert('Error: ' + ex.message); }
 }
 
 async function deleteAnggota(id) {
-  if (!await uiConfirm('Hapus anggota ini?', 'Konfirmasi Hapus', true)) return;
+  if (!confirm('Hapus anggota ini?')) return;
   await api('DELETE', `/api/cms/members/${id}`);
   await loadAnggota();
   await loadKementerian();
 }
 
 // ── MANAJEMEN PERIODE ────────────────────────────────────────────────────────
-let periodSubperiodDraft = [];
-let periodUsedSubperiods = new Set();
-
-function renderPeriodSubperiodEditor() {
-  const list = document.getElementById('periode-subperiod-list');
-  if (!list) return;
-  list.innerHTML = periodSubperiodDraft.map((sp, idx) => {
-    const locked = periodUsedSubperiods.has(sp);
-    const canDelete = periodSubperiodDraft.length > 1 && !locked;
-    return `<div class="flex items-center gap-2">
-      <input type="text" data-subperiod-index="${idx}" value="${escHtml(sp)}" class="flex-1 border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
-      <button type="button" data-remove-subperiod="${idx}" class="text-xs px-2 py-1 rounded ${canDelete ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}" ${canDelete ? '' : 'disabled'}>${locked ? 'Dipakai' : 'Hapus'}</button>
-    </div>`;
-  }).join('');
-}
-
-async function loadSubperiodUsage(periodLabel) {
-  try {
-    const members = await api('GET', `/api/cms/members?period=${encodeURIComponent(periodLabel)}`);
-    const used = new Set();
-    (members || []).forEach(m => {
-      const sp = m?.active_periods?.[periodLabel];
-      if (sp) used.add(sp);
-    });
-    periodUsedSubperiods = used;
-  } catch (_) {
-    periodUsedSubperiods = new Set();
-  }
-}
-
-document.addEventListener('click', e => {
-  if (e.target.matches('#btn-add-subperiod')) {
-    periodSubperiodDraft.push(`Gelombang ${periodSubperiodDraft.length + 1}`);
-    renderPeriodSubperiodEditor();
-  }
-  if (e.target.matches('[data-remove-subperiod]')) {
-    const idx = parseInt(e.target.getAttribute('data-remove-subperiod'), 10);
-    if (!Number.isNaN(idx) && periodSubperiodDraft.length > 1) {
-      periodSubperiodDraft.splice(idx, 1);
-      renderPeriodSubperiodEditor();
-    }
-  }
-});
-
-document.addEventListener('input', e => {
-  if (e.target.matches('[data-subperiod-index]')) {
-    const idx = parseInt(e.target.getAttribute('data-subperiod-index'), 10);
-    if (!Number.isNaN(idx)) periodSubperiodDraft[idx] = e.target.value;
-  }
-});
-
 async function loadPeriode() {
   const el = document.getElementById('list-periode');
   try {
@@ -1777,31 +1538,33 @@ function editPeriode(label) {
     const p = (state.periods || []).find(x => x.label === label);
     if(!p) return;
     document.getElementById('periode-label').value = p.label;
-    document.getElementById('periode-label').readOnly = true;
-    document.getElementById('modalPeriodeTitle').textContent = 'Edit Periode';
+    document.getElementById('periode-label').readOnly = true; // Can't edit primary label
     document.getElementById('periode-displayname').value = p.display_name;
-    periodSubperiodDraft = [...periodSubPeriods(p)];
-    document.getElementById('periode-subperiod-editor').classList.remove('hidden');
-    loadSubperiodUsage(p.label).then(renderPeriodSubperiodEditor);
+    document.getElementById('periode-sub_periods').value = (p.sub_periods||[]).join(', ');
+    
+    // image picks
+    pickerClear('picker-periode-hierarchy');
+    if(p.hierarchy_image_url) pickerSetUrl('picker-periode-hierarchy', p.hierarchy_image_url);
+    pickerClear('picker-periode-hero');
+    if(p.hero_image_url) pickerSetUrl('picker-periode-hero', p.hero_image_url);
+    
     openModal('modalPeriode');
 }
 
-function openPeriodeCreateModal() {
-  document.getElementById('periode-label').readOnly = false;
-  document.getElementById('modalPeriodeTitle').textContent = 'Tambah Periode';
-  document.getElementById('formPeriode').reset();
-  document.getElementById('periode-subperiod-editor').classList.add('hidden');
-  periodSubperiodDraft = ['Gelombang 1'];
-  periodUsedSubperiods = new Set();
-  openModal('modalPeriode');
-}
+// Reset readOnly when adding new
+document.querySelector('[onclick="openModal(\'modalPeriode\')"]').addEventListener('click', () => {
+    document.getElementById('periode-label').readOnly = false;
+    document.getElementById('formPeriode').reset();
+    pickerClear('picker-periode-hierarchy');
+    pickerClear('picker-periode-hero');
+});
 
 async function activatePeriode(label) {
-  if (!await uiConfirm(`Jadikan periode "${label}" sebagai aktif?`, 'Konfirmasi Aktivasi')) return;
+  if (!confirm(`Jadikan periode "${label}" sebagai aktif?`)) return;
   try {
     await api('PUT', `/api/cms/periods/${label}/activate`);
     loadPeriode();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 }
 
 
@@ -1813,7 +1576,9 @@ document.getElementById('formPeriode').addEventListener('submit', async e => {
   const body = {
     label: label,
     display_name: document.getElementById('periode-displayname').value,
-    sub_periods: (isEditing ? periodSubperiodDraft : ['Gelombang 1']).map(s => s.trim()).filter(Boolean)
+    hierarchy_image_url: pickerGetUrl('picker-periode-hierarchy'),
+    hero_image_url: pickerGetUrl('picker-periode-hero'),
+    sub_periods: document.getElementById('periode-sub_periods').value ? document.getElementById('periode-sub_periods').value.split(',').map(s=>s.trim()).filter(s=>s) : []
   };
   try {
     if(isEditing) {
@@ -1823,8 +1588,10 @@ document.getElementById('formPeriode').addEventListener('submit', async e => {
     }
     closeModal('modalPeriode');
     document.getElementById('formPeriode').reset();
+    createImagePicker('picker-periode-hierarchy');
+    createImagePicker('picker-periode-hero');
     loadPeriode();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
 //__REPLACE_ME__
 
@@ -1888,7 +1655,7 @@ function editAkun(u) {
 }
 
 async function deleteAkun(id) {
-  if (!await uiConfirm('Hapus akun ini?', 'Konfirmasi Hapus', true)) return;
+  if (!confirm('Hapus akun ini?')) return;
   await api('DELETE', `/api/cms/accounts/${id}`);
   loadAkun();
 }
@@ -1907,7 +1674,7 @@ document.getElementById('formAkun').addEventListener('submit', async e => {
     else await api('POST', '/api/cms/accounts', body);
     closeModal('modalAkun');
     loadAkun();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
 
 function toggleAssignedPeriod() {
@@ -1946,7 +1713,7 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
     });
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
 
 document.getElementById('formSocmed').addEventListener('submit', async e => {
@@ -1968,7 +1735,7 @@ document.getElementById('formSocmed').addEventListener('submit', async e => {
     });
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
+  } catch(ex) { alert('Error: ' + ex.message); }
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -2025,7 +1792,7 @@ function editScholar(id) {
   if(!imagePickers['picker-scholar-photo']) createImagePicker('picker-scholar-photo');
 }
 async function deleteScholar(id) {
-  if(!await uiConfirm('Hapus scholar?', 'Konfirmasi Hapus', true)) return;
+  if(!confirm('Hapus scholar?')) return;
   await api('DELETE', '/api/cms/scholars?id='+id);
   loadScholars();
 }
@@ -2045,14 +1812,14 @@ document.getElementById('formScholar')?.addEventListener('submit', async e => {
      await api(data.id ? 'PUT' : 'POST', '/api/cms/scholars', data);
      closeModal('modalScholar');
      loadScholars();
-  } catch(ex) { uiAlert(ex); }
+  } catch(ex) { alert(ex); }
 });
 
 // ── BATCH ASSIGN SCHOLARS TO PERIODE ───────────────────────────────
 
 async function openAssignScholarsModal() {
    const cur = currentPeriod();
-   if (!cur) return uiAlert('Pilih periode aktif terlebih dahulu!');
+   if (!cur) return alert('Pilih periode aktif terlebih dahulu!');
    
    document.getElementById('assign-period').value = cur;
    
@@ -2064,8 +1831,8 @@ async function openAssignScholarsModal() {
    let p = (state.periods||[]).find(x => x.label === cur);
    const sel = document.getElementById('assign-subperiod');
    sel.innerHTML = '<option value="">-- Pilih --</option>';
-     if (p) {
-       periodSubPeriods(p).forEach(sp => { sel.innerHTML += `<option value="${sp}">${sp}</option>`; });
+   if (p && p.sub_periods) {
+       p.sub_periods.forEach(sp => { sel.innerHTML += `<option value="${sp}">${sp}</option>`; });
    }
    
    const list = document.getElementById('assign-scholar-list');
@@ -2090,7 +1857,7 @@ function updateAssignSubperiod() {
    sel.innerHTML = '<option value="">-- Pilih --</option>';
    if(!val) return;
    const p = (state.periods||[]).find(x => x.id === val || x.label === val);
-  periodSubPeriods(p).forEach(sp => { sel.innerHTML += `<option value="${sp}">${sp}</option>`; });
+   (p?.sub_periods||[]).forEach(sp => { sel.innerHTML += `<option value="${sp}">${sp}</option>`; });
 }
 
 document.getElementById('formAssignScholars')?.addEventListener('submit', async e => {
@@ -2099,7 +1866,7 @@ document.getElementById('formAssignScholars')?.addEventListener('submit', async 
   const subPeriod = document.getElementById('assign-subperiod').value;
   const checks = document.querySelectorAll('input[name="assign-scholar-ids"]:checked');
   const ids = Array.from(checks).map(c => c.value);
-  if(!ids.length) return uiAlert('Pilih anggota dulu');
+  if(!ids.length) return alert('Pilih anggota dulu');
   try {
      await fetch('/api/cms/batch-assign-scholars', {
         method: 'POST', headers: {'Content-Type':'application/json'},
@@ -2107,7 +1874,7 @@ document.getElementById('formAssignScholars')?.addEventListener('submit', async 
      });
      closeModal('modalAssignScholars');
      loadAnggota();
-  } catch(ex) { uiAlert(ex); }
+  } catch(ex) { alert(ex); }
 });
 
 // ── FAQ GLOBAL & PERIODE ──────────────────────────────────────────────────
@@ -2136,7 +1903,7 @@ function initFAQSorable(pLabel) {
         try {
             await Promise.all(updates);
         } catch(e) {
-            uiAlert('Gagal mengurutkan FAQ: ' + e.message);
+            alert('Gagal mengurutkan FAQ: ' + e.message);
         }
       }
     }
@@ -2178,7 +1945,7 @@ function editFAQ(id, pLabel) {
   openModal('modalFAQ');
 }
 async function deleteFAQ(id, pLabel) {
-  if(!await uiConfirm('Hapus FAQ ini?', 'Konfirmasi Hapus', true)) return;
+  if(!confirm('Hapus FAQ ini?')) return;
   await api('DELETE', '/api/cms/faqs?id='+id);
   loadFAQs(pLabel);
 }
@@ -2195,142 +1962,76 @@ document.getElementById('formFAQ')?.addEventListener('submit', async e => {
      await api(data.id ? 'PUT' : 'POST', '/api/cms/faqs', data);
      closeModal('modalFAQ');
      loadFAQs(data.period_label);
-  } catch(ex) { uiAlert(ex); }
+  } catch(ex) { alert(ex); }
 });
 
 // ── STATISTIK ──────────────────────────────────────────────────────────
 
 async function syncStats() {
     const cur = currentPeriod();
-    if(!cur || cur === '_TEMPLATE_') return uiAlert("Pilih periode valid!");
-  if(!await uiConfirm("Tarik template statistik global ke periode ini?", 'Konfirmasi Sinkronisasi')) return;
+    if(!cur || cur === '_TEMPLATE_') return alert("Pilih periode valid!");
+    if(!confirm("Tarik template statistik global ke periode ini?")) return;
     try {
         await api('POST', '/api/cms/sync-stats', { period_label: cur });
-        uiAlert("Berhasil menarik template.");
+        alert("Berhasil menarik template.");
         loadStatistik();
-    } catch(e) { uiAlert(e); }
-}
-function initStatsSortable(tbodyId) {
-  const tb = document.getElementById(tbodyId);
-  if (!tb) return;
-  if (tb._sortable) tb._sortable.destroy();
-  tb._sortable = Sortable.create(tb, {
-    animation: 180,
-    handle: '.stat-drag',
-    onEnd: async () => {
-      const rows = tb.querySelectorAll('tr[data-id]');
-      for (let i = 0; i < rows.length; i++) {
-        const id = rows[i].getAttribute('data-id');
-        const source = [...(state.global_stats || []), ...(state.stats || [])].find(x => x.id === id);
-        if (!source) continue;
-        const payload = {
-          ...source,
-          order: i,
-          template_id: source.template_id || source.id,
-          chart_type: source.chart_type || 'bar',
-          fillable: !!source.fillable,
-          visible: source.visible !== false
-        };
-        await api('PUT', '/api/cms/stats/' + id, payload);
-      }
-      if (tbodyId === 'global-stats-tbody') loadGlobalStatsTab();
-      else loadStatistik();
-    }
-  });
+    } catch(e) { alert(e); }
 }
 
-async function toggleTemplateFlag(id, key, checked) {
-  const s = (state.global_stats || []).find(x => x.id === id);
-  if (!s) return;
-  const payload = {
-    ...s,
-    template_id: s.template_id || s.id,
-    chart_type: s.chart_type || 'bar',
-    fillable: key === 'fillable' ? checked : !!s.fillable,
-    visible: key === 'visible' ? checked : s.visible !== false,
-    period_label: '_TEMPLATE_'
-  };
-  await api('PUT', '/api/cms/stats/' + id, payload);
-  loadGlobalStatsTab();
-}
+
+
+
+
+
 
 async function loadGlobalStatsTab() {
     const tb = document.getElementById('global-stats-tbody');
     try {
         const items = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
+        // store in a separate state key so it doesn't collide with current period stats
         state.global_stats = items || [];
         tb.innerHTML = (items||[]).map(s => `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${s.id}">
-            <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
             <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
             <td class="p-4 align-middle text-slate-500">${escHtml(s.desc||'')}</td>
-            <td class="p-4 align-middle text-xs">${escHtml((s.chart_type||'bar').toUpperCase())}</td>
-            <td class="p-4 align-middle"><input type="checkbox" ${s.fillable ? 'checked' : ''} onchange="toggleTemplateFlag('${s.id}','fillable',this.checked)"></td>
-            <td class="p-4 align-middle"><input type="checkbox" ${s.visible === false ? '' : 'checked'} onchange="toggleTemplateFlag('${s.id}','visible',this.checked)"></td>
             <td class="p-4 align-middle text-right">
               <button onclick="editGlobalStat('${s.id}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button>
               <button onclick="deleteGlobalStat('${s.id}')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button>
             </td>
           </tr>
         `).join('');
-        if(!items || !items.length) tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
-        initStatsSortable('global-stats-tbody');
+        if(!items || !items.length) tb.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
     } catch(e) {
-        tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">${e}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-red-500">${e}</td></tr>`;
     }
 }
 
 function openStatModalGlobal() {
   document.getElementById('formStatistik').reset();
-  document.getElementById('modalStatistikTitle').textContent = 'Tambah Template Statistik';
   document.getElementById('stat-id').value = '';
-  document.getElementById('stat-template-id').value = '';
   document.getElementById('stat-period').value = '_TEMPLATE_';
-  document.getElementById('stat-value').value = '';
-  document.getElementById('stat-value-wrap').classList.add('hidden');
-  document.getElementById('stat-flags-wrap').classList.add('hidden');
-  document.getElementById('stat-value').disabled = true;
-  document.getElementById('stat-label').disabled = false;
-  document.getElementById('stat-desc').disabled = false;
-  document.getElementById('stat-chart-type').disabled = false;
-  renderChartChoices('bar');
-  document.getElementById('stat-fillable').checked = false;
-  document.getElementById('stat-visible').checked = true;
-  document.getElementById('stat-fillable').disabled = true;
-  document.getElementById('stat-visible').disabled = true;
   openModal('modalStatistik');
 }
 
 function editGlobalStat(id) {
   const s = state.global_stats.find(x => x.id === id);
   if(!s) return;
-  document.getElementById('modalStatistikTitle').textContent = 'Edit Template Statistik';
   document.getElementById('stat-id').value = s.id;
-  document.getElementById('stat-template-id').value = s.template_id || s.id;
   document.getElementById('stat-period').value = s.period_label;
   document.getElementById('stat-label').value = s.label||'';
   document.getElementById('stat-value').value = s.value||'';
   document.getElementById('stat-desc').value = s.desc||'';
-  renderChartChoices(s.chart_type || 'bar');
-  document.getElementById('stat-fillable').checked = !!s.fillable;
-  document.getElementById('stat-visible').checked = s.visible !== false;
-  document.getElementById('stat-value-wrap').classList.add('hidden');
-  document.getElementById('stat-flags-wrap').classList.remove('hidden');
-  document.getElementById('stat-value').disabled = true;
-  document.getElementById('stat-label').disabled = false;
-  document.getElementById('stat-desc').disabled = false;
-  document.getElementById('stat-chart-type').disabled = false;
-  document.getElementById('stat-fillable').disabled = false;
-  document.getElementById('stat-visible').disabled = false;
+  document.getElementById('stat-icon').value = s.icon||'';
+  document.getElementById('stat-order').value = s.order||0;
   openModal('modalStatistik');
 }
 
 async function deleteGlobalStat(id) {
-  if(!await uiConfirm('Hapus template ini?', 'Konfirmasi Hapus', true)) return;
+  if(!confirm('Hapus template ini?')) return;
   try {
     await api('DELETE', '/api/cms/stats/' + id);
     loadGlobalStatsTab();
-  } catch(e) { uiAlert(e); }
+  } catch(e) { alert(e); }
 }
 
 async function loadStatistik() {
@@ -2342,78 +2043,54 @@ async function loadStatistik() {
     state.stats = items || [];
     tb.innerHTML = (items||[]).map(s => `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${s.id}">
-        <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
+        <td class="p-4 align-middle w-10 cursor-move faq-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
         <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
         <td class="p-4 align-middle font-bold text-blue-600">${escHtml(s.value||'')}</td>
         <td class="p-4 align-middle">${escHtml(s.desc||'')}</td>
         <td class="p-4 align-middle text-right">
           <button onclick="editStat('${s.id}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button>
+          <button onclick="deleteStat('${s.id}')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button>
         </td>
       </tr>
     `).join('');
-    initStatsSortable('statistik-tbody');
   } catch(e) { tb.innerHTML = `<tr><td colspan="5">${errHtml(e.message)}</td></tr>`; }
 }
 function openStatModal() {
   const cur = currentPeriod();
-  if(!cur) return uiAlert('Pilih periode dulu.');
+  if(!cur) return alert('Pilih periode dulu.');
   document.getElementById('formStatistik').reset();
-  document.getElementById('modalStatistikTitle').textContent = 'Tambah Nilai Statistik Periode';
   document.getElementById('stat-id').value = '';
-  document.getElementById('stat-template-id').value = '';
   document.getElementById('stat-period').value = cur;
-  document.getElementById('stat-value-wrap').classList.remove('hidden');
-  document.getElementById('stat-flags-wrap').classList.add('hidden');
-  document.getElementById('stat-value').disabled = false;
-  document.getElementById('stat-label').disabled = true;
-  document.getElementById('stat-desc').disabled = true;
-  renderChartChoices('bar');
-  document.getElementById('stat-chart-type').disabled = true;
-  document.getElementById('stat-fillable').disabled = true;
-  document.getElementById('stat-visible').disabled = true;
   openModal('modalStatistik');
 }
 function editStat(id) {
   const s = state.stats.find(x => x.id === id);
   if(!s) return;
-  document.getElementById('modalStatistikTitle').textContent = 'Edit Nilai Statistik Periode';
   document.getElementById('stat-id').value = s.id;
-  document.getElementById('stat-template-id').value = s.template_id || s.id;
   document.getElementById('stat-period').value = s.period_label;
   document.getElementById('stat-label').value = s.label||'';
   document.getElementById('stat-value').value = s.value||'';
   document.getElementById('stat-desc').value = s.desc||'';
-  renderChartChoices(s.chart_type || 'bar');
-  document.getElementById('stat-fillable').checked = !!s.fillable;
-  document.getElementById('stat-visible').checked = s.visible !== false;
-  document.getElementById('stat-value-wrap').classList.remove('hidden');
-  document.getElementById('stat-flags-wrap').classList.add('hidden');
-  document.getElementById('stat-value').disabled = false;
-  document.getElementById('stat-label').disabled = true;
-  document.getElementById('stat-desc').disabled = true;
-  document.getElementById('stat-chart-type').disabled = true;
-  document.getElementById('stat-fillable').disabled = true;
-  document.getElementById('stat-visible').disabled = true;
+  document.getElementById('stat-icon').value = s.icon||'';
+  document.getElementById('stat-order').value = s.order||0;
   openModal('modalStatistik');
+}
+async function deleteStat(id) {
+  if(!confirm('Hapus Statistik?')) return;
+  await api('DELETE', '/api/cms/stats/'+id);
+  loadStatistik();
 }
 document.getElementById('formStatistik').addEventListener('submit', async e => {
   e.preventDefault();
   const periodLabel = document.getElementById('stat-period').value || currentPeriod();
-  if (periodLabel !== '_TEMPLATE_' && !document.getElementById('stat-value').value.trim()) {
-    uiAlert('Value statistik periode wajib diisi.');
-    return;
-  }
   const data = {
     id: document.getElementById('stat-id').value,
-    template_id: document.getElementById('stat-template-id').value,
     period_label: periodLabel,
     label: document.getElementById('stat-label').value,
     value: document.getElementById('stat-value').value,
     desc: document.getElementById('stat-desc').value,
-    chart_type: document.getElementById('stat-chart-type').value,
-    fillable: document.getElementById('stat-fillable').checked,
-    visible: document.getElementById('stat-visible').checked,
-    order: 0
+    icon: document.getElementById('stat-icon').value,
+    order: parseInt(document.getElementById('stat-order').value) || 0
   };
   try {
      await api(data.id ? 'PUT' : 'POST', '/api/cms/stats', data);
@@ -2423,14 +2100,20 @@ document.getElementById('formStatistik').addEventListener('submit', async e => {
      } else {
         loadStatistik();
      }
-  } catch(ex) { uiAlert(ex); }
+  } catch(ex) { alert(ex); }
 });
 
 
 // ── Initialize ───────────────────────────────────────────────────────────────
+// Initialize pickers for modals that are opened later (Periode modal)
+document.getElementById('modalPeriode').addEventListener('click', function init() {
+  if (!imagePickers['picker-periode-hierarchy']) {
+    createImagePicker('picker-periode-hierarchy');
+  }
+});
+
 // Boot: switch to first tab
 switchTab('pengumuman');
-renderChartChoices('bar');
 </script>
 
 <!-- Scholars Modal -->
@@ -2491,22 +2174,6 @@ renderChartChoices('bar');
       
       <div class="flex justify-end pt-4"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Simpan</button></div>
     </form>
-  </div>
-</div>
-
-<!-- Global Action Modal -->
-<div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200">
-      <h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3>
-    </div>
-    <div class="p-6">
-      <p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p>
-    </div>
-    <div class="px-6 pb-6 flex justify-end gap-3">
-      <button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      <button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button>
-    </div>
   </div>
 </div>
 

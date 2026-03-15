@@ -35,22 +35,15 @@
   {{if .Departments}}
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {{range .Departments}}
-    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
-      <h3 class="text-xl font-bold text-brand-900 mb-4">{{.Name}}</h3>
-      <div class="space-y-4">
-        {{if .HeadName}}
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-accent-100 text-accent-700 flex items-center justify-center font-bold text-sm"><i data-lucide="award" class="w-4 h-4"></i></div>
-          <div><p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Ketua/Kepala</p><p class="font-bold text-gray-900">{{.HeadName}}</p></div>
-        </div>
-        {{end}}
-        {{if .StaffCount}}
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-sm"><i data-lucide="users" class="w-4 h-4"></i></div>
-          <div><p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Jumlah Staf</p><p class="font-bold text-gray-900">{{.StaffCount}} Anggota</p></div>
-        </div>
-        {{end}}
+    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow flex flex-col items-center text-center">
+      <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold mb-6">
+        <i data-lucide="network" class="w-8 h-8"></i>
       </div>
+      <h3 class="text-xl font-bold text-brand-900 mb-4">{{.Name}}</h3>
+      {{if .Description}}
+      <p class="text-gray-500 text-sm leading-relaxed mb-4">{{.Description}}</p>
+      {{end}}
+    </div>
     </div>
     {{end}}
   </div>
