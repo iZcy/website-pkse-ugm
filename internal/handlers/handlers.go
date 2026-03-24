@@ -311,19 +311,47 @@ func (h *Handler) ShortLinkRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Statistik(w http.ResponseWriter, r *http.Request) {
-	data := h.baseData()
-	sel := r.URL.Query().Get("period")
-	if sel == "" {
-		sel = h.activePeriodLabel()
-	}
-	data["SelectedPeriod"] = sel
-	items, _ := db.GetStats(sel)
-	data["Stats"] = items
-	periods, _ := db.GetPeriods()
-	data["Periods"] = periods
-	h.render(w, "statistik.html", data)
-}
+        data := h.baseData()
+        sel := r.URL.Query().Get("period")
+        if sel == "" {
+                sel = h.activePeriodLabel()
+        }
+        data["SelectedPeriod"] = sel
 
+        templates, _ := db.GetStats("_TEMPLATE_")
+        values, _ := db.GetStats(sel)
+        byTemplate := make(map[string]db.StatData, len(values))
+        for _, v := range values {
+                if v.TemplateID != "" {
+                        byTemplate[v.TemplateID] = v
+                }
+        }
+
+        merged := make([]db.StatData, 0, len(templates))
+        for _, t := range templates {
+                if !t.Visible {
+                        continue
+                }
+                tid := t.ID.Hex()
+                if t.TemplateID != "" {
+                        tid = t.TemplateID
+                }
+                item := t
+                item.PeriodLabel = sel
+                item.TemplateID = tid
+                item.Value = ""
+                if v, ok := byTemplate[tid]; ok {
+                        item.ID = v.ID
+                        item.Value = v.Value
+                }
+                merged = append(merged, item)
+        }
+
+        data["Stats"] = merged
+        periods, _ := db.GetPeriods()
+        data["Periods"] = periods
+        h.render(w, "statistik.html", data)
+}
 func (h *Handler) Alumni(w http.ResponseWriter, r *http.Request) {
 	data := h.baseData()
 	h.render(w, "alumni.html", data)
