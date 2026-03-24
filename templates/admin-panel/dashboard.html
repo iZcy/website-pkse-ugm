@@ -54,15 +54,14 @@
 
 <!-- Period Selector Bar -->
 <div class="bg-blue-800 px-6 py-2 flex items-center gap-4 flex-shrink-0">
-  <span class="text-blue-200 text-sm font-medium flex-shrink-0">Periode:</span>
-  <div class="flex flex-wrap gap-2">
-    {{range .AccessiblePeriods}}
-    <a href="/admin/dashboard?period={{.Label}}"
-      class="px-3 py-1 rounded-md text-sm font-medium transition {{if eq $.SelectedPeriod .Label}}bg-white text-blue-900{{else}}bg-blue-700 text-blue-100 hover:bg-blue-600{{end}}">
-      {{.DisplayName}}{{if .IsActive}} ✦{{end}}
-    </a>
-    {{end}}
-  </div>
+  <label for="period-switcher" class="text-blue-200 text-sm font-medium flex-shrink-0">Periode:</label>
+  <form id="period-switcher-form" action="/admin/dashboard" method="get" class="min-w-[240px] max-w-full">
+    <select id="period-switcher" name="period" onchange="this.form.submit()" class="w-full px-3 py-1.5 rounded-md text-sm font-medium bg-white text-blue-900 border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      {{range .AccessiblePeriods}}
+      <option value="{{.Label}}" {{if eq $.SelectedPeriod .Label}}selected{{end}}>{{.DisplayName}}{{if .IsActive}} ✦{{end}}</option>
+      {{end}}
+    </select>
+  </form>
   {{if eq .Role "superadmin"}}
   <span class="ml-auto text-blue-300 text-xs">Superadmin dapat mengakses semua periode</span>
   {{end}}
@@ -90,6 +89,10 @@
       <button onclick="switchTab('departemen')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-departemen">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         Kementerian
+      </button>
+      <button onclick="switchTab('program')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-program">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Program
       </button>
       {{if ne .Role "superadmin"}}
       <button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
@@ -176,22 +179,61 @@
       <h2 class="text-2xl font-bold text-slate-800 mb-6">Tentang Periode</h2>
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <form id="formTentang" class="space-y-6">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Sejarah / Latar Belakang</label>
-            <div id="editor-sejarah" class="min-h-[120px]"></div>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Visi</label>
-            <div id="editor-visi" class="min-h-[80px]"></div>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Misi</label>
-            <div id="editor-misi" class="min-h-[120px]"></div>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Struktur Organisasi</label>
-            <div id="picker-struktur"></div>
-          </div>
+          <section class="border border-slate-200 rounded-xl p-4 space-y-4 bg-slate-50/40">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Section Hero / Landing</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Tagline Judul</label>
+                <input type="text" id="tentang-tagline-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kawah Candradimuka">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Tagline Subjudul</label>
+                <input type="text" id="tentang-tagline-subtitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Pemimpin Masa Depan">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Tagline Deskripsi</label>
+                <textarea id="tentang-tagline-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kami adalah keluarga yang saling mendukung..."></textarea>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Cover Periode (Landing & Sejarah)</label>
+                <div id="picker-cover"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="border border-slate-200 rounded-xl p-4 space-y-4 bg-slate-50/40">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Section Tentang Periode</h3>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Latar Belakang</label>
+              <div id="editor-sejarah" class="min-h-[120px]"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Visi</label>
+                <div id="editor-visi" class="min-h-[80px]"></div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Misi</label>
+                <div id="editor-misi" class="min-h-[80px]"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="border border-slate-200 rounded-xl p-4 space-y-4 bg-slate-50/40">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Section Struktur & Galeri</h3>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Struktur Organisasi</label>
+              <div id="picker-struktur"></div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-semibold text-slate-700">Galeri Konten Periode</label>
+                <button type="button" id="btn-add-gallery-item" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Item</button>
+              </div>
+              <div id="tentang-gallery-list" class="space-y-3"></div>
+              <p class="text-xs text-slate-400 mt-2">Tampilkan foto kegiatan periode untuk halaman frontend.</p>
+            </div>
+          </section>
           <div class="flex items-center gap-4">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Perubahan</button>
             <div id="tentang-msg" class="text-sm text-green-600 hidden">✓ Tersimpan!</div>
@@ -225,6 +267,30 @@
       </div>
       <div id="list-anggota" class="overflow-x-auto">
         <div class="text-slate-400 text-center py-8">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- PROGRAM -->
+    <div id="tab-program" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Program</h2>
+        <button onclick="openProgramModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Program
+        </button>
+      </div>
+      <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+            <tr>
+              <th class="p-4 text-left font-medium">Kementerian</th>
+              <th class="p-4 text-left font-medium">Judul Program</th>
+              <th class="p-4 text-left font-medium">Deskripsi</th>
+              <th class="p-4 text-right font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="program-tbody"></tbody>
+        </table>
       </div>
     </div>
 
@@ -318,6 +384,40 @@
               <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Organisasi</label>
               <div id="picker-logo"></div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Header</label>
+                <input type="text" id="global-header-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Subjudul Header</label>
+                <input type="text" id="global-header-subtitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Organisasi Beasiswa">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Badge</label>
+                <input type="text" id="global-hero-badge" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kepengurusan">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Judul Utama</label>
+                <input type="text" id="global-hero-title-main" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mengabdi Bersama,">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Judul Aksen</label>
+                <input type="text" id="global-hero-title-accent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Berkarya Nyata.">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Footer</label>
+                <input type="text" id="global-footer-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Copyright Footer</label>
+                <input type="text" id="global-footer-copy" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Deskripsi Footer</label>
+                <textarea id="global-footer-text" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Paguyuban Karya Salemba Empat UGM"></textarea>
+              </div>
+            </div>
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-2">Tentang Organisasi (Global)</label>
               <div id="editor-global-about" class="min-h-[140px]"></div>
@@ -344,6 +444,13 @@
                 Twitter / X
               </label>
               <input type="url" id="sm-twitter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://twitter.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.8l-.5 2.9h-2.3v7A10 10 0 0022 12z"/></svg>
+                Facebook
+              </label>
+              <input type="url" id="sm-facebook" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://facebook.com/...">
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
@@ -501,8 +608,9 @@
         <input type="text" id="stat-label" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Total Anggota">
       </div>
       <div id="stat-value-wrap">
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Value (Angka)</label>
-        <input type="text" id="stat-value" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150+">
+        <label id="stat-value-label" class="block text-sm font-semibold text-slate-700 mb-1">Nilai</label>
+        <input type="text" id="stat-value" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150">
+        <p id="stat-value-help" class="text-xs text-slate-500 mt-1">Untuk chart pie/bar/line gunakan JSON array, contoh: [{"label":"A","value":10}]</p>
       </div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Tambahan</label>
@@ -544,6 +652,10 @@
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Konten</label>
         <div id="editor-pengumuman" class="min-h-[160px]"></div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Pengumuman</label>
+        <div id="picker-pengumuman-image"></div>
       </div>
       <div class="flex items-center gap-2">
         <input type="checkbox" id="pengumuman-published" class="rounded text-blue-600">
@@ -619,6 +731,10 @@
         <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>
         <textarea id="dept-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
       </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Icon Kementerian</label>
+        <div id="picker-dept-icon"></div>
+      </div>
       <div class="flex gap-3 pt-2">
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
         <button type="button" onclick="closeModal('modalKementerian')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
@@ -627,9 +743,44 @@
   </div>
 </div>
 
+<!-- Modal Program -->
+<div id="modalProgram" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+      <h3 id="modalProgramTitle" class="text-lg font-bold">Tambah Program</h3>
+      <button onclick="closeModal('modalProgram')" class="text-slate-400 hover:text-slate-600 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="formProgram" class="p-6 space-y-4">
+      <input type="hidden" id="program-id">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Kementerian</label>
+        <select id="program-department" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Program</label>
+        <input type="text" id="program-title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>
+        <textarea id="program-desc" rows="4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Program</label>
+        <div id="picker-program-image"></div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
+        <button type="button" onclick="closeModal('modalProgram')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal Anggota -->
 <div id="modalAnggota" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-screen overflow-y-auto">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
     <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
       <h3 id="modalAnggotaTitle" class="text-lg font-bold">Tambah Anggota</h3>
       <button onclick="closeModal('modalAnggota')" class="text-slate-400 hover:text-slate-600 p-1">
@@ -664,6 +815,10 @@
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Foto Anggota</label>
         <div id="picker-anggota-photo"></div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Cover Anggota (Halaman Anggota)</label>
+        <div id="picker-anggota-cover"></div>
       </div>
       <div class="flex gap-3 pt-2">
         <button onclick="submitAnggota()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
@@ -773,7 +928,7 @@
 </div>
 
 <script>
-let state = { periods: [], faqs: [], stats: [] };
+let state = { periods: [], faqs: [], stats: [], periodGallery: [] };
 
 const PERIOD = "{{.SelectedPeriod}}";
 const ROLE = "{{.Role}}";
@@ -957,6 +1112,7 @@ function loadTab(name) {
   if (name === 'pengumuman') loadPengumuman();
   if (name === 'artikel') loadArtikel();
   if (name === 'departemen') loadKementerian();
+  if (name === 'program') loadPrograms();
   if (name === 'anggota') loadAnggota();
   if (name === 'periode') loadPeriode();
   if (name === 'akun') loadAkun();
@@ -1205,13 +1361,30 @@ function renderChartChoices(selectedValue = 'bar') {
       <div class="truncate">${c.label}</div>
     </button>`;
   }).join('');
+  updateStatValueGuide(current);
 }
 
 document.addEventListener('click', e => {
+  const addGalleryBtn = e.target.closest('#btn-add-gallery-item');
+  if (addGalleryBtn) {
+    state.periodGallery.push({ title: '', caption: '', image_url: '', order: state.periodGallery.length });
+    renderTentangGalleryEditor(state.periodGallery);
+    return;
+  }
+  const removeGalleryBtn = e.target.closest('[data-remove-gallery]');
+  if (removeGalleryBtn) {
+    const idx = Number(removeGalleryBtn.getAttribute('data-remove-gallery'));
+    if (!Number.isNaN(idx)) {
+      state.periodGallery.splice(idx, 1);
+      renderTentangGalleryEditor(state.periodGallery);
+    }
+    return;
+  }
   const btn = e.target.closest('.chart-choice');
   if (!btn) return;
   const value = btn.getAttribute('data-chart-value') || 'bar';
   renderChartChoices(value);
+  updateStatValueGuide(value);
 });
 
 function currentPeriod() {
@@ -1233,12 +1406,15 @@ async function loadPengumuman() {
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada pengumuman.'); return; }
     el.innerHTML = items.map(a => `
       <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
-        <div class="flex-1 min-w-0">
+        <div class="flex items-start gap-4 flex-1 min-w-0">
+          ${a.image_url ? `<img src="${a.image_url}" alt="" class="w-16 h-12 object-cover rounded-lg flex-shrink-0">` : ''}
+          <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <h3 class="font-semibold text-slate-800">${escHtml(a.title)}</h3>
             <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${a.published ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${a.published ? 'Terbit' : 'Draft'}</span>
           </div>
           <p class="text-slate-500 text-sm line-clamp-2">${stripHtml(a.content)}</p>
+          </div>
         </div>
         <div class="flex gap-2 flex-shrink-0">
           <button onclick='editPengumuman(${JSON.stringify(a)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
@@ -1259,6 +1435,7 @@ function openPengumumanModal() {
   document.getElementById('modalPengumumanTitle').textContent = 'Tambah Pengumuman';
   initQuill('editor-pengumuman');
   quillSetHTML('editor-pengumuman', '');
+  createImagePicker('picker-pengumuman-image');
   openModal('modalPengumuman');
 }
 
@@ -1269,6 +1446,7 @@ function editPengumuman(a) {
   document.getElementById('modalPengumumanTitle').textContent = 'Edit Pengumuman';
   initQuill('editor-pengumuman');
   quillSetHTML('editor-pengumuman', a.content || '');
+  createImagePicker('picker-pengumuman-image', { initialUrl: a.image_url || '' });
   openModal('modalPengumuman');
 }
 
@@ -1277,6 +1455,7 @@ async function submitPengumuman() {
   const body = {
     title: document.getElementById('pengumuman-title').value,
     content: quillGetHTML('editor-pengumuman'),
+    image_url: pickerGetUrl('picker-pengumuman-image'),
     published: document.getElementById('pengumuman-published').checked,
     period_label: PERIOD
   };
@@ -1390,14 +1569,24 @@ async function loadTentang() {
   initQuill('editor-sejarah');
   initQuill('editor-visi');
   initQuill('editor-misi');
+  createImagePicker('picker-cover');
   createImagePicker('picker-struktur');
   try {
     const pa = await api('GET', `/api/cms/period-about?period=${PERIOD}`);
     quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
+    document.getElementById('tentang-tagline-title').value = pa.tagline_title || '';
+    document.getElementById('tentang-tagline-subtitle').value = pa.tagline_subtitle || '';
+    document.getElementById('tentang-tagline-desc').value = pa.tagline_description || '';
+    if (pa.cover_image_url) pickerSetUrl('picker-cover', pa.cover_image_url);
+    else pickerClear('picker-cover');
     if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
-  } catch(e) {}
+    else pickerClear('picker-struktur');
+    renderTentangGalleryEditor(pa.gallery || []);
+  } catch(e) {
+    renderTentangGalleryEditor([]);
+  }
 }
 
 document.getElementById('formTentang').addEventListener('submit', async e => {
@@ -1407,9 +1596,14 @@ document.getElementById('formTentang').addEventListener('submit', async e => {
     await api('PUT', '/api/cms/period-about', {
       period_label: PERIOD,
       sejarah: quillGetHTML('editor-sejarah'),
+      tagline_title: document.getElementById('tentang-tagline-title').value,
+      tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
+      tagline_description: document.getElementById('tentang-tagline-desc').value,
       visi: quillGetHTML('editor-visi'),
       misi: quillGetHTML('editor-misi'),
-      hierarchy_image_url: pickerGetUrl('picker-struktur')
+      cover_image_url: pickerGetUrl('picker-cover'),
+      hierarchy_image_url: pickerGetUrl('picker-struktur'),
+      gallery: collectTentangGallery()
     });
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
@@ -1563,6 +1757,9 @@ async function loadKementerian() {
             <button type="button" class="dept-drag mt-0.5 text-slate-400 hover:text-slate-600" title="Geser urutan departemen">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 15h8"/></svg>
             </button>
+            <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden mt-0.5">
+              ${d.icon_url ? `<img src="${escHtml(d.icon_url)}" class="w-full h-full object-contain p-1" alt="icon">` : '<svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>'}
+            </div>
             <div class="min-w-0">
               <h3 class="font-semibold text-slate-800">${escHtml(d.name)}</h3>
               ${d.description ? `<p class="text-slate-500 text-sm">${escHtml(d.description)}</p>` : ''}
@@ -1596,6 +1793,7 @@ function resetDeptForm() {
   document.getElementById('dept-id').value = '';
   document.getElementById('dept-name').value = '';
   document.getElementById('dept-desc').value = '';
+  createImagePicker('picker-dept-icon');
   document.getElementById('modalDeptTitle').textContent = 'Tambah Kementerian';
 }
 
@@ -1603,6 +1801,7 @@ function editDept(d) {
   document.getElementById('dept-id').value = d.id;
   document.getElementById('dept-name').value = d.name;
   document.getElementById('dept-desc').value = d.description || '';
+  createImagePicker('picker-dept-icon', { initialUrl: d.icon_url || '' });
   document.getElementById('modalDeptTitle').textContent = 'Edit Kementerian';
   openModal('modalKementerian');
 }
@@ -1619,6 +1818,7 @@ document.getElementById('formKementerian').addEventListener('submit', async e =>
   const body = {
     name: document.getElementById('dept-name').value,
     description: document.getElementById('dept-desc').value,
+    icon_url: pickerGetUrl('picker-dept-icon'),
     period_label: PERIOD
   };
   if (!id) body.sort_order = deptCache.length;
@@ -1682,6 +1882,125 @@ async function unassignMember(memberId) {
   await loadAnggota();
 }
 
+// ── PROGRAM ──────────────────────────────────────────────────────────────────
+let programCache = [];
+let programDeptCache = [];
+
+async function loadPrograms() {
+  const tb = document.getElementById('program-tbody');
+  if (!tb) return;
+  try {
+    const [programs, depts] = await Promise.all([
+      api('GET', `/api/cms/programs?period=${PERIOD}`),
+      api('GET', `/api/cms/departments?period=${PERIOD}`)
+    ]);
+    programCache = programs || [];
+    programDeptCache = depts || [];
+
+    if (!programCache.length) {
+      tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada program untuk periode ini.</td></tr>';
+      return;
+    }
+
+    tb.innerHTML = programCache.map(p => `
+      <tr class="border-b border-slate-100 hover:bg-slate-50">
+        <td class="p-4 align-top text-slate-700">${escHtml(p.department || '-')}</td>
+        <td class="p-4 align-top font-medium text-slate-800">
+          <div class="flex items-center gap-2">
+            ${p.image_url ? `<img src="${p.image_url}" alt="" class="w-10 h-10 rounded-lg object-cover">` : ''}
+            <span>${escHtml(p.title || '')}</span>
+          </div>
+        </td>
+        <td class="p-4 align-top text-slate-600">${escHtml(p.description || '')}</td>
+        <td class="p-4 align-top text-right whitespace-nowrap">
+          <button onclick="editProgramById('${p.id}')" class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button onclick="deleteProgram('${p.id}')" class="text-red-400 hover:text-red-600 p-1" title="Hapus">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(e.message)}</td></tr>`;
+  }
+}
+
+function fillProgramDepartmentOptions(selected = '') {
+  const sel = document.getElementById('program-department');
+  if (!sel) return;
+  if (!programDeptCache.length) {
+    sel.innerHTML = '<option value="">Belum ada kementerian</option>';
+    return;
+  }
+  sel.innerHTML = programDeptCache.map(d => `<option value="${escHtml(d.name)}" ${d.name === selected ? 'selected' : ''}>${escHtml(d.name)}</option>`).join('');
+}
+
+async function openProgramModal() {
+  if (!programDeptCache.length) {
+    try {
+      programDeptCache = await api('GET', `/api/cms/departments?period=${PERIOD}`);
+    } catch (_) {}
+  }
+  if (!programDeptCache.length) {
+    uiAlert('Tambahkan kementerian terlebih dahulu sebelum membuat program.');
+    return;
+  }
+  document.getElementById('program-id').value = '';
+  document.getElementById('program-title').value = '';
+  document.getElementById('program-desc').value = '';
+  document.getElementById('modalProgramTitle').textContent = 'Tambah Program';
+  createImagePicker('picker-program-image');
+  fillProgramDepartmentOptions(programDeptCache[0]?.name || '');
+  openModal('modalProgram');
+}
+
+function editProgramById(id) {
+  const p = programCache.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('program-id').value = p.id || '';
+  document.getElementById('program-title').value = p.title || '';
+  document.getElementById('program-desc').value = p.description || '';
+  document.getElementById('modalProgramTitle').textContent = 'Edit Program';
+  createImagePicker('picker-program-image', { initialUrl: p.image_url || '' });
+  fillProgramDepartmentOptions(p.department || '');
+  openModal('modalProgram');
+}
+
+async function deleteProgram(id) {
+  if (!await uiConfirm('Hapus program ini?', 'Konfirmasi Hapus', true)) return;
+  await api('DELETE', `/api/cms/programs/${id}`);
+  await loadPrograms();
+}
+
+document.getElementById('formProgram')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('program-id').value;
+  const payload = {
+    period_label: PERIOD,
+    department: document.getElementById('program-department').value,
+    title: document.getElementById('program-title').value,
+    description: document.getElementById('program-desc').value,
+    image_url: pickerGetUrl('picker-program-image'),
+    order: id ? (programCache.find(x => x.id === id)?.order || 0) : programCache.length
+  };
+
+  if (!payload.department || !payload.title) {
+    uiAlert('Kementerian dan judul program wajib diisi.');
+    return;
+  }
+
+  try {
+    if (id) await api('PUT', `/api/cms/programs/${id}`, payload);
+    else await api('POST', '/api/cms/programs', payload);
+    closeModal('modalProgram');
+    await loadPrograms();
+  } catch (ex) {
+    uiAlert('Error: ' + ex.message);
+  }
+});
+
 // ── ANGGOTA ──────────────────────────────────────────────────────────────────
 function renderAnggotaActivationEditor(activePeriods = {}) {
   const wrap = document.getElementById('anggota-activation-wrap');
@@ -1692,9 +2011,9 @@ function renderAnggotaActivationEditor(activePeriods = {}) {
   }
   wrap.innerHTML = `
     <label class="block text-sm font-semibold text-slate-700 mb-1">Aktif per Periode/Sub-Periode</label>
-    <div class="space-y-2">${(state.periods || []).map(p => {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${(state.periods || []).map(p => {
       const options = periodSubPeriods(p).map(sp => `<option value="${sp}" ${activePeriods[p.label] === sp ? 'selected' : ''}>${escHtml(sp)}</option>`).join('');
-      return `<div class="grid grid-cols-2 gap-2 items-center">
+      return `<div class="grid grid-cols-2 gap-2 items-center border border-slate-200 rounded-lg p-2 bg-slate-50">
         <div class="text-xs text-slate-600 font-medium">${escHtml(p.display_name || p.label)}</div>
         <select data-period="${p.label}" class="anggota-active-subperiod w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs">
           <option value="">Tidak aktif</option>
@@ -1705,13 +2024,13 @@ function renderAnggotaActivationEditor(activePeriods = {}) {
 }
 
 function collectAnggotaActivation() {
-  const map = {};
+  const periods = {};
   document.querySelectorAll('.anggota-active-subperiod').forEach(sel => {
     const val = (sel.value || '').trim();
     const p = sel.getAttribute('data-period');
-    if (p && val) map[p] = val;
+    if (p && val) periods[p] = val;
   });
-  return map;
+  return { periods };
 }
 
 async function loadAnggota() {
@@ -1781,6 +2100,7 @@ async function openAnggotaModal() {
   document.getElementById('modalAnggotaTitle').textContent = 'Tambah Anggota';
   renderAnggotaActivationEditor({});
   createImagePicker('picker-anggota-photo');
+  createImagePicker('picker-anggota-cover');
   openModal('modalAnggota');
 }
 
@@ -1797,19 +2117,22 @@ async function editAnggota(m) {
   document.getElementById('modalAnggotaTitle').textContent = 'Edit Anggota';
   renderAnggotaActivationEditor(m.active_periods || {});
   createImagePicker('picker-anggota-photo', { initialUrl: m.photo_url || '' });
+  createImagePicker('picker-anggota-cover', { initialUrl: m.cover_url || '' });
   openModal('modalAnggota');
 }
 
 async function submitAnggota() {
   const id = document.getElementById('anggota-id').value;
+  const activation = collectAnggotaActivation();
   const body = {
     full_name: document.getElementById('anggota-fullname').value,
     nickname: document.getElementById('anggota-nickname').value,
     program_studi: document.getElementById('anggota-program-studi').value,
     fakultas: document.getElementById('anggota-fakultas').value,
     angkatan: document.getElementById('anggota-angkatan').value,
-    active_periods: collectAnggotaActivation(),
+    active_periods: activation.periods,
     photo_url: pickerGetUrl('picker-anggota-photo'),
+    cover_url: pickerGetUrl('picker-anggota-cover'),
     period_label: PERIOD
   };
   if (!body.full_name) { uiAlert('Nama harus diisi'); return; }
@@ -2062,11 +2385,20 @@ async function loadGlobal() {
   try {
     const g = await api('GET', '/api/cms/global-setting');
     document.getElementById('global-orgname').value = g.org_name || '';
+    document.getElementById('global-header-title').value = g.header_title || '';
+    document.getElementById('global-header-subtitle').value = g.header_subtitle || '';
+    document.getElementById('global-hero-badge').value = g.hero_badge_text || '';
+    document.getElementById('global-hero-title-main').value = g.hero_title_main || '';
+    document.getElementById('global-hero-title-accent').value = g.hero_title_accent || '';
+    document.getElementById('global-footer-title').value = g.footer_title || '';
+    document.getElementById('global-footer-copy').value = g.footer_copy_text || '';
+    document.getElementById('global-footer-text').value = g.footer_text || '';
     quillSetHTML('editor-global-about', g.about_html || '');
     if (g.logo_url) pickerSetUrl('picker-logo', g.logo_url);
     const sm = g.social_media || {};
     document.getElementById('sm-instagram').value = sm.instagram || '';
     document.getElementById('sm-twitter').value = sm.twitter || '';
+    document.getElementById('sm-facebook').value = sm.facebook || '';
     document.getElementById('sm-youtube').value = sm.youtube || '';
     document.getElementById('sm-linkedin').value = sm.linkedin || '';
     document.getElementById('sm-tiktok').value = sm.tiktok || '';
@@ -2081,6 +2413,14 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
     await api('PUT', '/api/cms/global-setting', {
       org_name: document.getElementById('global-orgname').value,
       logo_url: pickerGetUrl('picker-logo'),
+      header_title: document.getElementById('global-header-title').value,
+      header_subtitle: document.getElementById('global-header-subtitle').value,
+      hero_badge_text: document.getElementById('global-hero-badge').value,
+      hero_title_main: document.getElementById('global-hero-title-main').value,
+      hero_title_accent: document.getElementById('global-hero-title-accent').value,
+      footer_title: document.getElementById('global-footer-title').value,
+      footer_text: document.getElementById('global-footer-text').value,
+      footer_copy_text: document.getElementById('global-footer-copy').value,
       about_html: quillGetHTML('editor-global-about'),
       social_media: cur.social_media || {}
     });
@@ -2097,10 +2437,19 @@ document.getElementById('formSocmed').addEventListener('submit', async e => {
     await api('PUT', '/api/cms/global-setting', {
       org_name: cur.org_name || '',
       logo_url: cur.logo_url || '',
+      header_title: cur.header_title || '',
+      header_subtitle: cur.header_subtitle || '',
+      hero_badge_text: cur.hero_badge_text || '',
+      hero_title_main: cur.hero_title_main || '',
+      hero_title_accent: cur.hero_title_accent || '',
+      footer_title: cur.footer_title || '',
+      footer_text: cur.footer_text || '',
+      footer_copy_text: cur.footer_copy_text || '',
       about_html: cur.about_html || '',
       social_media: {
         instagram: document.getElementById('sm-instagram').value,
         twitter: document.getElementById('sm-twitter').value,
+        facebook: document.getElementById('sm-facebook').value,
         youtube: document.getElementById('sm-youtube').value,
         linkedin: document.getElementById('sm-linkedin').value,
         tiktok: document.getElementById('sm-tiktok').value
@@ -2119,6 +2468,115 @@ function escHtml(s) {
 function stripHtml(s) {
   if (!s) return '';
   return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function statValuePreview(raw) {
+  const txt = (raw || '').trim();
+  if (!txt) return '-';
+  try {
+    const parsed = JSON.parse(txt);
+    if (Array.isArray(parsed)) return `${parsed.length} titik data`;
+  } catch (_) {}
+  return txt;
+}
+
+function statChartNeedsSeries(chartType) {
+  const singleValueCharts = new Set(['kpi', 'gauge']);
+  return !singleValueCharts.has((chartType || '').toLowerCase());
+}
+
+function updateStatValueGuide(chartType) {
+  const label = document.getElementById('stat-value-label');
+  const help = document.getElementById('stat-value-help');
+  const input = document.getElementById('stat-value');
+  if (!label || !help || !input) return;
+  if (statChartNeedsSeries(chartType)) {
+    label.textContent = 'Nilai (JSON Series)';
+    input.placeholder = '[{"label":"Komputer","value":40}]';
+    help.textContent = 'Gunakan JSON array berisi label dan value. Contoh: [{"label":"A","value":10},{"label":"B","value":20}]';
+  } else {
+    label.textContent = 'Nilai';
+    input.placeholder = '150';
+    help.textContent = 'Gunakan satu nilai angka/teks singkat untuk chart KPI.';
+  }
+}
+
+function parseStatSeriesValue(raw) {
+  const txt = (raw || '').trim();
+  if (!txt) return [];
+  let parsed;
+  try {
+    parsed = JSON.parse(txt);
+  } catch (_) {
+    throw new Error('Format JSON tidak valid untuk chart ini.');
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('Gunakan JSON array dengan minimal 1 data.');
+  }
+  const normalized = [];
+  parsed.forEach((item, idx) => {
+    const label = String(item?.label ?? '').trim();
+    const valueNum = Number(item?.value);
+    if (!label || Number.isNaN(valueNum)) {
+      throw new Error(`Data ke-${idx + 1} harus punya label dan value numerik.`);
+    }
+    normalized.push({ label, value: valueNum });
+  });
+  return normalized;
+}
+
+function renderTentangGalleryEditor(items = []) {
+  state.periodGallery = Array.isArray(items) ? items.map((it, idx) => ({
+    title: it?.title || '',
+    image_url: it?.image_url || '',
+    caption: it?.caption || '',
+    order: Number.isFinite(Number(it?.order)) ? Number(it.order) : idx
+  })) : [];
+  const wrap = document.getElementById('tentang-gallery-list');
+  if (!wrap) return;
+  if (!state.periodGallery.length) {
+    wrap.innerHTML = '<div class="text-xs text-slate-400 border border-dashed border-slate-300 rounded-lg p-3">Belum ada item galeri.</div>';
+    return;
+  }
+  wrap.innerHTML = state.periodGallery.map((item, idx) => `
+    <div class="border border-slate-200 rounded-lg p-3 bg-white" data-gallery-index="${idx}">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-xs font-bold text-slate-600 uppercase tracking-wide">Item ${idx + 1}</p>
+        <button type="button" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded" data-remove-gallery="${idx}">Hapus</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Judul</label>
+          <input type="text" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" data-gallery-title="${idx}" value="${escHtml(item.title || '')}">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Caption</label>
+          <input type="text" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" data-gallery-caption="${idx}" value="${escHtml(item.caption || '')}">
+        </div>
+      </div>
+      <div class="mt-3">
+        <label class="block text-xs font-semibold text-slate-600 mb-1">Gambar</label>
+        <div id="picker-gallery-${idx}"></div>
+      </div>
+    </div>
+  `).join('');
+  state.periodGallery.forEach((item, idx) => {
+    createImagePicker(`picker-gallery-${idx}`, { initialUrl: item.image_url || '' });
+  });
+}
+
+function collectTentangGallery() {
+  return state.periodGallery.map((_, idx) => {
+    const title = (document.querySelector(`[data-gallery-title="${idx}"]`)?.value || '').trim();
+    const caption = (document.querySelector(`[data-gallery-caption="${idx}"]`)?.value || '').trim();
+    const imageURL = (pickerGetUrl(`picker-gallery-${idx}`) || '').trim();
+    return {
+      title,
+      caption,
+      image_url: imageURL,
+      order: idx
+    };
+  }).filter(item => item.image_url);
 }
 
 
@@ -2158,7 +2616,7 @@ async function loadFAQs(pLabel) {
   const isGlobal = (pLabel === 'GLOBAL');
   const tb = document.getElementById(isGlobal ? 'faq-global-tbody' : 'faq-periode-tbody');
   try {
-    const items = await api('GET', '/api/cms/faqs?p=' + pLabel);
+    const items = await api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel));
     state.faqs = items || [];
     tb.innerHTML = (items||[]).map(f => `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
@@ -2191,7 +2649,7 @@ function editFAQ(id, pLabel) {
 }
 async function deleteFAQ(id, pLabel) {
   if(!await uiConfirm('Hapus FAQ ini?', 'Konfirmasi Hapus', true)) return;
-  await api('DELETE', '/api/cms/faqs?id='+id);
+  await api('DELETE', '/api/cms/faqs/' + id);
   loadFAQs(pLabel);
 }
 document.getElementById('formFAQ')?.addEventListener('submit', async e => {
@@ -2204,7 +2662,7 @@ document.getElementById('formFAQ')?.addEventListener('submit', async e => {
     order: 0
   };
   try {
-     await api(data.id ? 'PUT' : 'POST', '/api/cms/faqs', data);
+      await api(data.id ? 'PUT' : 'POST', data.id ? '/api/cms/faqs/' + data.id : '/api/cms/faqs', data);
      closeModal('modalFAQ');
      loadFAQs(data.period_label);
   } catch(ex) { uiAlert(ex); }
@@ -2356,7 +2814,7 @@ async function loadStatistik() {
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${s.id}">
         <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
         <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
-        <td class="p-4 align-middle font-bold text-blue-600">${escHtml(s.value||'')}</td>
+        <td class="p-4 align-middle font-bold text-blue-600">${escHtml(statValuePreview(s.value||''))}</td>
         <td class="p-4 align-middle">${escHtml(s.desc||'')}</td>
         <td class="p-4 align-middle text-right">
           <button onclick="editStat('${s.id}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button>
@@ -2411,18 +2869,31 @@ function editStat(id) {
 document.getElementById('formStatistik').addEventListener('submit', async e => {
   e.preventDefault();
   const periodLabel = document.getElementById('stat-period').value || currentPeriod();
-  if (periodLabel !== '_TEMPLATE_' && !document.getElementById('stat-value').value.trim()) {
+  const chartType = document.getElementById('stat-chart-type').value;
+  const rawValue = document.getElementById('stat-value').value;
+  if (periodLabel !== '_TEMPLATE_' && !rawValue.trim()) {
     uiAlert('Value statistik periode wajib diisi.');
     return;
+  }
+  let normalizedValue = rawValue;
+  if (periodLabel !== '_TEMPLATE_') {
+    try {
+      if (statChartNeedsSeries(chartType)) {
+        normalizedValue = JSON.stringify(parseStatSeriesValue(rawValue));
+      }
+    } catch (ex) {
+      uiAlert(ex.message || String(ex));
+      return;
+    }
   }
   const data = {
     id: document.getElementById('stat-id').value,
     template_id: document.getElementById('stat-template-id').value,
     period_label: periodLabel,
     label: document.getElementById('stat-label').value,
-    value: document.getElementById('stat-value').value,
+    value: normalizedValue,
     desc: document.getElementById('stat-desc').value,
-    chart_type: document.getElementById('stat-chart-type').value,
+    chart_type: chartType,
     fillable: document.getElementById('stat-fillable').checked,
     visible: document.getElementById('stat-visible').checked,
     order: 0
@@ -2441,6 +2912,18 @@ document.getElementById('formStatistik').addEventListener('submit', async e => {
 
 // ── Initialize ───────────────────────────────────────────────────────────────
 // Boot: switch to first tab
+(() => {
+  const sel = document.getElementById('period-switcher');
+  if (!sel) return;
+  const seen = new Set();
+  [...sel.options].forEach(opt => {
+    if (seen.has(opt.value)) {
+      opt.remove();
+      return;
+    }
+    seen.add(opt.value);
+  });
+})();
 switchTab('pengumuman');
 renderChartChoices('bar');
 </script>

@@ -1,59 +1,86 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   {{template "head" .}}
   <title>PKSE UGM | Tentang Kami</title>
 </head>
-<body class="bg-white text-gray-900 antialiased">
+<body class="bg-gray-50 text-gray-900 antialiased">
 {{template "navbar" .}}
 
-<div class="pt-32 pb-20 px-6 max-w-7xl mx-auto text-center">
-  <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-600 font-bold text-xs uppercase tracking-wider mb-6">Cerita Kami</div>
-  <h1 class="text-5xl font-black text-gray-900 mb-8 tracking-tight">Kawah Candradimuka <br><span class="text-brand-600">Pemimpin Masa Depan</span></h1>
-  <p class="text-xl text-gray-500 max-w-2xl mx-auto">Kami adalah keluarga yang saling mendukung untuk mencetak pemimpin berkarakter empati dan kompeten.</p>
-</div>
+<section class="pt-32 pb-16 bg-brand-950 text-white relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-brand-900/60 to-brand-950"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-6">
+    <p class="text-sm uppercase tracking-wider text-brand-200 mb-3">Tentang Organisasi</p>
+    <h1 class="text-4xl md:text-6xl font-black mb-4">{{if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{else}}PKSE UGM{{end}}</h1>
+    <p class="text-brand-100 max-w-3xl">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{.GlobalSetting.AboutHTML}}{{else}}Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada.{{end}}</p>
+  </div>
+</section>
 
-{{if .PeriodAbout}}
-<div class="max-w-5xl mx-auto px-6 pb-24">
-  {{if .PeriodAbout.Sejarah}}
-  <div class="mb-16">
-    <h2 class="text-3xl font-bold text-brand-900 mb-6">Sejarah Singkat</h2>
-    <div class="prose prose-lg prose-gray max-w-none text-gray-600 leading-relaxed text-justify">
-      {{.PeriodAbout.Sejarah}}
+<section class="py-16 bg-white border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 bg-brand-900 text-white rounded-3xl p-8">
+      <p class="text-accent-300 text-xs uppercase tracking-widest mb-2">Tagline Periode</p>
+      <h2 class="text-3xl font-black leading-tight mb-2">{{if and .PeriodAbout .PeriodAbout.TaglineTitle}}{{.PeriodAbout.TaglineTitle}}{{else}}Kawah Candradimuka{{end}}</h2>
+      <h3 class="text-xl font-semibold text-accent-200 mb-4">{{if and .PeriodAbout .PeriodAbout.TaglineSubtitle}}{{.PeriodAbout.TaglineSubtitle}}{{else}}Pemimpin Masa Depan{{end}}</h3>
+      <p class="text-sm text-brand-100 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.TaglineDescription}}{{.PeriodAbout.TaglineDescription}}{{else}}Kami adalah keluarga yang saling mendukung untuk mencetak pemimpin berkarakter empati dan kompeten.{{end}}</p>
+    </div>
+
+    <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
+        <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Visi</p>
+        <div class="text-sm text-gray-700 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.Visi}}{{.PeriodAbout.Visi}}{{else}}Visi belum ditambahkan.{{end}}</div>
+      </div>
+      <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
+        <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Misi</p>
+        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{if and .PeriodAbout .PeriodAbout.Misi}}{{.PeriodAbout.Misi}}{{else}}Misi belum ditambahkan.{{end}}</div>
+      </div>
     </div>
   </div>
-  {{end}}
+</section>
 
-  <div class="bg-gray-50 rounded-[3rem] p-12 md:p-16 border border-gray-100 shadow-sm relative overflow-hidden">
-    <!-- decorative elements -->
-    <div class="absolute top-0 right-0 w-64 h-64 bg-brand-100/50 rounded-full blur-3xl -mr-20 -mt-20"></div>
-    <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent-100/50 rounded-full blur-3xl -ml-20 -mb-20"></div>
-    
-    <div class="relative z-10">
-      {{if .PeriodAbout.Visi}}
-      <div class="mb-12">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4 inline-flex items-center gap-3"><div class="w-10 h-10 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center"><i data-lucide="eye" class="w-5 h-5"></i></div> Visi</h2>
-        <p class="text-gray-600 text-lg md:ml-14">{{.PeriodAbout.Visi}}</p>
-      </div>
-      {{end}}
-      {{if .PeriodAbout.Misi}}
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4 inline-flex items-center gap-3"><div class="w-10 h-10 bg-accent-100 text-accent-600 rounded-xl flex items-center justify-center"><i data-lucide="target" class="w-5 h-5"></i></div> Misi</h2>
-        <div class="text-gray-600 text-lg md:ml-14 whitespace-pre-wrap leading-relaxed">{{.PeriodAbout.Misi}}</div>
-      </div>
+<section class="py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-8">
+      <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Struktur</p>
+      <h2 class="text-3xl md:text-4xl font-black text-brand-900">Kementerian dan Anggota</h2>
+    </div>
+
+    {{if .DepartmentGroups}}
+    <div class="space-y-6">
+      {{range .DepartmentGroups}}
+      <article class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center overflow-hidden text-brand-600">
+            {{if .Department.IconURL}}
+            <img src="{{.Department.IconURL}}" alt="Icon {{.Department.Name}}" class="w-full h-full object-contain p-2">
+            {{else}}
+            <i data-lucide="network" class="w-6 h-6"></i>
+            {{end}}
+          </div>
+          <div>
+            <h3 class="text-xl font-black text-gray-900">{{.Department.Name}}</h3>
+            {{if .Department.Description}}<p class="text-sm text-gray-500">{{.Department.Description}}</p>{{end}}
+          </div>
+        </div>
+
+        {{if .Members}}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {{range .Members}}
+          <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+            <p class="font-semibold text-gray-900">{{.FullName}}</p>
+            <p class="text-xs text-brand-600 font-semibold uppercase tracking-wide">{{if .Position}}{{.Position}}{{else}}Anggota{{end}}</p>
+          </div>
+          {{end}}
+        </div>
+        {{else}}
+        <p class="text-sm text-gray-400">Belum ada anggota di kementerian ini.</p>
+        {{end}}
+      </article>
       {{end}}
     </div>
-  </div>
-</div>
-{{end}}
-
-<!-- Team / Support section just for visual layout consistency -->
-<section class="py-20 bg-brand-900 text-white relative overflow-hidden">
-  <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')] bg-cover bg-center mix-blend-overlay opacity-10"></div>
-  <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
-    <h2 class="text-4xl font-extrabold mb-8 leading-tight">Bersama Membangun <span class="text-accent-400">Generasi Emas</span></h2>
-    <a href="/anggota" class="inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-brand-900 bg-accent-400 hover:bg-accent-300 transition-colors shadow-lg">Lihat Pengurus Kami <i data-lucide="users" class="w-4 h-4"></i></a>
+    {{else}}
+    <div class="bg-white rounded-3xl border border-gray-100 p-10 text-center text-gray-400">Struktur kementerian belum tersedia.</div>
+    {{end}}
   </div>
 </section>
 

@@ -29,13 +29,52 @@
     <p class="text-gray-500">Program untuk periode ini sedang dipersiapkan.</p>
   </div>
   {{else}}
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    {{range .Programs}}
-    <div class="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-      <div class="w-14 h-14 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center mb-6"><i data-lucide="gem" class="w-6 h-6"></i></div>
-      <h3 class="text-2xl font-bold text-gray-900 mb-4">{{.Title}}</h3>
-      <p class="text-gray-600 leading-relaxed">{{.Description}}</p>
-    </div>
+  <div class="space-y-10">
+    {{range .DepartmentGroups}}
+      {{if gt (len .Programs) 0}}
+      <section class="bg-white rounded-[2rem] border border-gray-100 p-8 md:p-10 shadow-sm">
+        <div class="mb-6 pb-4 border-b border-gray-100">
+          <h2 class="text-2xl md:text-3xl font-black text-brand-900">{{.Department.Name}}</h2>
+          {{if .Department.Description}}
+          <p class="text-gray-500 mt-2">{{.Department.Description}}</p>
+          {{end}}
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {{range .Programs}}
+          <article class="rounded-2xl border border-gray-100 p-6 bg-gray-50 hover:bg-white hover:shadow-md transition-all">
+            {{if .ImageURL}}
+            <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-40 object-cover rounded-xl mb-4 border border-gray-100">
+            {{else}}
+            <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center mb-4"><i data-lucide="gem" class="w-5 h-5"></i></div>
+            {{end}}
+            <h3 class="text-xl font-bold text-gray-900 mb-3">{{.Title}}</h3>
+            <p class="text-gray-600 leading-relaxed">{{.Description}}</p>
+          </article>
+          {{end}}
+        </div>
+      </section>
+      {{end}}
+    {{end}}
+
+    {{if gt (len .UngroupedPrograms) 0}}
+    <section class="bg-white rounded-[2rem] border border-gray-100 p-8 md:p-10 shadow-sm">
+      <div class="mb-6 pb-4 border-b border-gray-100">
+        <h2 class="text-2xl md:text-3xl font-black text-brand-900">Program Lainnya</h2>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {{range .UngroupedPrograms}}
+        <article class="rounded-2xl border border-gray-100 p-6 bg-gray-50 hover:bg-white hover:shadow-md transition-all">
+          {{if .ImageURL}}
+          <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-40 object-cover rounded-xl mb-4 border border-gray-100">
+          {{else}}
+          <div class="w-12 h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center mb-4"><i data-lucide="gem" class="w-5 h-5"></i></div>
+          {{end}}
+          <h3 class="text-xl font-bold text-gray-900 mb-3">{{.Title}}</h3>
+          <p class="text-gray-600 leading-relaxed">{{.Description}}</p>
+        </article>
+        {{end}}
+      </div>
+    </section>
     {{end}}
   </div>
   {{end}}

@@ -7,46 +7,164 @@
 <body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
 {{template "navbar" .}}
 
-<div class="bg-brand-950 pt-32 pb-48 px-6 text-center text-white relative">
-  <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80')] bg-cover bg-center mix-blend-overlay opacity-10"></div>
-  <div class="relative z-10 max-w-4xl mx-auto">
-    <a href="/periode" class="inline-flex items-center gap-2 text-brand-300 hover:text-white mb-8 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Sejarah</a>
-    <h1 class="text-5xl md:text-7xl font-black mb-6">Periode {{.Period.DisplayName}}</h1>
+<div class="bg-brand-950 pt-28 pb-24 px-6 text-center text-white relative">
+  <div class="absolute inset-0 {{if and .PeriodAbout .PeriodAbout.CoverImageURL}}bg-[url('{{.PeriodAbout.CoverImageURL}}')]{{else}}bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80')]{{end}} bg-cover bg-center mix-blend-overlay opacity-10"></div>
+  <div class="relative z-10 max-w-5xl mx-auto">
+    <a href="/periode" class="inline-flex items-center gap-2 text-brand-300 hover:text-white mb-5 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Sejarah</a>
+    <h1 class="text-4xl md:text-6xl font-black mb-4">Periode {{.Period.DisplayName}}</h1>
     {{if .Period.IsActive}}
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-500/20 border border-accent-500 font-bold text-accent-400 uppercase tracking-widest text-xs">
-      <span class="w-2 h-2 rounded-full bg-accent-400 animate-pulse"></span> Kepanjangan Tangan Mahasiswa (Aktif)
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-500/20 border border-accent-500 font-bold text-accent-400 uppercase tracking-widest text-xs mb-5">
+      <span class="w-2 h-2 rounded-full bg-accent-400 animate-pulse"></span> Kepengurusan Aktif
     </div>
     {{end}}
+    <div class="flex flex-wrap justify-center gap-2">
+      <a href="#tentang" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Latar Belakang</a>
+      <a href="#struktur" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Struktur</a>
+      {{if and .PeriodAbout (gt (len .PeriodAbout.Gallery) 0)}}<a href="#galeri" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Galeri</a>{{end}}
+      {{if .Articles}}<a href="#artikel" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Artikel</a>{{end}}
+      {{if .Stats}}<a href="#statistik" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Statistik</a>{{end}}
+      {{if or .UngroupedPrograms .DepartmentGroups}}<a href="#program" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Program</a>{{end}}
+    </div>
   </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-6 -mt-24 relative z-20 pb-24">
-  <div class="bg-white rounded-[3rem] p-10 md:p-16 shadow-2xl border border-gray-100 text-center mb-16">
-    <h2 class="text-3xl font-extrabold text-gray-900 mb-8 w-max mx-auto border-b-4 border-brand-500 pb-2">Struktur Organisasi</h2>
+<div class="max-w-7xl mx-auto px-6 -mt-10 relative z-20 pb-16 space-y-6">
+  <section id="tentang" class="bg-white rounded-2xl p-5 md:p-7 shadow-lg border border-gray-100">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3">Latar Belakang Periode</h2>
+        <div class="prose prose-sm max-w-none text-gray-700">
+          {{if and .PeriodAbout .PeriodAbout.Sejarah}}
+            {{.PeriodAbout.Sejarah}}
+          {{else}}
+            <p>Latar belakang periode ini belum ditambahkan.</p>
+          {{end}}
+        </div>
+      </div>
+      <div>
+        {{if and .PeriodAbout .PeriodAbout.CoverImageURL}}
+        <div class="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
+          <img src="{{.PeriodAbout.CoverImageURL}}" alt="Cover Periode {{.Period.DisplayName}}" class="w-full h-64 md:h-72 object-cover">
+        </div>
+        {{else}}
+        <div class="rounded-2xl border border-gray-100 bg-gray-50 h-64 md:h-72 flex items-center justify-center text-gray-400">Cover periode belum ditambahkan.</div>
+        {{end}}
+      </div>
+    </div>
+  </section>
+
+  <section id="struktur" class="bg-white rounded-2xl p-5 md:p-7 shadow-sm border border-gray-100 text-center">
+    <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4">Struktur Organisasi</h2>
     {{if .Period.HierarchyImageURL}}
-    <div class="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 p-2 shadow-inner inline-block mx-auto max-w-full">
+    <div class="rounded-xl overflow-hidden border border-gray-100 bg-gray-50 p-2 shadow-inner inline-block mx-auto max-w-full">
       <img src="{{.Period.HierarchyImageURL}}" alt="Struktur Organisasi" class="max-w-full h-auto rounded-xl">
     </div>
     {{else}}
-    <div class="py-16 text-gray-400 bg-gray-50 rounded-2xl border border-gray-100">Bagan struktur organisasi belum diperbarui.</div>
+    <div class="py-8 text-gray-400 bg-gray-50 rounded-xl border border-gray-100">Bagan struktur organisasi belum diperbarui.</div>
     {{end}}
-  </div>
+  </section>
 
-  {{if .Departments}}
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-    {{range .Departments}}
-    <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow flex flex-col items-center text-center">
-      <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold mb-6">
-        <i data-lucide="network" class="w-8 h-8"></i>
-      </div>
-      <h3 class="text-xl font-bold text-brand-900 mb-4">{{.Name}}</h3>
-      {{if .Description}}
-      <p class="text-gray-500 text-sm leading-relaxed mb-4">{{.Description}}</p>
+  {{if and .PeriodAbout (gt (len .PeriodAbout.Gallery) 0)}}
+  <section id="galeri" class="bg-white rounded-2xl p-5 md:p-7 shadow-sm border border-gray-100">
+    <div class="flex items-end justify-between mb-4">
+      <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900">Galeri Periode</h2>
+      <p class="text-sm text-gray-500">Dokumentasi kegiatan dan momen periode</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {{range .PeriodAbout.Gallery}}
+      <figure class="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+        <img src="{{.ImageURL}}" alt="{{if .Title}}{{.Title}}{{else}}Galeri Periode{{end}}" class="w-full h-44 object-cover">
+        <figcaption class="p-3">
+          {{if .Title}}<p class="font-semibold text-gray-900 mb-1">{{.Title}}</p>{{end}}
+          {{if .Caption}}<p class="text-xs text-gray-600">{{.Caption}}</p>{{end}}
+        </figcaption>
+      </figure>
       {{end}}
     </div>
+  </section>
+  {{end}}
+
+  {{if .Articles}}
+  <section id="artikel">
+    <div class="flex items-end justify-between mb-4">
+      <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900">Artikel Periode</h2>
+      <a href="/artikel?period={{.Period.Label}}" class="text-brand-600 font-bold hover:text-brand-800">Lihat semua</a>
     </div>
-    {{end}}
-  </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {{range .Articles}}
+      <article class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
+        {{if .CoverURL}}
+        <img src="{{.CoverURL}}" alt="{{.Title}}" class="w-full h-40 object-cover">
+        {{else}}
+        <div class="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-300"><i data-lucide="image" class="w-10 h-10"></i></div>
+        {{end}}
+        <div class="p-4">
+          <h3 class="font-bold text-base text-gray-900 mb-2 line-clamp-2">{{.Title}}</h3>
+          <p class="text-sm text-gray-500 line-clamp-2 mb-3">{{.Excerpt}}</p>
+          <a href="/artikel/{{.Slug}}" class="text-brand-600 font-semibold text-sm hover:text-brand-800 inline-flex items-center gap-1">Baca artikel <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+        </div>
+      </article>
+      {{end}}
+    </div>
+  </section>
+  {{end}}
+
+  {{if .Stats}}
+  <section id="statistik" class="bg-white rounded-2xl p-5 md:p-7 border border-gray-100 shadow-sm">
+    <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900 mb-4">Statistik Periode</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {{range .Stats}}
+      <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+        <p class="text-xs uppercase tracking-wide font-semibold text-gray-500 mb-1">{{.Label}}</p>
+        <p class="text-2xl font-black text-brand-700 leading-tight">{{.Value}}</p>
+        {{if .Desc}}<p class="text-xs text-gray-500 mt-2">{{.Desc}}</p>{{end}}
+      </div>
+      {{end}}
+    </div>
+  </section>
+  {{end}}
+
+  {{if or .UngroupedPrograms .DepartmentGroups}}
+  <section id="program">
+    <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900 mb-4">Program Per Kementerian</h2>
+    <div class="space-y-4">
+      {{range .DepartmentGroups}}
+        {{if .Programs}}
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 class="text-lg font-black text-gray-900 mb-3">{{.Department.Name}}</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {{range .Programs}}
+            <article class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+              {{if .ImageURL}}
+              <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-32 object-cover rounded-lg mb-2">
+              {{end}}
+              <h4 class="font-bold text-gray-900 mb-2">{{.Title}}</h4>
+              <p class="text-sm text-gray-600 line-clamp-3">{{.Description}}</p>
+            </article>
+            {{end}}
+          </div>
+        </div>
+        {{end}}
+      {{end}}
+
+      {{if .UngroupedPrograms}}
+      <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <h3 class="text-lg font-black text-gray-900 mb-3">Program Lainnya</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {{range .UngroupedPrograms}}
+          <article class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+            {{if .ImageURL}}
+            <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-32 object-cover rounded-lg mb-2">
+            {{end}}
+            <h4 class="font-bold text-gray-900 mb-2">{{.Title}}</h4>
+            <p class="text-sm text-gray-600 line-clamp-3">{{.Description}}</p>
+          </article>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    </div>
+  </section>
   {{end}}
 </div>
 

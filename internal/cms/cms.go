@@ -242,6 +242,7 @@ func Members(w http.ResponseWriter, r *http.Request) {
 			u, _ := db.GetUserByUsername(username)
 			m.PeriodLabel = u.AssignedPeriod
 			m.ActivePeriods = nil
+			m.ActivePositions = nil
 		}
 		if err := db.CreateMember(m); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -266,6 +267,7 @@ func Members(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			delete(fields, "active_periods")
+			delete(fields, "active_positions")
 			if _, hasDept := fields["department"]; hasDept {
 				m, err := db.GetMemberByID(idSegment)
 				if err != nil {
@@ -660,192 +662,304 @@ func Accounts(w http.ResponseWriter, r *http.Request) {
 // ── Upload ────────────────────────────────────────────────────────────────────
 
 func Upload(w http.ResponseWriter, r *http.Request) {
-_, _, ok := requireAny(w, r)
-if !ok {
-return
-}
-if r.Method != http.MethodPost {
-writeJSON(w, 405, map[string]string{"error": "method not allowed"})
-return
-}
-r.ParseMultipartForm(5 << 20) // 5 MB
-file, header, err := r.FormFile("file")
-if err != nil {
-file, header, err = r.FormFile("files[0]")
-}
-if err != nil {
-writeJSON(w, 400, map[string]string{"error": "file required"})
-return
-}
-defer file.Close()
+	_, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	if r.Method != http.MethodPost {
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		return
+	}
+	r.ParseMultipartForm(5 << 20) // 5 MB
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		file, header, err = r.FormFile("files[0]")
+	}
+	if err != nil {
+		writeJSON(w, 400, map[string]string{"error": "file required"})
+		return
+	}
+	defer file.Close()
 
-ext := filepath.Ext(header.Filename)
-base := strings.TrimSuffix(filepath.Base(header.Filename), ext)
-safeName := fmt.Sprintf("%d_%s%s", time.Now().UnixMilli(), sanitizeUploadName(base), ext)
+	ext := filepath.Ext(header.Filename)
+	base := strings.TrimSuffix(filepath.Base(header.Filename), ext)
+	safeName := fmt.Sprintf("%d_%s%s", time.Now().UnixMilli(), sanitizeUploadName(base), ext)
 
-os.MkdirAll("./static/uploads", 0755)
-dst, err := os.Create("./static/uploads/" + safeName)
-if err != nil {
-writeJSON(w, 500, map[string]string{"error": "cannot create file"})
-return
-}
-defer dst.Close()
-io.Copy(dst, file)
+	os.MkdirAll("./static/uploads", 0755)
+	dst, err := os.Create("./static/uploads/" + safeName)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": "cannot create file"})
+		return
+	}
+	defer dst.Close()
+	io.Copy(dst, file)
 
-writeJSON(w, 200, map[string]string{"url": "/static/uploads/" + safeName})
+	writeJSON(w, 200, map[string]string{"url": "/static/uploads/" + safeName})
 }
 
 func sanitizeUploadName(s string) string {
-var b strings.Builder
-for _, c := range s {
-if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' {
-b.WriteRune(c)
-} else {
-b.WriteRune('_')
+	var b strings.Builder
+	for _, c := range s {
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' {
+			b.WriteRune(c)
+		} else {
+			b.WriteRune('_')
+		}
+	}
+	r := b.String()
+	if len(r) > 60 {
+		r = r[:60]
+	}
+	if r == "" {
+		r = "upload"
+	}
+	return r
 }
-}
-r := b.String()
-if len(r) > 60 { r = r[:60] }
-if r == "" { r = "upload" }
-return r
-}
-
 
 // ── Batch Updates ────────────────────────────────────────────────────────────
 
 func BatchUpdateMembers(w http.ResponseWriter, r *http.Request) {
-        _, _, ok := requireAny(w, r)
-        if !ok { return }
-        if r.Method != http.MethodPut {
-                writeJSON(w, 405, map[string]string{"error": "Method not allowed"})
-                return
-        }
-        var req []map[string]any
-        if err := readJSON(r, &req); err != nil {
-                writeJSON(w, 400, map[string]string{"error": err.Error()})
-                return
-        }
-        for _, m := range req {
-                id, ok := m["id"].(string)
-                if !ok { continue }
-                delete(m, "id")
-                db.UpdateMember(id, m)
-        }
-        writeJSON(w, 200, map[string]string{"status": "ok"})
+	_, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	if r.Method != http.MethodPut {
+		writeJSON(w, 405, map[string]string{"error": "Method not allowed"})
+		return
+	}
+	var req []map[string]any
+	if err := readJSON(r, &req); err != nil {
+		writeJSON(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+	for _, m := range req {
+		id, ok := m["id"].(string)
+		if !ok {
+			continue
+		}
+		delete(m, "id")
+		db.UpdateMember(id, m)
+	}
+	writeJSON(w, 200, map[string]string{"status": "ok"})
 }
 
 func BatchUpdateDepartments(w http.ResponseWriter, r *http.Request) {
-        _, _, ok := requireAny(w, r)
-        if !ok { return }
-        if r.Method != http.MethodPut {
-                writeJSON(w, 405, map[string]string{"error": "Method not allowed"})
-                return
-        }
-        var req []map[string]any
-        if err := readJSON(r, &req); err != nil {
-                writeJSON(w, 400, map[string]string{"error": err.Error()})
-                return
-        }
-        for _, d := range req {
-                id, ok := d["id"].(string)
-                if !ok { continue }
-                delete(d, "id")
-                db.UpdateDepartment(id, d)
-        }
-        writeJSON(w, 200, map[string]string{"status": "ok"})
+	_, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	if r.Method != http.MethodPut {
+		writeJSON(w, 405, map[string]string{"error": "Method not allowed"})
+		return
+	}
+	var req []map[string]any
+	if err := readJSON(r, &req); err != nil {
+		writeJSON(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+	for _, d := range req {
+		id, ok := d["id"].(string)
+		if !ok {
+			continue
+		}
+		delete(d, "id")
+		db.UpdateDepartment(id, d)
+	}
+	writeJSON(w, 200, map[string]string{"status": "ok"})
 }
-
 
 // --- PROGRAMS ---
 func Programs(w http.ResponseWriter, r *http.Request) {
-    switch r.Method {
-    case http.MethodGet:
-        pl := r.URL.Query().Get("period")
-        items, err := db.GetPrograms(pl)
-        if err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(items)
-    case http.MethodPost:
-        var p db.Program
-        if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-            http.Error(w, err.Error(), 400)
-            return
-        }
-        if err := db.InsertProgram(&p); err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(p)
-    case http.MethodPut:
-        id := strings.TrimPrefix(r.URL.Path, "/api/cms/programs/")
-        var p db.Program
-        if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-            http.Error(w, err.Error(), 400)
-            return
-        }
-        if err := db.UpdateProgram(id, &p); err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(map[string]any{"success": true})
-    case http.MethodDelete:
-        id := strings.TrimPrefix(r.URL.Path, "/api/cms/programs/")
-        if err := db.DeleteProgram(id); err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(map[string]any{"success": true})
-    default:
-        http.Error(w, "Method not allowed", 405)
-    }
+	username, role, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+
+	idSegment := strings.TrimPrefix(r.URL.Path, "/api/cms/programs")
+	idSegment = strings.Trim(idSegment, "/")
+
+	resolvePeriod := func(payloadPeriod string) string {
+		if role == "superadmin" {
+			payloadPeriod = strings.TrimSpace(payloadPeriod)
+			if payloadPeriod != "" {
+				return payloadPeriod
+			}
+			return strings.TrimSpace(r.URL.Query().Get("period"))
+		}
+		u, err := db.GetUserByUsername(username)
+		if err != nil {
+			return ""
+		}
+		return strings.TrimSpace(u.AssignedPeriod)
+	}
+
+	validateDepartment := func(periodLabel, dept string) error {
+		dept = strings.TrimSpace(dept)
+		if dept == "" {
+			return fmt.Errorf("kementerian wajib dipilih")
+		}
+		depts, err := db.GetDepartments(periodLabel)
+		if err != nil {
+			return err
+		}
+		for _, d := range depts {
+			if strings.EqualFold(strings.TrimSpace(d.Name), dept) {
+				return nil
+			}
+		}
+		return fmt.Errorf("kementerian tidak valid untuk periode ini")
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		periodLabel := resolvePeriod("")
+		items, err := db.GetPrograms(periodLabel)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, items)
+
+	case http.MethodPost:
+		var p db.Program
+		if err := readJSON(r, &p); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		p.PeriodLabel = resolvePeriod(p.PeriodLabel)
+		if p.PeriodLabel == "" {
+			writeJSON(w, 400, map[string]string{"error": "period required"})
+			return
+		}
+		if strings.TrimSpace(p.Title) == "" {
+			writeJSON(w, 400, map[string]string{"error": "judul program wajib diisi"})
+			return
+		}
+		if err := validateDepartment(p.PeriodLabel, p.Department); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		p.Department = strings.TrimSpace(p.Department)
+		if err := db.InsertProgram(&p); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 201, p)
+
+	case http.MethodPut:
+		if idSegment == "" {
+			writeJSON(w, 400, map[string]string{"error": "id required"})
+			return
+		}
+		var p db.Program
+		if err := readJSON(r, &p); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		p.PeriodLabel = resolvePeriod(p.PeriodLabel)
+		if p.PeriodLabel == "" {
+			writeJSON(w, 400, map[string]string{"error": "period required"})
+			return
+		}
+		if strings.TrimSpace(p.Title) == "" {
+			writeJSON(w, 400, map[string]string{"error": "judul program wajib diisi"})
+			return
+		}
+		if err := validateDepartment(p.PeriodLabel, p.Department); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		p.Department = strings.TrimSpace(p.Department)
+		if err := db.UpdateProgram(idSegment, &p); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"success": true})
+
+	case http.MethodDelete:
+		if idSegment == "" {
+			writeJSON(w, 400, map[string]string{"error": "id required"})
+			return
+		}
+		if err := db.DeleteProgram(idSegment); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"success": true})
+
+	default:
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+	}
 }
 
 // --- FAQS ---
 func FAQs(w http.ResponseWriter, r *http.Request) {
-    switch r.Method {
-    case http.MethodGet:
-        pl := r.URL.Query().Get("period")
-        items, err := db.GetFAQs(pl)
-        if err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(items)
-    case http.MethodPost:
-        var f db.FAQ
-        if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
-            http.Error(w, err.Error(), 400)
-            return
-        }
-        if err := db.InsertFAQ(&f); err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(f)
-    case http.MethodPut:
-        id := strings.TrimPrefix(r.URL.Path, "/api/cms/faqs/")
-        var f db.FAQ
-        if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
-            http.Error(w, err.Error(), 400)
-            return
-        }
-        if err := db.UpdateFAQ(id, &f); err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(map[string]any{"success": true})
-    case http.MethodDelete:
-        id := strings.TrimPrefix(r.URL.Path, "/api/cms/faqs/")
-        if err := db.DeleteFAQ(id); err != nil {
-            http.Error(w, err.Error(), 500)
-            return
-        }
-        json.NewEncoder(w).Encode(map[string]any{"success": true})
-    default:
-        http.Error(w, "Method not allowed", 405)
-    }
+	faqIDFromRequest := func() string {
+		id := strings.TrimPrefix(r.URL.Path, "/api/cms/faqs")
+		id = strings.Trim(id, "/")
+		if id != "" {
+			return id
+		}
+		return strings.TrimSpace(r.URL.Query().Get("id"))
+	}
+	periodFromRequest := func() string {
+		pl := strings.TrimSpace(r.URL.Query().Get("period"))
+		if pl == "" {
+			pl = strings.TrimSpace(r.URL.Query().Get("p"))
+		}
+		return pl
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		pl := periodFromRequest()
+		items, err := db.GetFAQs(pl)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		json.NewEncoder(w).Encode(items)
+	case http.MethodPost:
+		var f db.FAQ
+		if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		if err := db.InsertFAQ(&f); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		json.NewEncoder(w).Encode(f)
+	case http.MethodPut:
+		id := faqIDFromRequest()
+		if id == "" {
+			http.Error(w, "id required", 400)
+			return
+		}
+		var f db.FAQ
+		if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		if err := db.UpdateFAQ(id, &f); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{"success": true})
+	case http.MethodDelete:
+		id := faqIDFromRequest()
+		if id == "" {
+			http.Error(w, "id required", 400)
+			return
+		}
+		if err := db.DeleteFAQ(id); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{"success": true})
+	default:
+		http.Error(w, "Method not allowed", 405)
+	}
 }
 
 func normalizeShortCode(raw string) string {
@@ -1181,5 +1295,3 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 	}
 }
-
-

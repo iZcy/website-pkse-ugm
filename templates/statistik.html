@@ -3,6 +3,7 @@
 <head>
   {{template "head" .}}
   <title>PKSE UGM | Statistik</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
 {{template "navbar" .}}
@@ -20,21 +21,254 @@
     </form>
   </div>
 
-  <div class="bg-white rounded-[3rem] p-12 shadow-lg border border-gray-100">
+  <div class="space-y-6">
     {{if eq (len .Stats) 0}}
-      <div class="text-center py-12 text-gray-400">Data tidak tersedia untuk periode ini.</div>
+      <div class="bg-white rounded-[3rem] p-12 shadow-lg border border-gray-100 text-center text-gray-400">Data tidak tersedia untuk periode ini.</div>
     {{else}}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-        {{range .Stats}}
-        <div class="text-center">
-          <div class="text-6xl font-black text-brand-600 mb-4">{{.Value}}</div>
-          <div class="text-sm font-bold text-gray-500 uppercase tracking-widest">{{.Label}}</div>
+      {{range $idx, $stat := .Stats}}
+      <section class="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-2xl font-black text-brand-900">{{$stat.Label}}</h2>
+            {{if $stat.Desc}}<p class="text-sm text-gray-500 mt-1">{{$stat.Desc}}</p>{{end}}
+          </div>
+          <span class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-brand-50 text-brand-700">{{$stat.ChartType}}</span>
         </div>
-        {{end}}
-      </div>
+        <div id="stat-block-{{$idx}}" data-chart-type="{{$stat.ChartType}}" data-raw-value='{{$stat.Value}}' class="min-h-[220px]"></div>
+      </section>
+      {{end}}
     {{end}}
   </div>
 </div>
+
+<script>
+function normalizeLegacySeries(raw) {
+  return String(raw || '')
+    .split(',')
+    .map(part => part.trim())
+    .filter(Boolean)
+    .map(part => {
+      const chunks = part.split(':');
+      if (chunks.length < 2) return null;
+      const label = chunks[0].trim();
+      const value = Number(chunks.slice(1).join(':').trim());
+      if (!label || Number.isNaN(value)) return null;
+      return { label, value };
+    })
+    .filter(Boolean);
+}
+
+function parseRaw(raw) {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    const legacy = normalizeLegacySeries(raw);
+    if (legacy.length) return legacy;
+    return raw;
+  }
+}
+
+function statColorPalette(size) {
+  const colors = ['#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd', '#2563eb', '#38bdf8', '#0ea5e9', '#0284c7'];
+  const out = [];
+  for (let i = 0; i < size; i++) out.push(colors[i % colors.length]);
+  return out;
+}
+
+function ensureCanvas(el) {
+  const canvas = document.createElement('canvas');
+  canvas.className = 'w-full h-[280px]';
+  el.innerHTML = '';
+  el.appendChild(canvas);
+  return canvas.getContext('2d');
+}
+
+function asLabelValueArray(parsed) {
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map(item => ({
+      label: String(item?.label ?? item?.name ?? ''),
+      value: Number(item?.value)
+    }))
+    .filter(item => item.label && !Number.isNaN(item.value));
+}
+
+function renderChart(el, chartType, data, options) {
+  const ctx = ensureCanvas(el);
+  new Chart(ctx, {
+    type: chartType,
+    data,
+    options: Object.assign({ responsive: true, maintainAspectRatio: false }, options || {})
+  });
+}
+
+function renderKPI(el, raw) {
+  el.innerHTML = `<div class="h-full min-h-[220px] flex items-center justify-center text-6xl font-black text-brand-600">${raw || '-'}</div>`;
+}
+
+function renderTable(el, parsed) {
+  if (!Array.isArray(parsed) || !parsed.length || typeof parsed[0] !== 'object') {
+    el.innerHTML = '<div class="text-sm text-gray-400">Data tabel tidak valid.</div>';
+    return;
+  }
+  const keys = Object.keys(parsed[0]);
+  const th = keys.map(k => `<th class="px-3 py-2 text-left text-xs uppercase tracking-wide text-gray-500">${k}</th>`).join('');
+  const rows = parsed.map(row => `<tr class="border-t border-gray-100">${keys.map(k => `<td class="px-3 py-2 text-sm text-gray-700">${row[k] ?? ''}</td>`).join('')}</tr>`).join('');
+  el.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full bg-white border border-gray-100 rounded-xl"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function renderHeatmap(el, parsed) {
+  const arr = asLabelValueArray(parsed);
+  if (!arr.length) {
+    el.innerHTML = '<div class="text-sm text-gray-400">Data heatmap tidak valid.</div>';
+    return;
+  }
+  const max = Math.max(...arr.map(x => x.value), 1);
+  el.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${arr.map(item => {
+    const alpha = Math.max(0.15, item.value / max);
+    return `<div class="rounded-lg p-3 border border-blue-100" style="background-color: rgba(37,99,235,${alpha});">
+      <p class="text-xs text-white/90 font-semibold truncate">${item.label}</p>
+      <p class="text-lg font-black text-white mt-1">${item.value}</p>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function renderFunnel(el, parsed) {
+  const arr = asLabelValueArray(parsed);
+  if (!arr.length) {
+    el.innerHTML = '<div class="text-sm text-gray-400">Data funnel tidak valid.</div>';
+    return;
+  }
+  const max = Math.max(...arr.map(x => x.value), 1);
+  el.innerHTML = `<div class="space-y-2">${arr.map(item => {
+    const width = Math.max(24, Math.round((item.value / max) * 100));
+    return `<div class="mx-auto rounded-lg px-3 py-2 text-white text-sm font-semibold text-center" style="width:${width}%; background: linear-gradient(90deg,#2563eb,#60a5fa);">${item.label} (${item.value})</div>`;
+  }).join('')}</div>`;
+}
+
+function renderStandardSeries(el, type, parsed) {
+  const arr = asLabelValueArray(parsed);
+  if (!arr.length) {
+    el.innerHTML = '<div class="text-sm text-gray-400">Data chart belum valid.</div>';
+    return;
+  }
+  const labels = arr.map(x => x.label);
+  const values = arr.map(x => x.value);
+  const colors = statColorPalette(values.length);
+  const isArea = type === 'area';
+
+  let chartType = 'bar';
+  if (type === 'line' || type === 'area') chartType = 'line';
+  if (type === 'pie') chartType = 'pie';
+  if (type === 'doughnut') chartType = 'doughnut';
+  if (type === 'polar') chartType = 'polarArea';
+  if (type === 'radar') chartType = 'radar';
+
+  renderChart(el, chartType, {
+    labels,
+    datasets: [{
+      label: 'Nilai',
+      data: values,
+      backgroundColor: chartType === 'line' ? 'rgba(37,99,235,0.2)' : colors,
+      borderColor: chartType === 'line' ? '#1d4ed8' : colors,
+      borderWidth: 2,
+      fill: isArea,
+      tension: 0.35
+    }]
+  }, {
+    plugins: { legend: { display: chartType !== 'bar' && chartType !== 'line' } },
+    scales: ['pie', 'doughnut', 'polarArea', 'radar'].includes(chartType) ? {} : { y: { beginAtZero: true } }
+  });
+}
+
+function renderScatter(el, parsed) {
+  const points = Array.isArray(parsed) ? parsed.map(p => ({ x: Number(p?.x), y: Number(p?.y) })).filter(p => !Number.isNaN(p.x) && !Number.isNaN(p.y)) : [];
+  if (!points.length) {
+    el.innerHTML = '<div class="text-sm text-gray-400">Data scatter tidak valid. Gunakan [{"x":1,"y":2}]</div>';
+    return;
+  }
+  renderChart(el, 'scatter', {
+    datasets: [{ label: 'Titik', data: points, backgroundColor: '#2563eb' }]
+  }, {
+    scales: { x: { beginAtZero: true }, y: { beginAtZero: true } }
+  });
+}
+
+function renderBubble(el, parsed) {
+  const points = Array.isArray(parsed)
+    ? parsed.map(p => ({ x: Number(p?.x), y: Number(p?.y), r: Number(p?.r ?? 8) })).filter(p => !Number.isNaN(p.x) && !Number.isNaN(p.y) && !Number.isNaN(p.r))
+    : [];
+  if (!points.length) {
+    el.innerHTML = '<div class="text-sm text-gray-400">Data bubble tidak valid. Gunakan [{"x":1,"y":2,"r":10}]</div>';
+    return;
+  }
+  renderChart(el, 'bubble', {
+    datasets: [{ label: 'Bubble', data: points, backgroundColor: 'rgba(37,99,235,0.55)', borderColor: '#1d4ed8' }]
+  }, {
+    scales: { x: { beginAtZero: true }, y: { beginAtZero: true } }
+  });
+}
+
+function renderStackedOrGrouped(el, type, parsed) {
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.labels) && Array.isArray(parsed.series)) {
+    const colors = statColorPalette(parsed.series.length);
+    const datasets = parsed.series.map((s, idx) => ({
+      label: String(s?.name || `Seri ${idx + 1}`),
+      data: Array.isArray(s?.values) ? s.values.map(v => Number(v) || 0) : [],
+      backgroundColor: colors[idx]
+    }));
+    const stacked = type === 'stacked_bar';
+    renderChart(el, 'bar', { labels: parsed.labels, datasets }, {
+      scales: { x: { stacked }, y: { beginAtZero: true, stacked } }
+    });
+    return;
+  }
+  renderStandardSeries(el, 'bar', parsed);
+}
+
+function renderStatBlock(el) {
+  const type = (el.dataset.chartType || 'kpi').toLowerCase();
+  const raw = el.dataset.rawValue || '';
+  const parsed = parseRaw(raw);
+
+  if (type === 'kpi' || type === 'kpi_card' || type === 'gauge') {
+    renderKPI(el, raw);
+    return;
+  }
+  if (type === 'table') {
+    renderTable(el, parsed);
+    return;
+  }
+  if (type === 'heatmap') {
+    renderHeatmap(el, parsed);
+    return;
+  }
+  if (type === 'funnel') {
+    renderFunnel(el, parsed);
+    return;
+  }
+  if (type === 'scatter') {
+    renderScatter(el, parsed);
+    return;
+  }
+  if (type === 'bubble') {
+    renderBubble(el, parsed);
+    return;
+  }
+  if (type === 'stacked_bar' || type === 'grouped_bar') {
+    renderStackedOrGrouped(el, type, parsed);
+    return;
+  }
+  if (type === 'histogram') {
+    renderStandardSeries(el, 'bar', parsed);
+    return;
+  }
+  renderStandardSeries(el, type, parsed);
+}
+
+document.querySelectorAll('[id^="stat-block-"]').forEach(renderStatBlock);
+</script>
 
 {{template "footer" .}}
 </body>
