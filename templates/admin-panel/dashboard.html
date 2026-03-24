@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Admin - PKSE UGM</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <style>
@@ -56,6 +57,7 @@
 <div class="bg-blue-800 px-6 py-2 flex items-center gap-4 flex-shrink-0">
   <label for="period-switcher" class="text-blue-200 text-sm font-medium flex-shrink-0">Periode:</label>
   <form id="period-switcher-form" action="/admin/dashboard" method="get" class="min-w-[240px] max-w-full">
+    <input type="hidden" id="period-route-section" name="section" value="pengumuman">
     <select id="period-switcher" name="period" onchange="this.form.submit()" class="w-full px-3 py-1.5 rounded-md text-sm font-medium bg-white text-blue-900 border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300">
       {{range .AccessiblePeriods}}
       <option value="{{.Label}}" {{if eq $.SelectedPeriod .Label}}selected{{end}}>{{.DisplayName}}{{if .IsActive}} ✦{{end}}</option>
@@ -74,71 +76,68 @@
   <aside class="w-56 bg-blue-900 text-blue-100 flex-shrink-0 overflow-y-auto">
     <nav class="p-3 space-y-1">
       <div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider">Konten Periode</div>
-      <button onclick="switchTab('pengumuman')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-pengumuman">
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=pengumuman" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-pengumuman">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
         Pengumuman
-      </button>
-      <button onclick="switchTab('artikel')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-artikel">
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=artikel" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-artikel">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Artikel
-      </button>
-      <button onclick="switchTab('tentang')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-tentang">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Tentang Periode
-      </button>
-      <button onclick="switchTab('departemen')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-departemen">
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=departemen" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-departemen">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         Kementerian
-      </button>
-      <button onclick="switchTab('program')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-program">
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=program" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-program">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         Program
-      </button>
-      {{if ne .Role "superadmin"}}
-      <button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        Anggota
-      </button>
-      {{end}}
-
-      <button onclick="switchTab('faq-periode')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-periode">
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=faq-periode" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-periode">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         FAQ Periode
-      </button>
-      <button onclick="switchTab('statistik')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-statistik">
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=tentang" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-tentang">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Tentang Periode
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=galeri" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-galeri">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Galeri
+      </a>
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=statistik" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-statistik">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         Statistik
-      </button>
+      </a>
       
       {{if eq .Role "superadmin"}}
       <div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-3">Superadmin</div>
-<button onclick="switchTab('global')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-global">
+      <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=anggota" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        Anggota
+      </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=global" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-global">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         Pengaturan Global
-      </button>
-<button onclick="switchTab('anggota')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-anggota">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-        Anggota
-      </button>
-<button onclick="switchTab('shortlink')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-shortlink">
+      </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=shortlink" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-shortlink">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 11-5.656-5.656l1.5-1.5m6.328-1.328a4 4 0 010-5.656l3-3a4 4 0 015.656 5.656l-1.5 1.5M8 16l8-8"/></svg>
         Shorten Link
-      </button>
-<button onclick="switchTab('faq-global')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-global">
+      </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=faq-global" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-global">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         FAQ Global
-      </button>
-<button onclick="switchTab('global-stats')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-global-stats">
+      </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=global-stats" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-global-stats">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Template Statistik
-      </button>
-<button onclick="switchTab('periode')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-periode">
+      </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=periode" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-periode">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         Manajemen Periode
-      </button>
-<button onclick="switchTab('akun')" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-akun">
+      </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=akun" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-akun">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         Manajemen Akun
-      </button>
+      </a>
       {{end}}
     </nav>
   </aside>
@@ -220,18 +219,10 @@
           </section>
 
           <section class="border border-slate-200 rounded-xl p-4 space-y-4 bg-slate-50/40">
-            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Section Struktur & Galeri</h3>
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Section Struktur</h3>
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Struktur Organisasi</label>
               <div id="picker-struktur"></div>
-            </div>
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="block text-sm font-semibold text-slate-700">Galeri Konten Periode</label>
-                <button type="button" id="btn-add-gallery-item" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Item</button>
-              </div>
-              <div id="tentang-gallery-list" class="space-y-3"></div>
-              <p class="text-xs text-slate-400 mt-2">Tampilkan foto kegiatan periode untuk halaman frontend.</p>
             </div>
           </section>
           <div class="flex items-center gap-4">
@@ -239,6 +230,22 @@
             <div id="tentang-msg" class="text-sm text-green-600 hidden">✓ Tersimpan!</div>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- GALERI PERIODE -->
+    <div id="tab-galeri" class="tab-content">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Galeri Periode</h2>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-slate-600">Kelola foto kegiatan periode yang tampil di halaman frontend.</p>
+          <button type="button" id="btn-add-gallery-item" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Item</button>
+        </div>
+        <div id="tentang-gallery-list" class="space-y-3"></div>
+        <div class="flex items-center gap-4">
+          <button type="button" id="btn-save-gallery" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Galeri</button>
+          <div id="galeri-msg" class="text-sm text-green-600 hidden">✓ Galeri tersimpan!</div>
+        </div>
       </div>
     </div>
 
@@ -510,16 +517,6 @@
     <div id="tab-statistik" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Statistik Periode</h2>
-        <div class="flex gap-2">
-          <button onclick="syncStats()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Tarik Template
-          </button>
-          <button onclick="openStatModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Tambah Statistik
-          </button>
-        </div>
       </div>
       <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
         <table class="w-full text-sm">
@@ -527,7 +524,8 @@
             <tr>
               <th class="p-4 text-left font-medium w-10"></th>
               <th class="p-4 text-left font-medium">Label</th>
-              <th class="p-4 text-left font-medium">Value</th>
+              <th class="p-4 text-left font-medium">Input Nilai</th>
+              <th class="p-4 text-left font-medium">Preview Chart</th>
               <th class="p-4 text-left font-medium">Deskripsi</th>
               <th class="p-4 text-right font-medium">Aksi</th>
             </tr>
@@ -609,8 +607,22 @@
       </div>
       <div id="stat-value-wrap">
         <label id="stat-value-label" class="block text-sm font-semibold text-slate-700 mb-1">Nilai</label>
-        <input type="text" id="stat-value" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150">
-        <p id="stat-value-help" class="text-xs text-slate-500 mt-1">Untuk chart pie/bar/line gunakan JSON array, contoh: [{"label":"A","value":10}]</p>
+        <input type="hidden" id="stat-value" value="">
+        <div id="stat-simple-wrap" class="space-y-2">
+          <input type="text" id="stat-simple-value" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150">
+        </div>
+        <div id="stat-series-wrap" class="space-y-2 hidden">
+          <div id="stat-series-list" class="space-y-2"></div>
+          <button type="button" id="btn-add-series" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Baris Data</button>
+        </div>
+        <p id="stat-value-help" class="text-xs text-slate-500 mt-1">Masukkan nilai statistik sesuai tipe chart.</p>
+      </div>
+      <div id="stat-preview-wrap" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Preview Chart</p>
+        <div class="h-44 bg-white border border-slate-200 rounded-lg p-2">
+          <canvas id="stat-preview-canvas" class="w-full h-full"></canvas>
+          <div id="stat-preview-empty" class="h-full hidden items-center justify-center text-xs text-slate-400">Isi data untuk melihat preview.</div>
+        </div>
       </div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Tambahan</label>
@@ -928,10 +940,23 @@
 </div>
 
 <script>
-let state = { periods: [], faqs: [], stats: [], periodGallery: [] };
+let state = { periods: [], faqs: [], stats: [], periodGallery: [], globalSetting: null, periodAbout: null };
 
 const PERIOD = "{{.SelectedPeriod}}";
 const ROLE = "{{.Role}}";
+let statPreviewChart = null;
+
+function selectedSectionFromURL() {
+  const section = new URLSearchParams(window.location.search).get('section') || 'pengumuman';
+  const allowed = new Set(['pengumuman', 'artikel', 'departemen', 'program', 'faq-periode', 'tentang', 'galeri', 'statistik', 'anggota', 'global', 'shortlink', 'faq-global', 'global-stats', 'periode', 'akun']);
+  return allowed.has(section) ? section : 'pengumuman';
+}
+
+function syncPeriodSwitcherRouteSection() {
+  const hidden = document.getElementById('period-route-section');
+  if (!hidden) return;
+  hidden.value = selectedSectionFromURL();
+}
 
 // ── Image Picker Component ───────────────────────────────────────────────────
 // Creates a reusable image picker: drag-drop zone + file upload + URL input
@@ -1041,6 +1066,8 @@ function pickerSetUrl(id, url) {
   wrap.classList.remove('hidden');
   prompt.classList.add('hidden');
   if (urlInput) urlInput.value = url;
+  if (id === 'picker-logo') renderGlobalPreview();
+  if (id === 'picker-cover' || id === 'picker-struktur') renderTentangPreview();
 }
 function pickerClear(id) {
   imagePickers[id].url = '';
@@ -1054,6 +1081,8 @@ function pickerClear(id) {
   if (urlInput) urlInput.value = '';
   const fileInput = document.getElementById(id + '-file');
   if (fileInput) fileInput.value = '';
+  if (id === 'picker-logo') renderGlobalPreview();
+  if (id === 'picker-cover' || id === 'picker-struktur') renderTentangPreview();
 }
 function pickerGetUrl(id) {
   return imagePickers[id] ? imagePickers[id].url : '';
@@ -1100,11 +1129,17 @@ function quillSetHTML(id, html) {
 
 // ── Tab switching ────────────────────────────────────────────────────────────
 function switchTab(name) {
+  const target = document.getElementById('tab-' + name);
+  if (!target) {
+    name = 'pengumuman';
+  }
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   const btn = document.getElementById('tab-btn-' + name);
   if (btn) btn.classList.add('active');
+  const hidden = document.getElementById('period-route-section');
+  if (hidden) hidden.value = name;
   loadTab(name);
 }
 
@@ -1118,12 +1153,16 @@ function loadTab(name) {
   if (name === 'akun') loadAkun();
   if (name === 'global') loadGlobal();
   if (name === 'tentang') loadTentang();
+  if (name === 'galeri') loadGaleri();
   if (name === 'shortlink') loadShortlinks();
   
   if (name === 'faq-global') loadFAQs('GLOBAL');
   if (name === 'faq-periode' && currentPeriod()) loadFAQs(currentPeriod());
   if (name === 'global-stats') loadGlobalStatsTab();
-  if (name === 'statistik' && currentPeriod()) loadStatistik();
+  if (name === 'statistik' && currentPeriod()) {
+    // Load templates first, then statistics
+    loadGlobalStatsTab().then(() => loadStatistik());
+  }
 
 }
 
@@ -1349,19 +1388,21 @@ function chartPreviewSVG(type) {
   return s[type] || s.bar;
 }
 
-function renderChartChoices(selectedValue = 'bar') {
+function renderChartChoices(selectedValue = 'bar', readOnly = false) {
   const wrap = document.getElementById('stat-chart-options');
   if (!wrap) return;
   const current = selectedValue || 'bar';
   document.getElementById('stat-chart-type').value = current;
   wrap.innerHTML = CHART_CHOICES.map(c => {
     const active = c.value === current;
-    return `<button type="button" class="chart-choice border rounded-lg p-2 text-xs font-medium transition text-left ${active ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}" data-chart-value="${c.value}">
+    return `<button type="button" ${readOnly ? 'disabled' : ''} class="chart-choice border rounded-lg p-2 text-xs font-medium transition text-left ${readOnly ? 'opacity-50 cursor-not-allowed ' : ''}${active ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}" data-chart-value="${c.value}">
       <div class="rounded-md border ${active ? 'border-blue-300 bg-blue-500/10' : 'border-slate-200 bg-slate-50'} p-1.5 mb-1 overflow-hidden">${chartPreviewSVG(c.value)}</div>
       <div class="truncate">${c.label}</div>
     </button>`;
   }).join('');
-  updateStatValueGuide(current);
+  const currentRaw = document.getElementById('stat-value')?.value || '';
+  renderStatValueInput(current, currentRaw);
+  renderStatPreview(current, currentRaw);
 }
 
 document.addEventListener('click', e => {
@@ -1380,11 +1421,34 @@ document.addEventListener('click', e => {
     }
     return;
   }
+  const addSeriesBtn = e.target.closest('#btn-add-series');
+  if (addSeriesBtn) {
+    const chartType = document.getElementById('stat-chart-type')?.value || 'bar';
+    const mode = statChartMode(chartType) === 'xy' ? 'xy' : 'series';
+    const list = document.getElementById('stat-series-list');
+    if (list) {
+      const nextIdx = list.querySelectorAll('.stat-row').length;
+      list.insertAdjacentHTML('beforeend', statRowInputTemplate(mode, nextIdx, {}));
+      renderStatPreview(chartType, collectStatInputValue(chartType));
+    }
+    return;
+  }
+  const removeSeriesBtn = e.target.closest('[data-remove-series]');
+  if (removeSeriesBtn) {
+    const row = removeSeriesBtn.closest('.stat-row');
+    if (row) row.remove();
+    const chartType = document.getElementById('stat-chart-type')?.value || 'bar';
+    try {
+      renderStatPreview(chartType, collectStatInputValue(chartType));
+    } catch (_) {
+      renderStatPreview(chartType, '');
+    }
+    return;
+  }
   const btn = e.target.closest('.chart-choice');
   if (!btn) return;
   const value = btn.getAttribute('data-chart-value') || 'bar';
   renderChartChoices(value);
-  updateStatValueGuide(value);
 });
 
 function currentPeriod() {
@@ -1569,10 +1633,18 @@ async function loadTentang() {
   initQuill('editor-sejarah');
   initQuill('editor-visi');
   initQuill('editor-misi');
+  ['editor-sejarah', 'editor-visi', 'editor-misi'].forEach((id) => {
+    const q = quills[id];
+    if (q && !q.__previewBound) {
+      q.on('text-change', () => renderTentangPreview());
+      q.__previewBound = true;
+    }
+  });
   createImagePicker('picker-cover');
   createImagePicker('picker-struktur');
   try {
     const pa = await api('GET', `/api/cms/period-about?period=${PERIOD}`);
+    state.periodAbout = pa || {};
     quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
@@ -1583,9 +1655,12 @@ async function loadTentang() {
     else pickerClear('picker-cover');
     if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
     else pickerClear('picker-struktur');
-    renderTentangGalleryEditor(pa.gallery || []);
+    state.periodGallery = Array.isArray(pa.gallery) ? pa.gallery : [];
+    renderTentangPreview();
   } catch(e) {
-    renderTentangGalleryEditor([]);
+    state.periodAbout = { period_label: PERIOD };
+    state.periodGallery = [];
+    renderTentangPreview();
   }
 }
 
@@ -1603,11 +1678,50 @@ document.getElementById('formTentang').addEventListener('submit', async e => {
       misi: quillGetHTML('editor-misi'),
       cover_image_url: pickerGetUrl('picker-cover'),
       hierarchy_image_url: pickerGetUrl('picker-struktur'),
-      gallery: collectTentangGallery()
+      gallery: state.periodGallery
     });
+    state.periodAbout = {
+      ...(state.periodAbout || {}),
+      period_label: PERIOD,
+      sejarah: quillGetHTML('editor-sejarah'),
+      tagline_title: document.getElementById('tentang-tagline-title').value,
+      tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
+      tagline_description: document.getElementById('tentang-tagline-desc').value,
+      visi: quillGetHTML('editor-visi'),
+      misi: quillGetHTML('editor-misi'),
+      cover_image_url: pickerGetUrl('picker-cover'),
+      hierarchy_image_url: pickerGetUrl('picker-struktur')
+    };
+    renderTentangPreview();
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
+});
+
+async function loadGaleri() {
+  if (!state.periodAbout) {
+    await loadTentang();
+  }
+  renderTentangGalleryEditor(state.periodGallery || []);
+}
+
+document.getElementById('btn-save-gallery')?.addEventListener('click', async () => {
+  const msg = document.getElementById('galeri-msg');
+  const current = await api('GET', `/api/cms/period-about?period=${PERIOD}`).catch(() => ({ period_label: PERIOD }));
+  const gallery = collectTentangGallery();
+  try {
+    await api('PUT', '/api/cms/period-about', {
+      ...current,
+      period_label: PERIOD,
+      gallery
+    });
+    state.periodGallery = gallery;
+    renderTentangPreview();
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch (ex) {
+    uiAlert('Error: ' + ex.message);
+  }
 });
 
 
@@ -2381,9 +2495,14 @@ function toggleAssignedPeriod() {
 // ── GLOBAL SETTING ───────────────────────────────────────────────────────────
 async function loadGlobal() {
   initQuill('editor-global-about');
+  if (quills['editor-global-about'] && !quills['editor-global-about'].__previewBound) {
+    quills['editor-global-about'].on('text-change', () => renderGlobalPreview());
+    quills['editor-global-about'].__previewBound = true;
+  }
   createImagePicker('picker-logo');
   try {
     const g = await api('GET', '/api/cms/global-setting');
+    state.globalSetting = g || {};
     document.getElementById('global-orgname').value = g.org_name || '';
     document.getElementById('global-header-title').value = g.header_title || '';
     document.getElementById('global-header-subtitle').value = g.header_subtitle || '';
@@ -2402,7 +2521,11 @@ async function loadGlobal() {
     document.getElementById('sm-youtube').value = sm.youtube || '';
     document.getElementById('sm-linkedin').value = sm.linkedin || '';
     document.getElementById('sm-tiktok').value = sm.tiktok || '';
-  } catch(e) {}
+    renderGlobalPreview();
+  } catch(e) {
+    state.globalSetting = {};
+    renderGlobalPreview();
+  }
 }
 
 document.getElementById('formGlobal').addEventListener('submit', async e => {
@@ -2424,6 +2547,22 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
       about_html: quillGetHTML('editor-global-about'),
       social_media: cur.social_media || {}
     });
+    state.globalSetting = {
+      ...cur,
+      org_name: document.getElementById('global-orgname').value,
+      logo_url: pickerGetUrl('picker-logo'),
+      header_title: document.getElementById('global-header-title').value,
+      header_subtitle: document.getElementById('global-header-subtitle').value,
+      hero_badge_text: document.getElementById('global-hero-badge').value,
+      hero_title_main: document.getElementById('global-hero-title-main').value,
+      hero_title_accent: document.getElementById('global-hero-title-accent').value,
+      footer_title: document.getElementById('global-footer-title').value,
+      footer_text: document.getElementById('global-footer-text').value,
+      footer_copy_text: document.getElementById('global-footer-copy').value,
+      about_html: quillGetHTML('editor-global-about'),
+      social_media: cur.social_media || {}
+    };
+    renderGlobalPreview();
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
@@ -2455,6 +2594,18 @@ document.getElementById('formSocmed').addEventListener('submit', async e => {
         tiktok: document.getElementById('sm-tiktok').value
       }
     });
+    state.globalSetting = {
+      ...cur,
+      social_media: {
+        instagram: document.getElementById('sm-instagram').value,
+        twitter: document.getElementById('sm-twitter').value,
+        facebook: document.getElementById('sm-facebook').value,
+        youtube: document.getElementById('sm-youtube').value,
+        linkedin: document.getElementById('sm-linkedin').value,
+        tiktok: document.getElementById('sm-tiktok').value
+      }
+    };
+    renderGlobalPreview();
     msg.classList.remove('hidden');
     setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
@@ -2470,59 +2621,299 @@ function stripHtml(s) {
   return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function statValuePreview(raw) {
-  const txt = (raw || '').trim();
-  if (!txt) return '-';
+function statValuePreview(raw, chartType) {
+  const parsed = parseStatInputValue(raw, chartType);
+  if (parsed.mode === 'single') return String(parsed.single || '-');
+  if (!parsed.points.length) return '-';
+  if (parsed.mode === 'xy') return `${parsed.points.length} titik koordinat`;
+  return `${parsed.points.length} baris data`;
+}
+
+function statChartMode(chartType) {
+  const t = String(chartType || '').toLowerCase();
+  if (t === 'kpi') return 'single';
+  if (t === 'scatter' || t === 'bubble') return 'xy';
+  return 'series';
+}
+
+function parseStatInputValue(raw, chartType) {
+  const txt = String(raw || '').trim();
+  const mode = statChartMode(chartType);
+  if (!txt) return { mode, single: '', points: [] };
+  if (mode === 'single') return { mode, single: txt, points: [] };
   try {
     const parsed = JSON.parse(txt);
-    if (Array.isArray(parsed)) return `${parsed.length} titik data`;
-  } catch (_) {}
-  return txt;
+    if (!Array.isArray(parsed)) return { mode, single: txt, points: [] };
+    const points = parsed.map((item) => ({
+      label: String(item?.label ?? '').trim(),
+      value: Number(item?.value),
+      x: Number(item?.x),
+      y: Number(item?.y),
+      r: Number(item?.r)
+    }));
+    return { mode, single: '', points };
+  } catch (_) {
+    if (mode === 'xy') {
+      const points = txt.split(/[;\n]+/).map((line, idx) => {
+        const [xRaw, yRaw] = line.split(',').map(v => String(v || '').trim());
+        const x = Number(xRaw);
+        const y = Number(yRaw);
+        if (Number.isNaN(x) || Number.isNaN(y)) return null;
+        return { label: `Titik ${idx + 1}`, x, y, r: 6 };
+      }).filter(Boolean);
+      return { mode, single: '', points };
+    }
+    const pairs = txt.split(/[;\n]+/).map((line) => {
+      const [labelRaw, valueRaw] = line.split(':');
+      const label = String(labelRaw || '').trim();
+      const value = Number(String(valueRaw || '').trim());
+      if (!label || Number.isNaN(value)) return null;
+      return { label, value };
+    }).filter(Boolean);
+    if (pairs.length) return { mode, single: '', points: pairs };
+    const singleNumeric = Number(txt);
+    if (!Number.isNaN(singleNumeric)) {
+      return { mode, single: '', points: [{ label: 'Nilai', value: singleNumeric }] };
+    }
+    return { mode, single: txt, points: [] };
+  }
 }
 
-function statChartNeedsSeries(chartType) {
-  const singleValueCharts = new Set(['kpi', 'gauge']);
-  return !singleValueCharts.has((chartType || '').toLowerCase());
+function statRowInputTemplate(mode, idx, row = {}) {
+  if (mode === 'xy') {
+    return `<div class="grid grid-cols-12 gap-2 items-center stat-row" data-row-idx="${idx}">
+      <input type="text" class="col-span-4 border border-slate-300 rounded-lg px-2 py-2 text-xs" data-row-label placeholder="Label" value="${escHtml(row.label || '')}">
+      <input type="number" step="any" class="col-span-3 border border-slate-300 rounded-lg px-2 py-2 text-xs" data-row-x placeholder="X" value="${Number.isFinite(row.x) ? row.x : ''}">
+      <input type="number" step="any" class="col-span-3 border border-slate-300 rounded-lg px-2 py-2 text-xs" data-row-y placeholder="Y" value="${Number.isFinite(row.y) ? row.y : ''}">
+      <button type="button" class="col-span-2 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded-lg py-2" data-remove-series="${idx}">Hapus</button>
+    </div>`;
+  }
+  return `<div class="grid grid-cols-12 gap-2 items-center stat-row" data-row-idx="${idx}">
+    <input type="text" class="col-span-6 border border-slate-300 rounded-lg px-2 py-2 text-xs" data-row-label placeholder="Label" value="${escHtml(row.label || '')}">
+    <input type="number" step="any" class="col-span-4 border border-slate-300 rounded-lg px-2 py-2 text-xs" data-row-value placeholder="Nilai" value="${Number.isFinite(row.value) ? row.value : ''}">
+    <button type="button" class="col-span-2 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded-lg py-2" data-remove-series="${idx}">Hapus</button>
+  </div>`;
 }
 
-function updateStatValueGuide(chartType) {
+function renderStatSeriesRows(mode, rows = []) {
+  const list = document.getElementById('stat-series-list');
+  if (!list) return;
+  const safeRows = rows.length ? rows : [{}];
+  list.innerHTML = safeRows.map((row, idx) => statRowInputTemplate(mode, idx, row)).join('');
+}
+
+function collectStatInputValue(chartType) {
+  const mode = statChartMode(chartType);
+  if (mode === 'single') {
+    return (document.getElementById('stat-simple-value')?.value || '').trim();
+  }
+  const rows = [...document.querySelectorAll('#stat-series-list .stat-row')];
+  if (!rows.length) throw new Error('Tambahkan minimal 1 baris data.');
+  if (mode === 'xy') {
+    const points = rows.map((row, idx) => {
+      const label = (row.querySelector('[data-row-label]')?.value || '').trim() || `Titik ${idx + 1}`;
+      const x = Number(row.querySelector('[data-row-x]')?.value);
+      const y = Number(row.querySelector('[data-row-y]')?.value);
+      if (Number.isNaN(x) || Number.isNaN(y)) {
+        throw new Error(`Baris ${idx + 1} harus punya nilai X dan Y numerik.`);
+      }
+      const point = { label, x, y };
+      if (String(chartType).toLowerCase() === 'bubble') point.r = 6;
+      return point;
+    });
+    return JSON.stringify(points);
+  }
+  const points = rows.map((row, idx) => {
+    const label = (row.querySelector('[data-row-label]')?.value || '').trim();
+    const value = Number(row.querySelector('[data-row-value]')?.value);
+    if (!label || Number.isNaN(value)) {
+      throw new Error(`Baris ${idx + 1} harus punya label dan nilai numerik.`);
+    }
+    return { label, value };
+  });
+  return JSON.stringify(points);
+}
+
+function renderStatValueInput(chartType, rawValue = '') {
+  const mode = statChartMode(chartType);
   const label = document.getElementById('stat-value-label');
   const help = document.getElementById('stat-value-help');
-  const input = document.getElementById('stat-value');
-  if (!label || !help || !input) return;
-  if (statChartNeedsSeries(chartType)) {
-    label.textContent = 'Nilai (JSON Series)';
-    input.placeholder = '[{"label":"Komputer","value":40}]';
-    help.textContent = 'Gunakan JSON array berisi label dan value. Contoh: [{"label":"A","value":10},{"label":"B","value":20}]';
+  const simpleWrap = document.getElementById('stat-simple-wrap');
+  const seriesWrap = document.getElementById('stat-series-wrap');
+  const addBtn = document.getElementById('btn-add-series');
+  const parsed = parseStatInputValue(rawValue, chartType);
+
+  if (!label || !help || !simpleWrap || !seriesWrap || !addBtn) return;
+
+  if (mode === 'single') {
+    label.textContent = 'Nilai Utama';
+    help.textContent = 'Nilai tunggal untuk KPI card.';
+    simpleWrap.classList.remove('hidden');
+    seriesWrap.classList.add('hidden');
+    document.getElementById('stat-simple-value').value = parsed.single || '';
+  } else if (mode === 'xy') {
+    label.textContent = 'Data Titik';
+    help.textContent = String(chartType).toLowerCase() === 'bubble'
+      ? 'Isi titik koordinat X dan Y. Bubble akan memakai ukuran default.'
+      : 'Isi titik koordinat X dan Y untuk scatter chart.';
+    simpleWrap.classList.add('hidden');
+    seriesWrap.classList.remove('hidden');
+    addBtn.textContent = '+ Tambah Titik';
+    renderStatSeriesRows('xy', parsed.points);
   } else {
-    label.textContent = 'Nilai';
-    input.placeholder = '150';
-    help.textContent = 'Gunakan satu nilai angka/teks singkat untuk chart KPI.';
+    label.textContent = 'Data Label dan Nilai';
+    help.textContent = 'Isi data seperti tabel sederhana: label + angka.';
+    simpleWrap.classList.add('hidden');
+    seriesWrap.classList.remove('hidden');
+    addBtn.textContent = '+ Tambah Baris Data';
+    renderStatSeriesRows('series', parsed.points);
   }
 }
 
-function parseStatSeriesValue(raw) {
-  const txt = (raw || '').trim();
-  if (!txt) return [];
-  let parsed;
-  try {
-    parsed = JSON.parse(txt);
-  } catch (_) {
-    throw new Error('Format JSON tidak valid untuk chart ini.');
+function buildPreviewDataset(chartType, rawValue) {
+  const parsed = parseStatInputValue(rawValue, chartType);
+  const type = String(chartType || 'bar').toLowerCase();
+  if (parsed.mode === 'single') {
+    return {
+      labels: ['Nilai'],
+      datasets: [{ label: 'Nilai', data: [Number(parsed.single) || 0], backgroundColor: ['#2563eb'] }],
+      chartType: 'bar'
+    };
   }
-  if (!Array.isArray(parsed) || parsed.length === 0) {
-    throw new Error('Gunakan JSON array dengan minimal 1 data.');
+  if (parsed.mode === 'xy') {
+    const data = parsed.points.map((p) => ({ x: Number(p.x) || 0, y: Number(p.y) || 0, r: Number(p.r) || 6 }));
+    return {
+      labels: parsed.points.map((p) => p.label || ''),
+      datasets: [{ label: 'Data', data, backgroundColor: '#2563eb', borderColor: '#2563eb' }],
+      chartType: type === 'bubble' ? 'bubble' : 'scatter'
+    };
   }
-  const normalized = [];
-  parsed.forEach((item, idx) => {
-    const label = String(item?.label ?? '').trim();
-    const valueNum = Number(item?.value);
-    if (!label || Number.isNaN(valueNum)) {
-      throw new Error(`Data ke-${idx + 1} harus punya label dan value numerik.`);
+  return {
+    labels: parsed.points.map((p) => p.label || '-'),
+    datasets: [{ label: 'Data', data: parsed.points.map((p) => Number(p.value) || 0), backgroundColor: '#60a5fa', borderColor: '#2563eb' }],
+    chartType: ['line', 'radar'].includes(type) ? type : ['pie', 'doughnut'].includes(type) ? type : type === 'polar' ? 'polarArea' : 'bar'
+  };
+}
+
+function renderStatPreview(chartType, rawValue) {
+  const canvas = document.getElementById('stat-preview-canvas');
+  const empty = document.getElementById('stat-preview-empty');
+  if (!canvas || !empty) return;
+  const parsed = parseStatInputValue(rawValue, chartType);
+  const hasData = parsed.mode === 'single' ? !!String(parsed.single || '').trim() : parsed.points.length > 0;
+  if (statPreviewChart) {
+    statPreviewChart.destroy();
+    statPreviewChart = null;
+  }
+  if (!hasData) {
+    empty.classList.remove('hidden');
+    empty.classList.add('flex');
+    return;
+  }
+  empty.classList.add('hidden');
+  empty.classList.remove('flex');
+  const preview = buildPreviewDataset(chartType, rawValue);
+  statPreviewChart = new Chart(canvas, {
+    type: preview.chartType,
+    data: { labels: preview.labels, datasets: preview.datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: preview.chartType === 'pie' || preview.chartType === 'doughnut' || preview.chartType === 'polarArea' ? {} : { y: { beginAtZero: true } }
     }
-    normalized.push({ label, value: valueNum });
   });
-  return normalized;
+}
+
+function renderTentangPreview() {
+  const wrap = document.getElementById('tentang-preview');
+  if (!wrap) return;
+  const title = (document.getElementById('tentang-tagline-title')?.value || '').trim();
+  const subtitle = (document.getElementById('tentang-tagline-subtitle')?.value || '').trim();
+  const desc = (document.getElementById('tentang-tagline-desc')?.value || '').trim();
+  const cover = pickerGetUrl('picker-cover') || '';
+  const struktur = pickerGetUrl('picker-struktur') || '';
+  const sejarah = stripHtml(quillGetHTML('editor-sejarah')).slice(0, 160);
+  const visi = stripHtml(quillGetHTML('editor-visi')).slice(0, 120);
+  const misi = stripHtml(quillGetHTML('editor-misi')).slice(0, 120);
+  const galleryCount = (state.periodGallery || []).length;
+  wrap.innerHTML = `
+    <div class="space-y-2">
+      <p class="text-xs uppercase tracking-wide text-slate-400">Hero Tentang Periode</p>
+      <h4 class="text-lg font-bold text-slate-800">${escHtml(title || '-')}</h4>
+      <p class="text-sm text-slate-600">${escHtml(subtitle || '-')}</p>
+      <p class="text-sm text-slate-500">${escHtml(desc || '-')}</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+          <p class="text-xs text-slate-500 mb-2">Cover</p>
+          ${cover ? `<img src="${escHtml(cover)}" alt="cover" class="w-full h-24 object-cover rounded">` : '<p class="text-xs text-slate-400">Belum ada cover.</p>'}
+        </div>
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-2">
+          <p class="text-xs text-slate-500 mb-2">Struktur</p>
+          ${struktur ? `<img src="${escHtml(struktur)}" alt="struktur" class="w-full h-24 object-cover rounded">` : '<p class="text-xs text-slate-400">Belum ada gambar struktur.</p>'}
+        </div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs text-slate-500">Ringkasan Tentang</p>
+        <p class="text-xs text-slate-700 mt-1"><span class="font-semibold">Latar Belakang:</span> ${escHtml(sejarah || '-')}</p>
+        <p class="text-xs text-slate-700 mt-1"><span class="font-semibold">Visi:</span> ${escHtml(visi || '-')}</p>
+        <p class="text-xs text-slate-700 mt-1"><span class="font-semibold">Misi:</span> ${escHtml(misi || '-')}</p>
+      </div>
+      <p class="text-xs text-slate-500">Galeri saat ini: <span class="font-semibold text-slate-700">${galleryCount}</span> item.</p>
+    </div>
+  `;
+}
+
+function renderGlobalPreview() {
+  const wrap = document.getElementById('global-preview');
+  if (!wrap) return;
+  const orgName = (document.getElementById('global-orgname')?.value || '').trim();
+  const headerTitle = (document.getElementById('global-header-title')?.value || '').trim();
+  const headerSubtitle = (document.getElementById('global-header-subtitle')?.value || '').trim();
+  const heroBadge = (document.getElementById('global-hero-badge')?.value || '').trim();
+  const heroMain = (document.getElementById('global-hero-title-main')?.value || '').trim();
+  const heroAccent = (document.getElementById('global-hero-title-accent')?.value || '').trim();
+  const footerTitle = (document.getElementById('global-footer-title')?.value || '').trim();
+  const footerText = (document.getElementById('global-footer-text')?.value || '').trim();
+  const footerCopy = (document.getElementById('global-footer-copy')?.value || '').trim();
+  const logo = pickerGetUrl('picker-logo') || '';
+  const aboutSummary = stripHtml(quillGetHTML('editor-global-about')).slice(0, 140);
+  const social = {
+    instagram: (document.getElementById('sm-instagram')?.value || '').trim(),
+    twitter: (document.getElementById('sm-twitter')?.value || '').trim(),
+    facebook: (document.getElementById('sm-facebook')?.value || '').trim(),
+    youtube: (document.getElementById('sm-youtube')?.value || '').trim(),
+    linkedin: (document.getElementById('sm-linkedin')?.value || '').trim(),
+    tiktok: (document.getElementById('sm-tiktok')?.value || '').trim()
+  };
+  const socialCount = Object.values(social).filter(Boolean).length;
+  wrap.innerHTML = `
+    <div class="space-y-3">
+      <div class="flex items-center gap-3">
+        ${logo ? `<img src="${escHtml(logo)}" alt="logo" class="h-10 w-10 rounded object-cover border border-slate-200">` : '<div class="h-10 w-10 rounded bg-slate-100 border border-slate-200"></div>'}
+        <div>
+          <p class="text-sm font-semibold text-slate-800">${escHtml(orgName || '-')}</p>
+          <p class="text-xs text-slate-500">${escHtml(headerTitle || '-')} • ${escHtml(headerSubtitle || '-')}</p>
+        </div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs text-slate-500">Hero</p>
+        <p class="text-xs text-blue-600 font-semibold">${escHtml(heroBadge || '-')}</p>
+        <p class="text-sm font-semibold text-slate-800">${escHtml(heroMain || '-')} <span class="text-blue-700">${escHtml(heroAccent || '')}</span></p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs text-slate-500">Footer</p>
+        <p class="text-sm font-semibold text-slate-800">${escHtml(footerTitle || '-')}</p>
+        <p class="text-xs text-slate-600">${escHtml(footerText || '-')}</p>
+        <p class="text-xs text-slate-500">Copyright: ${escHtml(footerCopy || '-')}</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <p class="text-xs text-slate-500">Ringkasan Tentang Global</p>
+        <p class="text-xs text-slate-700 mt-1">${escHtml(aboutSummary || '-')}</p>
+      </div>
+      <p class="text-xs text-slate-500">Tautan media sosial aktif: <span class="font-semibold text-slate-700">${socialCount}</span></p>
+    </div>
+  `;
 }
 
 function renderTentangGalleryEditor(items = []) {
@@ -2563,6 +2954,7 @@ function renderTentangGalleryEditor(items = []) {
   state.periodGallery.forEach((item, idx) => {
     createImagePicker(`picker-gallery-${idx}`, { initialUrl: item.image_url || '' });
   });
+  renderTentangPreview();
 }
 
 function collectTentangGallery() {
@@ -2578,6 +2970,32 @@ function collectTentangGallery() {
     };
   }).filter(item => item.image_url);
 }
+
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (!t) return;
+
+  if (t.id === 'stat-simple-value' || t.matches('#stat-series-list input')) {
+    const chartType = document.getElementById('stat-chart-type')?.value || 'bar';
+    try {
+      const value = collectStatInputValue(chartType);
+      document.getElementById('stat-value').value = value;
+      renderStatPreview(chartType, value);
+    } catch (_) {
+      renderStatPreview(chartType, '');
+    }
+    return;
+  }
+
+  if (['tentang-tagline-title', 'tentang-tagline-subtitle', 'tentang-tagline-desc'].includes(t.id)) {
+    renderTentangPreview();
+    return;
+  }
+
+  if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok'].includes(t.id)) {
+    renderGlobalPreview();
+  }
+});
 
 
 // ── FAQ GLOBAL & PERIODE ──────────────────────────────────────────────────
@@ -2758,6 +3176,7 @@ function openStatModalGlobal() {
   document.getElementById('stat-period').value = '_TEMPLATE_';
   document.getElementById('stat-value').value = '';
   document.getElementById('stat-value-wrap').classList.add('hidden');
+  document.getElementById('stat-preview-wrap').classList.add('hidden');
   document.getElementById('stat-flags-wrap').classList.add('hidden');
   document.getElementById('stat-value').disabled = true;
   document.getElementById('stat-label').disabled = false;
@@ -2785,6 +3204,7 @@ function editGlobalStat(id) {
   document.getElementById('stat-fillable').checked = !!s.fillable;
   document.getElementById('stat-visible').checked = s.visible !== false;
   document.getElementById('stat-value-wrap').classList.add('hidden');
+  document.getElementById('stat-preview-wrap').classList.add('hidden');
   document.getElementById('stat-flags-wrap').classList.remove('hidden');
   document.getElementById('stat-value').disabled = true;
   document.getElementById('stat-label').disabled = false;
@@ -2808,21 +3228,69 @@ async function loadStatistik() {
   if(!cur) return;
   const tb = document.getElementById('statistik-tbody');
   try {
-    const items = await api('GET', '/api/cms/stats?period=' + cur);
-    state.stats = items || [];
-    tb.innerHTML = (items||[]).map(s => `
-      <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${s.id}">
+    // Load template statistik with Fillable=true
+    const templates = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
+    const fillableTemplates = (templates||[]).filter(t => t.fillable);
+    
+    // Load period statistik values
+    const periodStats = await api('GET', '/api/cms/stats?period=' + cur);
+    state.stats = periodStats || [];
+    
+    // Create map of period stats by template_id
+    const statsMap = {};
+    state.stats.forEach(s => {
+      const templateId = s.template_id || s.id;
+      statsMap[templateId] = s;
+    });
+    
+    tb.innerHTML = fillableTemplates.map(template => {
+      const stat = statsMap[template.id];
+      const value = stat ? stat.value : '';
+      return `
+      <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${template.id}">
         <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
-        <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
-        <td class="p-4 align-middle font-bold text-blue-600">${escHtml(statValuePreview(s.value||''))}</td>
-        <td class="p-4 align-middle">${escHtml(s.desc||'')}</td>
+        <td class="p-4 align-middle font-medium">${escHtml(template.label||'')}</td>
+        <td class="p-4 align-middle">
+          <p class="font-semibold text-slate-700">${escHtml(statValueDisplay(value, template.chart_type || 'bar'))}</p>
+          <p class="text-xs text-slate-500 mt-1">Mode: ${escHtml(statChartMode(template.chart_type || 'bar'))}</p>
+        </td>
+        <td class="p-4 align-middle min-w-[120px]">
+          <div class="rounded-md border border-slate-200 bg-slate-50 p-1.5">${chartPreviewSVG(template.chart_type || 'bar')}</div>
+        </td>
+        <td class="p-4 align-middle">${escHtml(template.desc||'')}</td>
         <td class="p-4 align-middle text-right">
-          <button onclick="editStat('${s.id}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button>
+          <button onclick="editStatPeriod('${template.id}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Isi Nilai</button>
         </td>
       </tr>
-    `).join('');
-    initStatsSortable('statistik-tbody');
-  } catch(e) { tb.innerHTML = `<tr><td colspan="5">${errHtml(e.message)}</td></tr>`; }
+    `}).join('');
+    
+    if(!fillableTemplates.length) {
+      tb.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
+    }
+  } catch(e) { tb.innerHTML = `<tr><td colspan="6">${errHtml(e.message)}</td></tr>`; }
+}
+
+// Display formatted stat value based on chart type  
+function statValueDisplay(value, chartType) {
+  if (!value) return '-';
+  try {
+    const mode = statChartMode(chartType);
+    if (mode === 'single') return value;
+    
+    // For series mode, try to parse and show summary
+    try {
+      const data = typeof value === 'string' ? JSON.parse(value) : value;
+      if (Array.isArray(data)) {
+        const count = data.length;
+        return count === 1 ? `${data[0].label}: ${data[0].value}` : `${count} data points`;
+      }
+      return String(value).substring(0, 50);
+    } catch {
+      return String(value).substring(0, 50);
+    }
+  } catch {
+    return String(value).substring(0, 50);
+  }
 }
 function openStatModal() {
   const cur = currentPeriod();
@@ -2833,16 +3301,61 @@ function openStatModal() {
   document.getElementById('stat-template-id').value = '';
   document.getElementById('stat-period').value = cur;
   document.getElementById('stat-value-wrap').classList.remove('hidden');
+  document.getElementById('stat-preview-wrap').classList.remove('hidden');
   document.getElementById('stat-flags-wrap').classList.add('hidden');
   document.getElementById('stat-value').disabled = false;
   document.getElementById('stat-label').disabled = true;
   document.getElementById('stat-desc').disabled = true;
+  document.getElementById('stat-value').value = '';
   renderChartChoices('bar');
+  renderStatValueInput('bar', '');
+  renderStatPreview('bar', '');
   document.getElementById('stat-chart-type').disabled = true;
   document.getElementById('stat-fillable').disabled = true;
   document.getElementById('stat-visible').disabled = true;
   openModal('modalStatistik');
 }
+function editStatPeriod(templateId) {
+  const cur = currentPeriod();
+  if(!cur) return uiAlert('Pilih periode dulu.');
+  
+  // Find template
+  const template = state.global_stats && state.global_stats.find(x => x.id === templateId);
+  if(!template) return uiAlert('Template tidak ditemukan.');
+  
+  // Find existing period stat
+  const existing = state.stats && state.stats.find(x => (x.template_id || x.id) === templateId);
+  
+  document.getElementById('formStatistik').reset();
+  document.getElementById('modalStatistikTitle').textContent = 'Isi Nilai: ' + escHtml(template.label||'');
+  document.getElementById('stat-id').value = existing ? existing.id : '';
+  document.getElementById('stat-template-id').value = templateId;
+  document.getElementById('stat-period').value = cur;
+  document.getElementById('stat-label').value = template.label||'';
+  document.getElementById('stat-value').value = existing ? existing.value : '';
+  document.getElementById('stat-desc').value = template.desc||'';
+  
+  // Hide label, desc, type, flags - only show value input
+  document.getElementById('stat-value-wrap').classList.remove('hidden');
+  document.getElementById('stat-preview-wrap').classList.remove('hidden');
+  document.getElementById('stat-flags-wrap').classList.add('hidden');
+  
+  // Hide label/desc/type inputs and disable chart type switching
+  document.getElementById('stat-label').disabled = true;
+  document.getElementById('stat-desc').disabled = true;
+  document.getElementById('stat-chart-type').disabled = true;
+  document.getElementById('stat-fillable').disabled = true;
+  document.getElementById('stat-visible').disabled = true;
+  document.getElementById('stat-value').disabled = false;
+  
+  // Setup value input UI
+  renderChartChoices(template.chart_type || 'bar', true);
+  renderStatValueInput(template.chart_type || 'bar', existing ? existing.value : '');
+  renderStatPreview(template.chart_type || 'bar', existing ? existing.value : '');
+  
+  openModal('modalStatistik');
+}
+
 function editStat(id) {
   const s = state.stats.find(x => x.id === id);
   if(!s) return;
@@ -2857,6 +3370,7 @@ function editStat(id) {
   document.getElementById('stat-fillable').checked = !!s.fillable;
   document.getElementById('stat-visible').checked = s.visible !== false;
   document.getElementById('stat-value-wrap').classList.remove('hidden');
+  document.getElementById('stat-preview-wrap').classList.remove('hidden');
   document.getElementById('stat-flags-wrap').classList.add('hidden');
   document.getElementById('stat-value').disabled = false;
   document.getElementById('stat-label').disabled = true;
@@ -2864,28 +3378,28 @@ function editStat(id) {
   document.getElementById('stat-chart-type').disabled = true;
   document.getElementById('stat-fillable').disabled = true;
   document.getElementById('stat-visible').disabled = true;
+  renderStatValueInput(s.chart_type || 'bar', s.value || '');
+  renderStatPreview(s.chart_type || 'bar', s.value || '');
   openModal('modalStatistik');
 }
 document.getElementById('formStatistik').addEventListener('submit', async e => {
   e.preventDefault();
   const periodLabel = document.getElementById('stat-period').value || currentPeriod();
   const chartType = document.getElementById('stat-chart-type').value;
-  const rawValue = document.getElementById('stat-value').value;
-  if (periodLabel !== '_TEMPLATE_' && !rawValue.trim()) {
-    uiAlert('Value statistik periode wajib diisi.');
-    return;
-  }
-  let normalizedValue = rawValue;
+  let normalizedValue = document.getElementById('stat-value').value;
   if (periodLabel !== '_TEMPLATE_') {
     try {
-      if (statChartNeedsSeries(chartType)) {
-        normalizedValue = JSON.stringify(parseStatSeriesValue(rawValue));
-      }
+      normalizedValue = collectStatInputValue(chartType);
     } catch (ex) {
       uiAlert(ex.message || String(ex));
       return;
     }
   }
+  if (periodLabel !== '_TEMPLATE_' && !String(normalizedValue || '').trim()) {
+    uiAlert('Value statistik periode wajib diisi.');
+    return;
+  }
+  document.getElementById('stat-value').value = normalizedValue;
   const data = {
     id: document.getElementById('stat-id').value,
     template_id: document.getElementById('stat-template-id').value,
@@ -2924,7 +3438,8 @@ document.getElementById('formStatistik').addEventListener('submit', async e => {
     seen.add(opt.value);
   });
 })();
-switchTab('pengumuman');
+syncPeriodSwitcherRouteSection();
+switchTab(selectedSectionFromURL());
 renderChartChoices('bar');
 </script>
 
