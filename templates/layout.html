@@ -31,7 +31,7 @@
 {{end}}
 
 {{define "navbar"}}
-<nav x-data="{ mobileMenuOpen: false, scrolled: false, get isDark() { return (window.location.pathname === '/' || window.location.pathname.startsWith('/anggota') || window.location.pathname.startsWith('/periode')) && !this.scrolled && !this.mobileMenuOpen; } }" @scroll.window="scrolled = (window.pageYOffset > 20)" :class="{ 'glass-nav shadow-sm': scrolled, 'bg-transparent': !scrolled, 'glass-nav': mobileMenuOpen }" class="fixed w-full z-50 transition-all duration-300 top-0">
+<nav x-data="{ mobileMenuOpen: false, scrolled: false, get isDark() { return (window.location.pathname === '/' || window.location.pathname.startsWith('/anggota') || window.location.pathname.startsWith('/periode') || window.location.pathname.startsWith('/tentang-kami')) && !this.scrolled && !this.mobileMenuOpen; } }" @scroll.window="scrolled = (window.pageYOffset > 20)" :class="{ 'glass-nav shadow-sm': scrolled, 'bg-transparent': !scrolled, 'glass-nav': mobileMenuOpen }" class="fixed w-full z-50 transition-all duration-300 top-0">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-20">
       <div class="flex-shrink-0 flex items-center">
@@ -93,7 +93,7 @@
 
 {{define "footer"}}
 <footer class="bg-brand-950 text-brand-200 py-16">
-  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12">
     <div class="md:col-span-1">
       <div class="flex items-center gap-3 mb-6">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden {{if and .GlobalSetting .GlobalSetting.LogoURL}}bg-white{{else}}bg-white/10 text-white{{end}}">
@@ -116,7 +116,7 @@
           </div>
         </a>
       </div>
-      
+
       <div class="flex gap-3">
         {{if and .GlobalSetting .GlobalSetting.SocialMedia.Instagram}}
         <a href="{{.GlobalSetting.SocialMedia.Instagram}}" target="_blank" rel="noopener" aria-label="Instagram" class="w-9 h-9 rounded-xl flex items-center justify-center text-brand-200 hover:text-white hover:bg-brand-600 transition-all duration-200 bg-white/5">
@@ -166,10 +166,9 @@
       <li><a href="/statistik" class="hover:text-white transition-colors">Statistik</a></li>
     </ul></div>
 
-    <div>
-      <h4 class="text-white font-bold mb-6">Legal</h4>
-      <p class="text-sm text-brand-300">&copy; {{.CurrentYear}} All right reserved by Paguyuban KSE UGM</p>
-    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-white/10">
+    <p class="text-xs text-brand-400 text-center">&copy; {{.CurrentYear}} Paguyuban KSE UGM. All rights reserved.</p>
   </div>
 </footer>
 <script>lucide.createIcons();</script>

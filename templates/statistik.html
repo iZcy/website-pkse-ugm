@@ -8,7 +8,7 @@
 <body class="bg-gray-50 text-gray-900 antialiased">
 {{template "navbar" .}}
 
-<div class="pt-32 pb-24 px-6 max-w-7xl mx-auto">
+<div class="pt-32 pb-24 px-6 max-w-7xl mx-auto min-h-screen">
   <div class="text-center mb-16">
     <h1 class="text-5xl font-black text-gray-900 mb-6">Metrik Kepengurusan <span class="text-brand-600">Aktif</span></h1>
     <form id="periodForm" class="inline-flex items-center bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
@@ -21,12 +21,22 @@
     </form>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+  <div class="space-y-6">
     {{if eq (len .Stats) 0}}
-      <div class="bg-white rounded-[3rem] p-12 shadow-lg border border-gray-100 text-center text-gray-400">Data tidak tersedia untuk periode ini.</div>
+      <div class="flex items-center justify-center min-h-[400px]">
+        <div class="bg-white rounded-[3rem] p-16 shadow-lg border border-gray-100 text-center">
+          <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <p class="text-gray-500 font-semibold text-lg mb-2">Data tidak tersedia</p>
+          <p class="text-gray-400 text-sm">Belum ada statistik untuk periode ini.</p>
+        </div>
+      </div>
     {{else}}
       {{range $idx, $stat := .Stats}}
-      <section class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+      <section class="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
           <div>
             <h2 class="text-2xl font-black text-brand-900">{{$stat.Label}}</h2>
@@ -34,7 +44,7 @@
           </div>
           <span class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-brand-50 text-brand-700">{{$stat.ChartType}}</span>
         </div>
-        <div id="stat-block-{{$idx}}" data-chart-type="{{$stat.ChartType}}" data-raw-value='{{$stat.Value}}' class="h-[260px]"></div>
+        <div id="stat-block-{{$idx}}" data-chart-type="{{$stat.ChartType}}" data-raw-value='{{$stat.Value}}' class="min-h-[220px]"></div>
       </section>
       {{end}}
     {{end}}

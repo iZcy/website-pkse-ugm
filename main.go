@@ -60,7 +60,7 @@ func main() {
 
 	// Admin panel
 	mux.HandleFunc("/login", admin.Login)
-	mux.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/login", http.StatusFound) })
+	mux.HandleFunc("/admin", admin.Login)
 	mux.HandleFunc("/admin/logout", admin.Logout)
 	mux.HandleFunc("/admin/dashboard", admin.Dashboard)
 
@@ -74,6 +74,7 @@ func main() {
 	mux.HandleFunc("/api/cms/shortlinks", cms.ShortLinks)
 	mux.HandleFunc("/api/cms/shortlinks/", cms.ShortLinks)
 	mux.HandleFunc("/api/cms/stats", cms.Stats)
+	mux.HandleFunc("/api/cms/sync-stats", cms.SyncStatsTemplate)
 	mux.HandleFunc("/api/cms/stats/", cms.Stats)
 
 	mux.HandleFunc("/api/cms/global-setting", cms.GlobalSettingHandler)

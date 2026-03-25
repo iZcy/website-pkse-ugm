@@ -26,12 +26,11 @@
   </div>
 </section>
 
-<section class="py-16">
+<section class="py-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-6">
     {{if .Members}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {{range .Members}}
-      {{$m := .}}
       <article class="member-card bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer"
         data-name="{{.FullName}}"
         data-nickname="{{.Nickname}}"
@@ -42,7 +41,7 @@
         data-angkatan="{{.Angkatan}}"
         data-department="{{.Department}}"
         data-position="{{.Position}}"
-        data-track-records='{{range $k,$v := $m.ActivePeriods}}{{$k}}|{{$v}}|{{index $m.ActivePositions $k}};;{{end}}'>
+        data-track-records='{{range $k,$v := .ActivePeriods}}{{$k}}|{{$v}}|{{index .ActivePositions $k}};;{{end}}'>
         <div class="h-28 bg-gray-100 overflow-hidden">
           {{if .CoverURL}}
           <img src="{{.CoverURL}}" alt="Cover {{.FullName}}" class="w-full h-full object-cover">
@@ -66,7 +65,14 @@
       {{end}}
     </div>
     {{else}}
-    <div class="bg-white rounded-3xl border border-gray-100 p-10 text-center text-gray-400">Belum ada anggota.</div>
+    <div class="flex items-center justify-center min-h-[300px]">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        </div>
+        <p class="text-gray-500 font-medium">Belum ada anggota.</p>
+      </div>
+    </div>
     {{end}}
   </div>
 </section>
@@ -75,6 +81,7 @@
   <div class="max-w-2xl w-full mx-auto mt-20 bg-white rounded-3xl overflow-hidden shadow-2xl">
     <div id="memberModalCover" class="h-40 bg-gradient-to-r from-brand-200 to-brand-400"></div>
     <div class="p-6 md:p-8 -mt-10 relative">
+      <button type="button" onclick="closeMemberModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-gray-700">x</button>
       <div class="flex items-end gap-4 mb-6">
         <img id="memberModalPhoto" src="" alt="Foto" class="w-20 h-20 rounded-2xl border-4 border-white shadow-sm bg-white object-cover">
         <div>
@@ -141,6 +148,7 @@ function openMemberModal(card) {
   document.getElementById('memberModal').classList.remove('hidden');
 }
 
+function closeMemberModal() {
   document.getElementById('memberModal').classList.add('hidden');
 }
 
@@ -149,6 +157,7 @@ document.querySelectorAll('.member-card').forEach((card) => {
 });
 
 document.getElementById('memberModal').addEventListener('click', (e) => {
+  if (e.target.id === 'memberModal') closeMemberModal();
 });
 </script>
 
