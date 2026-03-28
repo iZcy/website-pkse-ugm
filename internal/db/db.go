@@ -72,7 +72,7 @@ type GlobalSetting struct {
 	OrgName         string             `bson:"org_name"            json:"org_name"`
 	LogoURL         string             `bson:"logo_url"            json:"logo_url"`
 	LogoUniversityURL string             `bson:"logo_university_url" json:"logo_university_url"`
-	LogoKSEURL      string             `bson:"logo_kse_url"        json:"logo_kse_url"`
+	LogoYayasanURL  string             `bson:"logo_yayasan_url"     json:"logo_yayasan_url"`
 	AboutHTML       string             `bson:"about_html"          json:"about_html"`
 	HeaderTitle     string             `bson:"header_title"        json:"header_title"`
 	HeaderSubtitle  string             `bson:"header_subtitle"     json:"header_subtitle"`

@@ -402,7 +402,7 @@
               </div>
               <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Yayasan KSE</label>
-                <div id="picker-logo-kse"></div>
+                <div id="picker-logo-yayasan"></div>
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1087,7 +1087,7 @@ function pickerSetUrl(id, url) {
   wrap.classList.remove('hidden');
   prompt.classList.add('hidden');
   if (urlInput) urlInput.value = url;
-  if (id === 'picker-logo' || id === 'picker-logo-university' || id === 'picker-logo-kse') renderGlobalPreview();
+  if (id === 'picker-logo' || id === 'picker-logo-university' || id === 'picker-logo-yayasan') renderGlobalPreview();
   if (id === 'picker-cover' || id === 'picker-struktur' || id === 'picker-logo-kabinet') renderTentangPreview();
 }
 function pickerClear(id) {
@@ -1102,7 +1102,7 @@ function pickerClear(id) {
   if (urlInput) urlInput.value = '';
   const fileInput = document.getElementById(id + '-file');
   if (fileInput) fileInput.value = '';
-  if (id === 'picker-logo' || id === 'picker-logo-university' || id === 'picker-logo-kse') renderGlobalPreview();
+  if (id === 'picker-logo' || id === 'picker-logo-university' || id === 'picker-logo-yayasan') renderGlobalPreview();
   if (id === 'picker-cover' || id === 'picker-struktur' || id === 'picker-logo-kabinet') renderTentangPreview();
 }
 function pickerGetUrl(id) {
@@ -2582,7 +2582,7 @@ async function loadGlobal() {
   }
   createImagePicker('picker-logo');
   createImagePicker('picker-logo-university');
-  createImagePicker('picker-logo-kse');
+  createImagePicker('picker-logo-yayasan');
   try {
     const g = await api('GET', '/api/cms/global-setting');
     state.globalSetting = g || {};
@@ -2598,7 +2598,7 @@ async function loadGlobal() {
     quillSetHTML('editor-global-about', g.about_html || '');
     if (g.logo_url) pickerSetUrl('picker-logo', g.logo_url);
     if (g.logo_university_url) pickerSetUrl('picker-logo-university', g.logo_university_url);
-    if (g.logo_kse_url) pickerSetUrl('picker-logo-kse', g.logo_kse_url);
+    if (g.logo_yayasan_url) pickerSetUrl('picker-logo-yayasan', g.logo_yayasan_url);
     const sm = g.social_media || {};
     document.getElementById('sm-instagram').value = sm.instagram || '';
     document.getElementById('sm-twitter').value = sm.twitter || '';
@@ -2622,7 +2622,7 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
       org_name: document.getElementById('global-orgname').value,
       logo_url: pickerGetUrl('picker-logo'),
       logo_university_url: pickerGetUrl('picker-logo-university'),
-      logo_kse_url: pickerGetUrl('picker-logo-kse'),
+      logo_yayasan_url: pickerGetUrl('picker-logo-yayasan'),
       header_title: document.getElementById('global-header-title').value,
       header_subtitle: document.getElementById('global-header-subtitle').value,
       hero_badge_text: document.getElementById('global-hero-badge').value,
@@ -2639,7 +2639,7 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
       org_name: document.getElementById('global-orgname').value,
       logo_url: pickerGetUrl('picker-logo'),
       logo_university_url: pickerGetUrl('picker-logo-university'),
-      logo_kse_url: pickerGetUrl('picker-logo-kse'),
+      logo_yayasan_url: pickerGetUrl('picker-logo-yayasan'),
       header_title: document.getElementById('global-header-title').value,
       header_subtitle: document.getElementById('global-header-subtitle').value,
       hero_badge_text: document.getElementById('global-hero-badge').value,
@@ -2967,7 +2967,7 @@ function renderGlobalPreview() {
   const footerCopy = (document.getElementById('global-footer-copy')?.value || '').trim();
   const logo = pickerGetUrl('picker-logo') || '';
   const logoUniversity = pickerGetUrl('picker-logo-university') || '';
-  const logoKSE = pickerGetUrl('picker-logo-kse') || '';
+  const logoYayasan = pickerGetUrl('picker-logo-yayasan') || '';
   const aboutSummary = stripHtml(quillGetHTML('editor-global-about')).slice(0, 140);
   const social = {
     instagram: (document.getElementById('sm-instagram')?.value || '').trim(),
@@ -2984,7 +2984,7 @@ function renderGlobalPreview() {
         <div class="flex items-center gap-1">
           ${logo ? `<img src="${escHtml(logo)}" alt="logo" class="h-8 w-8 rounded object-contain border border-slate-200">` : '<div class="h-8 w-8 rounded bg-slate-100 border border-slate-200"></div>'}
           ${logoUniversity ? `<img src="${escHtml(logoUniversity)}" alt="university" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
-          ${logoKSE ? `<img src="${escHtml(logoKSE)}" alt="kse" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
+          ${logoYayasan ? `<img src="${escHtml(logoYayasan)}" alt="yayasan" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
         </div>
         <div>
           <p class="text-sm font-semibold text-slate-800">${escHtml(orgName || '-')}</p>
