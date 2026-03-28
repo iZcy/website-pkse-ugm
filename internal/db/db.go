@@ -71,6 +71,8 @@ type GlobalSetting struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	OrgName         string             `bson:"org_name"            json:"org_name"`
 	LogoURL         string             `bson:"logo_url"            json:"logo_url"`
+	LogoUniversityURL string             `bson:"logo_university_url" json:"logo_university_url"`
+	LogoKSEURL      string             `bson:"logo_kse_url"        json:"logo_kse_url"`
 	AboutHTML       string             `bson:"about_html"          json:"about_html"`
 	HeaderTitle     string             `bson:"header_title"        json:"header_title"`
 	HeaderSubtitle  string             `bson:"header_subtitle"     json:"header_subtitle"`
@@ -122,6 +124,7 @@ type PeriodAbout struct {
 	TaglineDescription string             `bson:"tagline_description" json:"tagline_description"`
 	Visi               string             `bson:"visi"          json:"visi"`
 	Misi               string             `bson:"misi"          json:"misi"`
+	LogoKabinetURL     string             `bson:"logo_kabinet_url" json:"logo_kabinet_url"`
 	HierarchyImageURL  string             `bson:"hierarchy_image_url" json:"hierarchy_image_url"`
 	CoverImageURL      string             `bson:"cover_image_url" json:"cover_image_url"`
 	Gallery            []GalleryItem      `bson:"gallery,omitempty" json:"gallery,omitempty"`

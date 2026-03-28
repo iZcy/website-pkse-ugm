@@ -197,6 +197,10 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-2">Cover Periode (Landing & Sejarah)</label>
                 <div id="picker-cover"></div>
               </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Kabinet</label>
+                <div id="picker-logo-kabinet"></div>
+              </div>
             </div>
           </section>
 
@@ -390,6 +394,16 @@
             <div>
               <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Organisasi</label>
               <div id="picker-logo"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Universitas</label>
+                <div id="picker-logo-university"></div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Yayasan KSE</label>
+                <div id="picker-logo-kse"></div>
+              </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1073,8 +1087,8 @@ function pickerSetUrl(id, url) {
   wrap.classList.remove('hidden');
   prompt.classList.add('hidden');
   if (urlInput) urlInput.value = url;
-  if (id === 'picker-logo') renderGlobalPreview();
-  if (id === 'picker-cover' || id === 'picker-struktur') renderTentangPreview();
+  if (id === 'picker-logo' || id === 'picker-logo-university' || id === 'picker-logo-kse') renderGlobalPreview();
+  if (id === 'picker-cover' || id === 'picker-struktur' || id === 'picker-logo-kabinet') renderTentangPreview();
 }
 function pickerClear(id) {
   imagePickers[id].url = '';
@@ -1088,8 +1102,8 @@ function pickerClear(id) {
   if (urlInput) urlInput.value = '';
   const fileInput = document.getElementById(id + '-file');
   if (fileInput) fileInput.value = '';
-  if (id === 'picker-logo') renderGlobalPreview();
-  if (id === 'picker-cover' || id === 'picker-struktur') renderTentangPreview();
+  if (id === 'picker-logo' || id === 'picker-logo-university' || id === 'picker-logo-kse') renderGlobalPreview();
+  if (id === 'picker-cover' || id === 'picker-struktur' || id === 'picker-logo-kabinet') renderTentangPreview();
 }
 function pickerGetUrl(id) {
   return imagePickers[id] ? imagePickers[id].url : '';
@@ -1649,6 +1663,7 @@ async function loadTentang() {
   });
   createImagePicker('picker-cover');
   createImagePicker('picker-struktur');
+  createImagePicker('picker-logo-kabinet');
   try {
     const pa = await api('GET', `/api/cms/period-about?period=${PERIOD}`);
     state.periodAbout = pa || {};
@@ -1662,6 +1677,8 @@ async function loadTentang() {
     else pickerClear('picker-cover');
     if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
     else pickerClear('picker-struktur');
+    if (pa.logo_kabinet_url) pickerSetUrl('picker-logo-kabinet', pa.logo_kabinet_url);
+    else pickerClear('picker-logo-kabinet');
     state.periodGallery = Array.isArray(pa.gallery) ? pa.gallery : [];
     renderTentangPreview();
   } catch(e) {
@@ -1685,6 +1702,7 @@ document.getElementById('formTentang').addEventListener('submit', async e => {
       misi: quillGetHTML('editor-misi'),
       cover_image_url: pickerGetUrl('picker-cover'),
       hierarchy_image_url: pickerGetUrl('picker-struktur'),
+      logo_kabinet_url: pickerGetUrl('picker-logo-kabinet'),
       gallery: state.periodGallery
     });
     state.periodAbout = {
@@ -1697,7 +1715,8 @@ document.getElementById('formTentang').addEventListener('submit', async e => {
       visi: quillGetHTML('editor-visi'),
       misi: quillGetHTML('editor-misi'),
       cover_image_url: pickerGetUrl('picker-cover'),
-      hierarchy_image_url: pickerGetUrl('picker-struktur')
+      hierarchy_image_url: pickerGetUrl('picker-struktur'),
+      logo_kabinet_url: pickerGetUrl('picker-logo-kabinet')
     };
     renderTentangPreview();
     msg.classList.remove('hidden');
@@ -2562,6 +2581,8 @@ async function loadGlobal() {
     quills['editor-global-about'].__previewBound = true;
   }
   createImagePicker('picker-logo');
+  createImagePicker('picker-logo-university');
+  createImagePicker('picker-logo-kse');
   try {
     const g = await api('GET', '/api/cms/global-setting');
     state.globalSetting = g || {};
@@ -2576,6 +2597,8 @@ async function loadGlobal() {
     document.getElementById('global-footer-text').value = g.footer_text || '';
     quillSetHTML('editor-global-about', g.about_html || '');
     if (g.logo_url) pickerSetUrl('picker-logo', g.logo_url);
+    if (g.logo_university_url) pickerSetUrl('picker-logo-university', g.logo_university_url);
+    if (g.logo_kse_url) pickerSetUrl('picker-logo-kse', g.logo_kse_url);
     const sm = g.social_media || {};
     document.getElementById('sm-instagram').value = sm.instagram || '';
     document.getElementById('sm-twitter').value = sm.twitter || '';
@@ -2598,6 +2621,8 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
     await api('PUT', '/api/cms/global-setting', {
       org_name: document.getElementById('global-orgname').value,
       logo_url: pickerGetUrl('picker-logo'),
+      logo_university_url: pickerGetUrl('picker-logo-university'),
+      logo_kse_url: pickerGetUrl('picker-logo-kse'),
       header_title: document.getElementById('global-header-title').value,
       header_subtitle: document.getElementById('global-header-subtitle').value,
       hero_badge_text: document.getElementById('global-hero-badge').value,
@@ -2613,6 +2638,8 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
       ...cur,
       org_name: document.getElementById('global-orgname').value,
       logo_url: pickerGetUrl('picker-logo'),
+      logo_university_url: pickerGetUrl('picker-logo-university'),
+      logo_kse_url: pickerGetUrl('picker-logo-kse'),
       header_title: document.getElementById('global-header-title').value,
       header_subtitle: document.getElementById('global-header-subtitle').value,
       hero_badge_text: document.getElementById('global-hero-badge').value,
@@ -2939,6 +2966,8 @@ function renderGlobalPreview() {
   const footerText = (document.getElementById('global-footer-text')?.value || '').trim();
   const footerCopy = (document.getElementById('global-footer-copy')?.value || '').trim();
   const logo = pickerGetUrl('picker-logo') || '';
+  const logoUniversity = pickerGetUrl('picker-logo-university') || '';
+  const logoKSE = pickerGetUrl('picker-logo-kse') || '';
   const aboutSummary = stripHtml(quillGetHTML('editor-global-about')).slice(0, 140);
   const social = {
     instagram: (document.getElementById('sm-instagram')?.value || '').trim(),
@@ -2952,7 +2981,11 @@ function renderGlobalPreview() {
   wrap.innerHTML = `
     <div class="space-y-3">
       <div class="flex items-center gap-3">
-        ${logo ? `<img src="${escHtml(logo)}" alt="logo" class="h-10 w-10 rounded object-cover border border-slate-200">` : '<div class="h-10 w-10 rounded bg-slate-100 border border-slate-200"></div>'}
+        <div class="flex items-center gap-1">
+          ${logo ? `<img src="${escHtml(logo)}" alt="logo" class="h-8 w-8 rounded object-contain border border-slate-200">` : '<div class="h-8 w-8 rounded bg-slate-100 border border-slate-200"></div>'}
+          ${logoUniversity ? `<img src="${escHtml(logoUniversity)}" alt="university" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
+          ${logoKSE ? `<img src="${escHtml(logoKSE)}" alt="kse" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
+        </div>
         <div>
           <p class="text-sm font-semibold text-slate-800">${escHtml(orgName || '-')}</p>
           <p class="text-xs text-slate-500">${escHtml(headerTitle || '-')} • ${escHtml(headerSubtitle || '-')}</p>
