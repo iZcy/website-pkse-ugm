@@ -18,6 +18,7 @@ type PeriodDepartmentGroup struct {
 	Department db.Department
 	Members    []db.Member
 	Programs   []db.Program
+	Children   []PeriodDepartmentGroup
 }
 
 func New() *Handler {
@@ -25,6 +26,7 @@ func New() *Handler {
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
 		"mod": func(a, b int) int { return a % b },
+		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 	}
 	tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 	return &Handler{tmpl: tmpl}
@@ -44,8 +46,10 @@ func (h *Handler) baseData() map[string]any {
 }
 
 func groupByDepartment(depts []db.Department, members []db.Member, programs []db.Program) ([]PeriodDepartmentGroup, []db.Program) {
-	groups := make([]PeriodDepartmentGroup, 0, len(depts))
 	usedPrograms := map[string]bool{}
+	nodeMap := make(map[string]*PeriodDepartmentGroup)
+
+	// First pass: create all nodes and attach members/programs
 	for _, d := range depts {
 		g := PeriodDepartmentGroup{Department: d}
 		for _, m := range members {
@@ -59,16 +63,39 @@ func groupByDepartment(depts []db.Department, members []db.Member, programs []db
 				usedPrograms[p.ID.Hex()] = true
 			}
 		}
-		groups = append(groups, g)
+		nodeMap[d.ID.Hex()] = &g
 	}
 
-	ungrouped := make([]db.Program, 0)
+	// Second pass: build tree by linking children to parents (via pointers)
+	var rootPtrs []*PeriodDepartmentGroup
+	for _, d := range depts {
+		node := nodeMap[d.ID.Hex()]
+		if d.ParentID == nil {
+			rootPtrs = append(rootPtrs, node)
+		} else {
+			if parent, ok := nodeMap[d.ParentID.Hex()]; ok {
+				parent.Children = append(parent.Children, *node)
+			} else {
+				rootPtrs = append(rootPtrs, node)
+			}
+		}
+	}
+
+	// Copy root pointers into result slice (tree already built via pointer mutations)
+	roots := make([]PeriodDepartmentGroup, 0, len(rootPtrs))
+	for _, r := range rootPtrs {
+		roots = append(roots, *r)
+	}
+
+	// Compute ungrouped programs
+	var ungrouped []db.Program
 	for _, p := range programs {
 		if !usedPrograms[p.ID.Hex()] {
 			ungrouped = append(ungrouped, p)
 		}
 	}
-	return groups, ungrouped
+
+	return roots, ungrouped
 }
 
 func (h *Handler) activePeriodLabel() string {

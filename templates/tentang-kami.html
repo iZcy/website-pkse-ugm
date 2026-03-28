@@ -12,7 +12,7 @@
   <div class="relative z-10 max-w-7xl mx-auto px-6">
     <p class="text-sm uppercase tracking-wider text-brand-200 mb-3">Tentang Organisasi</p>
     <h1 class="text-4xl md:text-6xl font-black mb-4">{{if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{else}}PKSE UGM{{end}}</h1>
-    <p class="text-brand-100 max-w-3xl">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{.GlobalSetting.AboutHTML}}{{else}}Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada.{{end}}</p>
+    <p class="text-brand-100 max-w-3xl">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{safeHTML .GlobalSetting.AboutHTML}}{{else}}Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada.{{end}}</p>
   </div>
 </section>
 
@@ -22,17 +22,17 @@
       <p class="text-accent-300 text-xs uppercase tracking-widest mb-2">Tagline Periode</p>
       <h2 class="text-3xl font-black leading-tight mb-2">{{if and .PeriodAbout .PeriodAbout.TaglineTitle}}{{.PeriodAbout.TaglineTitle}}{{else}}Kawah Candradimuka{{end}}</h2>
       <h3 class="text-xl font-semibold text-accent-200 mb-4">{{if and .PeriodAbout .PeriodAbout.TaglineSubtitle}}{{.PeriodAbout.TaglineSubtitle}}{{else}}Pemimpin Masa Depan{{end}}</h3>
-      <p class="text-sm text-brand-100 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.TaglineDescription}}{{.PeriodAbout.TaglineDescription}}{{else}}Kami adalah keluarga yang saling mendukung untuk mencetak pemimpin berkarakter empati dan kompeten.{{end}}</p>
+      <p class="text-sm text-brand-100 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.TaglineDescription}}{{safeHTML .PeriodAbout.TaglineDescription}}{{else}}Kami adalah keluarga yang saling mendukung untuk mencetak pemimpin berkarakter empati dan kompeten.{{end}}</p>
     </div>
 
     <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
         <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Visi</p>
-        <div class="text-sm text-gray-700 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.Visi}}{{.PeriodAbout.Visi}}{{else}}Visi belum ditambahkan.{{end}}</div>
+        <div class="text-sm text-gray-700 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.Visi}}{{safeHTML .PeriodAbout.Visi}}{{else}}Visi belum ditambahkan.{{end}}</div>
       </div>
       <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
         <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Misi</p>
-        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{if and .PeriodAbout .PeriodAbout.Misi}}{{.PeriodAbout.Misi}}{{else}}Misi belum ditambahkan.{{end}}</div>
+        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{if and .PeriodAbout .PeriodAbout.Misi}}{{safeHTML .PeriodAbout.Misi}}{{else}}Misi belum ditambahkan.{{end}}</div>
       </div>
     </div>
   </div>
@@ -74,6 +74,32 @@
         </div>
         {{else}}
         <p class="text-sm text-gray-400">Belum ada anggota di kementerian ini.</p>
+        {{end}}
+
+        {{if .Children}}
+        <div class="mt-4 space-y-3 pl-4 border-l-2 border-brand-200">
+          {{range .Children}}
+          <div class="bg-gray-50 rounded-xl p-4">
+            <div class="flex items-center gap-3 mb-3">
+              {{if .Department.IconURL}}
+              <img src="{{.Department.IconURL}}" alt="" class="w-8 h-8 object-contain">
+              {{end}}
+              <h4 class="font-bold text-gray-900">{{.Department.Name}}</h4>
+            </div>
+            {{if .Department.Description}}<p class="text-sm text-gray-500 mb-2">{{.Department.Description}}</p>{{end}}
+            {{if .Members}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {{range .Members}}
+              <div class="rounded-lg border border-gray-100 bg-white p-3">
+                <p class="font-semibold text-gray-900 text-sm">{{.FullName}}</p>
+                <p class="text-xs text-brand-600 font-semibold uppercase tracking-wide">{{if .Position}}{{.Position}}{{else}}Anggota{{end}}</p>
+              </div>
+              {{end}}
+            </div>
+            {{end}}
+          </div>
+          {{end}}
+        </div>
         {{end}}
       </article>
       {{end}}

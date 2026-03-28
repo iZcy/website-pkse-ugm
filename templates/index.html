@@ -60,13 +60,15 @@
       <div>
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-600 font-bold text-xs uppercase tracking-wider mb-6">Tentang Kami</div>
         <h2 class="text-3xl md:text-5xl font-extrabold text-brand-900 leading-tight mb-6">Mengenal Paguyuban KSE UGM</h2>
-        <p class="text-lg text-gray-600 leading-relaxed mb-8 text-justify">
-          {{if and .PeriodAbout .PeriodAbout.Sejarah}}
-            {{.PeriodAbout.Sejarah}}
-          {{else}}
-          Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat secara khusus pada level Perguruan Tinggi. KSE UGM menjadi fasilitator bagi para mahasiswa yang menerima beasiswa untuk aktif berkontribusi dalam berbagai program yang mendukung pengembangan karakter, pelestarian lingkungan, partisipasi dalam inovasi sosial masyarakat, serta kepedulian terhadap isu-isu penting lainnya.
-          {{end}}
-        </p>
+        <div class="relative mb-8">
+          <p class="text-lg text-gray-600 leading-relaxed text-justify line-clamp-4">
+            {{if and .PeriodAbout .PeriodAbout.Sejarah}}
+              {{safeHTML .PeriodAbout.Sejarah}}
+            {{else}}
+            Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat secara khusus pada level Perguruan Tinggi. KSE UGM menjadi fasilitator bagi para mahasiswa yang menerima beasiswa untuk aktif berkontribusi dalam berbagai program yang mendukung pengembangan karakter, pelestarian lingkungan, partisipasi dalam inovasi sosial masyarakat, serta kepedulian terhadap isu-isu penting lainnya.
+            {{end}}
+          </p>
+        </div>
         <a href="/tentang-kami" class="inline-flex items-center gap-2 text-brand-600 font-bold hover:text-brand-800 transition-colors">Baca profil lengkap <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
       </div>
       <!-- Illustration / Visi Misi Highlight -->
@@ -76,13 +78,13 @@
           {{if and .PeriodAbout .PeriodAbout.Visi}}
           <div class="mb-10">
             <div class="flex items-center gap-3 mb-4 text-accent-400 font-bold text-xl uppercase tracking-wide"><i data-lucide="eye"></i> Visi</div>
-            <p class="text-white/90 leading-relaxed text-sm">{{.PeriodAbout.Visi}}</p>
+            <p class="text-white/90 leading-relaxed text-sm">{{safeHTML .PeriodAbout.Visi}}</p>
           </div>
           {{end}}
           {{if and .PeriodAbout .PeriodAbout.Misi}}
           <div>
             <div class="flex items-center gap-3 mb-4 text-accent-400 font-bold text-xl uppercase tracking-wide"><i data-lucide="target"></i> Misi</div>
-            <p class="text-white/90 leading-relaxed text-sm whitespace-pre-wrap">{{.PeriodAbout.Misi}}</p>
+            <p class="text-white/90 leading-relaxed text-sm whitespace-pre-wrap">{{safeHTML .PeriodAbout.Misi}}</p>
           </div>
           {{end}}
         </div>
@@ -116,10 +118,37 @@
         <div class="pt-4 border-t border-gray-100">
           <p class="text-xs uppercase tracking-wider font-bold text-brand-600 mb-2">Program Terkait</p>
           <ul class="space-y-2">
-            {{range .Programs}}
-            <li class="text-sm text-gray-600"><span class="font-semibold text-gray-800">{{.Title}}</span>{{if .Description}} - {{.Description}}{{end}}</li>
+            {{range $i, $p := .Programs}}
+            {{if lt $i 3}}
+            <li class="text-sm text-gray-600"><span class="font-semibold text-gray-800">{{$p.Title}}</span>{{if $p.Description}} - {{$p.Description}}{{end}}</li>
+            {{end}}
             {{end}}
           </ul>
+          {{if gt (len .Programs) 3}}
+          <a href="/program" class="inline-flex items-center gap-1 text-xs text-brand-600 font-semibold mt-2 hover:text-brand-800">+{{sub (len .Programs) 3}} program lainnya</a>
+          {{end}}
+        </div>
+        {{end}}
+        {{if .Children}}
+        <div class="mt-4 pt-4 border-t border-gray-100 space-y-3">
+          {{range .Children}}
+          <div class="pl-4 border-l-2 border-brand-200">
+            <div class="flex items-center gap-3 mb-2">
+              {{if .Department.IconURL}}
+              <img src="{{.Department.IconURL}}" alt="" class="w-8 h-8 object-contain">
+              {{end}}
+              <h4 class="font-bold text-base text-gray-800">{{.Department.Name}}</h4>
+            </div>
+            {{if .Department.Description}}<p class="text-gray-500 text-sm ml-11 mb-2">{{.Department.Description}}</p>{{end}}
+            {{if .Programs}}
+            <ul class="space-y-1 ml-11">
+              {{range .Programs}}
+              <li class="text-sm text-gray-600"><span class="font-semibold text-gray-800">{{.Title}}</span>{{if .Description}} - {{.Description}}{{end}}</li>
+              {{end}}
+            </ul>
+            {{end}}
+          </div>
+          {{end}}
         </div>
         {{end}}
       </div>

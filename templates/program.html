@@ -36,7 +36,7 @@
   {{else}}
   <div class="space-y-10">
     {{range .DepartmentGroups}}
-      {{if gt (len .Programs) 0}}
+      {{if or (gt (len .Programs) 0) .Children}}
       <section class="bg-white rounded-[2rem] border border-gray-100 p-8 md:p-10 shadow-sm">
         <div class="mb-6 pb-4 border-b border-gray-100">
           <h2 class="text-2xl md:text-3xl font-black text-brand-900">{{.Department.Name}}</h2>
@@ -44,6 +44,7 @@
           <p class="text-gray-500 mt-2">{{.Department.Description}}</p>
           {{end}}
         </div>
+        {{if .Programs}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {{range .Programs}}
           <article class="rounded-2xl border border-gray-100 p-6 bg-gray-50 hover:bg-white hover:shadow-md transition-all">
@@ -57,6 +58,34 @@
           </article>
           {{end}}
         </div>
+        {{end}}
+        {{if .Children}}
+        <div class="mt-6 space-y-6 pl-4 border-l-2 border-brand-200">
+          {{range .Children}}
+          {{if gt (len .Programs) 0}}
+          <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-3">{{.Department.Name}}</h3>
+            {{if .Department.Description}}
+            <p class="text-gray-500 text-sm mb-4">{{.Department.Description}}</p>
+            {{end}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {{range .Programs}}
+              <article class="rounded-2xl border border-gray-100 p-5 bg-gray-50 hover:bg-white hover:shadow-md transition-all">
+                {{if .ImageURL}}
+                <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-32 object-cover rounded-xl mb-3 border border-gray-100">
+                {{else}}
+                <div class="w-10 h-10 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center mb-3"><i data-lucide="gem" class="w-4 h-4"></i></div>
+                {{end}}
+                <h4 class="text-lg font-bold text-gray-900 mb-2">{{.Title}}</h4>
+                <p class="text-sm text-gray-600 leading-relaxed">{{.Description}}</p>
+              </article>
+              {{end}}
+            </div>
+          </div>
+          {{end}}
+          {{end}}
+        </div>
+        {{end}}
       </section>
       {{end}}
     {{end}}

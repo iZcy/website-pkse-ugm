@@ -34,7 +34,7 @@
         
         <h3 class="text-2xl font-bold text-gray-900 mb-4">{{.Title}}</h3>
         <div class="prose prose-sm prose-gray max-w-none mb-6">
-          <p class="whitespace-pre-wrap leading-relaxed text-gray-600">{{.Content}}</p>
+          <p class="whitespace-pre-wrap leading-relaxed text-gray-600">{{safeHTML .Content}}</p>
         </div>
         
         

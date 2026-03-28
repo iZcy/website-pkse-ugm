@@ -18,6 +18,7 @@ type PeriodDepartmentGroup struct {
 	Department db.Department
 	Members    []db.Member
 	Programs   []db.Program
+	Children   []PeriodDepartmentGroup
 }
 
 func New() *Handler {
@@ -25,6 +26,7 @@ func New() *Handler {
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
 		"mod": func(a, b int) int { return a % b },
+	"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 	}
 	tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 	return &Handler{tmpl: tmpl}
@@ -44,42 +46,58 @@ func (h *Handler) baseData() map[string]any {
 }
 
 func groupByDepartment(depts []db.Department, members []db.Member, programs []db.Program) ([]PeriodDepartmentGroup, []db.Program) {
-	groups := make([]PeriodDepartmentGroup, 0, len(depts))
-    usedPrograms := map[string]bool{}
-    
-    // Build tree structure from flat list
-    var roots []PeriodDepartmentGroup
-    childrenMap := make(map[string]*PeriodDepartmentGroup)
-    
-    for _, d := range depts {
-        g := PeriodDepartmentGroup{Department: d}
-        for _, m := range members {
-            if strings.EqualFold(strings.TrimSpace(m.Department), strings.TrimSpace(d.Name)) {
-                g.Members = append(g.Members, m)
-            }
-        }
-        for _, p := range programs {
-            if strings.EqualFold(strings.TrimSpace(p.Department), strings.TrimSpace(d.Name)) {
-                g.Programs = append(g.Programs, p)
-                usedPrograms[p.ID.Hex()] = true
-            }
-        }
-        
-        // Build tree structure
-        if d.ParentID == nil {
-            roots = append(roots, g)
-        } else {
-            parentIDStr := d.ParentID.Hex()
-            if parent, childrenMap[parentIDStr] == nil {
-                childrenMap[parentIDStr] = []PeriodDepartmentGroup{}
-            }
-            childrenMap[parentIDStr] = append(childrenMap[parentIDStr], g)
-        } else {
-            roots = append(roots, g)
-        }
-    }
-    
-    return roots, ungrouped
+	usedPrograms := map[string]bool{}
+	nodeMap := make(map[string]*PeriodDepartmentGroup)
+
+	// First pass: create all nodes and attach members/programs
+	for _, d := range depts {
+		g := PeriodDepartmentGroup{Department: d}
+		for _, m := range members {
+			if strings.EqualFold(strings.TrimSpace(m.Department), strings.TrimSpace(d.Name)) {
+				g.Members = append(g.Members, m)
+			}
+		}
+		for _, p := range programs {
+			if strings.EqualFold(strings.TrimSpace(p.Department), strings.TrimSpace(d.Name)) {
+				g.Programs = append(g.Programs, p)
+				usedPrograms[p.ID.Hex()] = true
+			}
+		}
+		nodeMap[d.ID.Hex()] = &g
+	}
+
+	// Second pass: build tree by linking children to parents (via pointers)
+	var rootPtrs []*PeriodDepartmentGroup
+	for _, d := range depts {
+		node := nodeMap[d.ID.Hex()]
+		if d.ParentID == nil {
+			rootPtrs = append(rootPtrs, node)
+		} else {
+			if parent, ok := nodeMap[d.ParentID.Hex()]; ok {
+				parent.Children = append(parent.Children, *node)
+			} else {
+				rootPtrs = append(rootPtrs, node)
+			}
+		}
+	}
+
+	// Copy root pointers into result slice (tree already built via pointer mutations)
+	roots := make([]PeriodDepartmentGroup, 0, len(rootPtrs))
+	for _, r := range rootPtrs {
+		roots = append(roots, *r)
+	}
+
+	// Compute ungrouped programs
+	var ungrouped []db.Program
+	for _, p := range programs {
+		if !usedPrograms[p.ID.Hex()] {
+			ungrouped = append(ungrouped, p)
+		}
+	}
+
+	return roots, ungrouped
+}
+
 func (h *Handler) activePeriodLabel() string {
 	p, err := db.GetActivePeriod()
 	if err != nil || p == nil {

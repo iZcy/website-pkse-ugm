@@ -136,12 +136,13 @@ type GalleryItem struct {
 }
 
 type Department struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	PeriodLabel string             `bson:"period_label"  json:"period_label"`
-	Name        string             `bson:"name"          json:"name"`
-	Description string             `bson:"description"   json:"description"`
-	IconURL     string             `bson:"icon_url"      json:"icon_url"`
-	SortOrder   int                `bson:"sort_order"    json:"sort_order"`
+	ID          primitive.ObjectID  `bson:"_id,omitempty" json:"id"`
+	PeriodLabel string              `bson:"period_label"  json:"period_label"`
+	Name        string              `bson:"name"          json:"name"`
+	Description string              `bson:"description"   json:"description"`
+	IconURL     string              `bson:"icon_url"      json:"icon_url"`
+	SortOrder   int                 `bson:"sort_order"    json:"sort_order"`
+	ParentID    *primitive.ObjectID `bson:"parent_id,omitempty" json:"parent_id,omitempty"`
 }
 
 type Member struct {
