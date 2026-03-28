@@ -123,6 +123,10 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 11-5.656-5.656l1.5-1.5m6.328-1.328a4 4 0 010-5.656l3-3a4 4 0 015.656 5.656l-1.5 1.5M8 16l8-8"/></svg>
         Shorten Link
       </a>
+<a href="/admin/dashboard?period={{.SelectedPeriod}}&section=broadcast" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-broadcast">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-9V12a9 9 0 0118 0v4.118c0 3.057-1.85 5.755-4.255 8.005z"/></svg>
+        WhatsApp Broadcast
+      </a>
 <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=faq-global" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-faq-global">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         FAQ Global
@@ -348,6 +352,71 @@
               </thead>
               <tbody id="shortlink-tbody"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHATSAPP BROADCAST (superadmin) -->
+    <div id="tab-broadcast" class="tab-content hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">WhatsApp Broadcast</h2>
+        <div class="flex items-center gap-3">
+          <span id="wa-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500">Checking...</span>
+          <button onclick="loadWAStatus()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">Refresh Status</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Connection + QR -->
+        <div class="space-y-6">
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-semibold text-slate-700 mb-4">Koneksi WhatsApp</h3>
+            <div id="wa-qr-container" class="text-center mb-4">
+              <p class="text-sm text-slate-500 mb-2">Memuat QR Code...</p>
+            </div>
+            <div id="wa-connected-info" class="hidden text-center">
+              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <p class="text-sm font-semibold text-green-700">WhatsApp Terhubung</p>
+            </div>
+          </div>
+
+          <!-- Compose -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-semibold text-slate-700 mb-4">Kirim Broadcast</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Pesan</label>
+                <textarea id="wa-message" rows="4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Tulis pesan broadcast..."></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">Penerima</label>
+                <select id="wa-recipient-source" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="ALL">Semua Kontak</option>
+                  <option value="members-phone">Anggota dengan No. HP</option>
+                </select>
+              </div>
+              <button onclick="sendBroadcast()" id="wa-send-btn" class="w-full py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                Kirim Broadcast
+              </button>
+              <div id="wa-progress" class="hidden">
+                <div class="bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="wa-progress-bar" class="bg-green-500 h-full rounded-full transition-all" style="width:0%"></div>
+                </div>
+                <p id="wa-progress-text" class="text-xs text-slate-500 mt-1 text-center">Mengirim...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Logs -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Riwayat Broadcast</h3>
+          <div id="wa-logs-list">
+            <p class="text-sm text-slate-400">Memuat riwayat...</p>
           </div>
         </div>
       </div>
@@ -969,7 +1038,7 @@ let statPreviewChart = null;
 
 function selectedSectionFromURL() {
   const section = new URLSearchParams(window.location.search).get('section') || 'pengumuman';
-  const allowed = new Set(['pengumuman', 'artikel', 'departemen', 'program', 'faq-periode', 'tentang', 'galeri', 'statistik', 'anggota', 'global', 'shortlink', 'faq-global', 'global-stats', 'periode', 'akun']);
+  const allowed = new Set(['pengumuman', 'artikel', 'departemen', 'program', 'faq-periode', 'tentang', 'galeri', 'statistik', 'anggota', 'global', 'shortlink', 'faq-global', 'global-stats', 'periode', 'akun', 'broadcast']);
   return allowed.has(section) ? section : 'pengumuman';
 }
 
@@ -1174,6 +1243,7 @@ function loadTab(name) {
   if (name === 'akun') loadAkun();
   if (name === 'global') loadGlobal();
   if (name === 'tentang') loadTentang();
+  if (name === 'broadcast') { loadWAStatus(); loadWAQR(); loadWALogs(); }
   if (name === 'galeri') loadGaleri();
   if (name === 'shortlink') loadShortlinks();
   
@@ -3536,6 +3606,152 @@ document.getElementById('formStatistik').addEventListener('submit', async e => {
 syncPeriodSwitcherRouteSection();
 switchTab(selectedSectionFromURL());
 renderChartChoices('bar');
+
+// ── WhatsApp Broadcast ────────────────────────────────────────────────────
+
+let waWs = null;
+try {
+  waWs = new WebSocket(((location.protocol === 'https:') ? 'wss:' : 'ws:') + '//' + location.host + '/api/broadcast/ws');
+  waWs.onmessage = (e) => {
+    try {
+      const ev = JSON.parse(e.data);
+      if (ev.type === 'broadcast_progress') {
+        const pct = Math.round(ev.percentage || 0);
+        const bar = document.getElementById('wa-progress-bar');
+        const txt = document.getElementById('wa-progress-text');
+        if (bar) bar.style.width = pct + '%';
+        if (txt) txt.textContent = `Mengirim... ${ev.sent || 0}/${ev.total || 0}`;
+      }
+      if (ev.type === 'broadcast_completed') {
+        const bar = document.getElementById('wa-progress-bar');
+        const txt = document.getElementById('wa-progress-text');
+        const btn = document.getElementById('wa-send-btn');
+        if (bar) bar.style.width = '100%';
+        if (txt) txt.textContent = `Selesai: ${ev.sent || 0} terkirim, ${ev.failed || 0} gagal`;
+        if (btn) btn.disabled = false;
+        loadWALogs();
+      }
+    } catch(_) {}
+  };
+  waWs.onclose = () => {
+    setTimeout(() => {
+      try {
+        waWs = new WebSocket(((location.protocol === 'https:') ? 'wss:' : 'ws:') + '//' + location.host + '/api/broadcast/ws');
+      } catch(_) {}
+    }, 3000);
+  };
+} catch(_) {}
+
+async function loadWAStatus() {
+  try {
+    const r = await api('GET', '/api/broadcast/status');
+    const badge = document.getElementById('wa-status-badge');
+    if (!badge) return;
+    if (r.connected) {
+      badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700';
+      badge.textContent = 'Terhubung';
+    } else {
+      badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700';
+      badge.textContent = 'Tidak Terhubung';
+    }
+  } catch(_) {}
+}
+
+async function loadWAQR() {
+  try {
+    const resp = await fetch('/api/broadcast/qr');
+    const ct = resp.headers.get('Content-Type') || '';
+    const container = document.getElementById('wa-qr-container');
+    const connected = document.getElementById('wa-connected-info');
+    if (!container) return;
+    if (ct.startsWith('image/')) {
+      container.innerHTML = '<img src="/api/broadcast/qr" alt="QR Code" class="mx-auto max-w-[250px] rounded-lg border border-slate-200">';
+      if (connected) connected.classList.add('hidden');
+    } else {
+      const data = await resp.json();
+      container.innerHTML = `<p class="text-sm text-slate-500">${data.error || 'QR belum tersedia. Pastikan wa-service berjalan.'}</p>`;
+    }
+  } catch(e) {
+    const container = document.getElementById('wa-qr-container');
+    if (container) container.innerHTML = '<p class="text-sm text-red-500">Gagal memuat status wa-service</p>';
+  }
+}
+
+async function loadWALogs() {
+  try {
+    const logs = await api('GET', '/api/broadcast/logs');
+    const wrap = document.getElementById('wa-logs-list');
+    if (!wrap) return;
+    if (!logs || logs.length === 0) {
+      wrap.innerHTML = '<p class="text-sm text-slate-400">Belum ada riwayat broadcast.</p>';
+      return;
+    }
+    wrap.innerHTML = logs.map(l => `
+      <div class="border border-slate-200 rounded-lg p-4 mb-3 hover:border-slate-300 transition cursor-pointer" onclick="loadWALogDetail('${l._id}')">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${l.status === 'done' ? 'bg-green-100 text-green-700' : l.status === 'partial' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${l.status}</span>
+          <span class="text-xs text-slate-400">${new Date(l.started_at).toLocaleString('id-ID')}</span>
+        </div>
+        <p class="text-sm text-slate-700 line-clamp-2">${escHtml(l.message)}</p>
+        <div class="flex gap-4 mt-2 text-xs text-slate-500">
+          <span>${l.sent_by || ''}</span>
+          <span>Terkirim: ${l.sent_count || 0}/${l.total_receivers || 0}</span>
+        </div>
+      </div>
+    `).join('');
+  } catch(_) {}
+}
+
+async function loadWALogDetail(id) {
+  try {
+    const data = await api('GET', '/api/broadcast/logs/' + id);
+    const wrap = document.getElementById('wa-logs-list');
+    if (!wrap) return;
+    const log = data.log || {};
+    const recipients = data.recipients || [];
+    wrap.innerHTML = `
+      <button onclick="loadWALogs()" class="text-sm text-blue-600 hover:text-blue-800 mb-4 inline-flex items-center gap-1">&larr; Kembali ke riwayat</button>
+      <div class="border border-slate-200 rounded-lg p-4 mb-4">
+        <p class="text-xs font-semibold mb-1">Pesan:</p>
+        <p class="text-sm text-slate-700">${escHtml(log.message)}</p>
+        <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
+          <span>Status: <strong>${log.status}</strong></span>
+          <span>Oleh: ${log.sent_by || '-'}</span>
+          <span>Terkirim: ${log.sent_count}/${log.total_receivers}</span>
+          <span>Waktu: ${log.started_at ? new Date(log.started_at).toLocaleString('id-ID') : '-'}</span>
+        </div>
+      </div>
+      ${recipients.length ? `<div class="border border-slate-200 rounded-lg overflow-hidden">
+        <table class="w-full text-xs">
+          <thead><tr class="bg-slate-50 border-b border-slate-200"><th class="px-3 py-2 text-left">No. HP</th><th class="px-3 py-2 text-left">Status</th><th class="px-3 py-2 text-left">Error</th></tr></thead>
+          <tbody>${recipients.map(r => `<tr class="border-b border-slate-100"><td class="px-3 py-2">${escHtml(r.phone)}</td><td class="px-3 py-2"><span class="${r.status === 'sent' ? 'text-green-600' : 'text-red-600'}">${r.status}</span></td><td class="px-3 py-2 text-slate-400">${escHtml(r.error || '-')}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>` : '<p class="text-xs text-slate-400">Tidak ada detail penerima.</p>'}
+    `;
+  } catch(_) {}
+}
+
+async function sendBroadcast() {
+  const message = document.getElementById('wa-message').value.trim();
+  if (!message) return uiAlert('Pesan tidak boleh kosong');
+  const btn = document.getElementById('wa-send-btn');
+  btn.disabled = true;
+  btn.textContent = 'Mengirim...';
+  const progress = document.getElementById('wa-progress');
+  if (progress) progress.classList.remove('hidden');
+  try {
+    await api('POST', '/api/broadcast/send', { message });
+    uiAlert('Broadcast telah dikirim!', 'WhatsApp Broadcast');
+    document.getElementById('wa-message').value = '';
+    loadWALogs();
+  } catch(e) {
+    uiAlert('Gagal: ' + e.message, 'Error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" strokejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Kirim Broadcast';
+    setTimeout(() => { if (progress) progress.classList.add('hidden'); }, 5000);
+  }
+}
 </script>
 
 <!-- FAQ Modal -->
