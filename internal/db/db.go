@@ -163,6 +163,7 @@ type Member struct {
 	CoverURL        string             `bson:"cover_url"     json:"cover_url"`
 	Department      string             `bson:"department"    json:"department"`
 	Position        string             `bson:"position"      json:"position"`
+	Phone           string             `bson:"phone"         json:"phone"`
 	SortOrder       int                `bson:"sort_order"    json:"sort_order"`
 }
 
@@ -965,4 +966,195 @@ func ResetCollections(names ...string) error {
 		}
 	}
 	return nil
+}
+
+// ── Broadcast ──────────────────────────────────────────────────────────────────
+
+type BroadcastContact struct {
+	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name       string             `bson:"name"          json:"name"`
+	Phone      string             `bson:"phone"         json:"phone"`
+	Period     string             `bson:"period"        json:"period"`
+	CreatedAt  time.Time          `bson:"created_at"    json:"created_at"`
+}
+
+type BroadcastLog struct {
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Message        string             `bson:"message"         json:"message"`
+	Status          string             `bson:"status"          json:"status"`
+	TotalReceivers  int                `bson:"total_receivers" json:"total_receivers"`
+	SentCount       int                `bson:"sent_count"      json:"sent_count"`
+	FailedCount     int                `bson:"failed_count"    json:"failed_count"`
+	SentBy          string             `bson:"sent_by"         json:"sent_by"`
+	StartedAt       time.Time          `bson:"started_at"      json:"started_at"`
+	CompletedAt     *time.Time         `bson:"completed_at"    json:"completed_at,omitempty"`
+}
+
+type BroadcastRecipientLog struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	LogID     primitive.ObjectID `bson:"log_id"  json:"log_id"`
+	ContactID primitive.ObjectID `bson:"contact_id" json:"contact_id"`
+	Phone     string             `bson:"phone"   json:"phone"`
+	Name      string             `bson:"name"    json:"name"`
+	Status    string             `bson:"status"  json:"status"`
+	Error     string             `bson:"error"   json:"error"`
+	SentAt    *time.Time         `bson:"sent_at" json:"sent_at,omitempty"`
+}
+
+func GetBroadcastContacts(period string) ([]BroadcastContact, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{}
+	if period != "" && period != "ALL" {
+		filter["period"] = period
+	}
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+	cur, err := col("broadcast_contacts").Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	var res []BroadcastContact
+	if err := cur.All(ctx, &res); err != nil {
+		return nil, err
+	}
+	if res == nil {
+		res = []BroadcastContact{}
+	}
+	return res, nil
+}
+
+func CreateBroadcastContact(c BroadcastContact) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	c.CreatedAt = time.Now()
+	_, err := col("broadcast_contacts").InsertOne(ctx, c)
+	return err
+}
+
+func BulkCreateBroadcastContacts(contacts []BroadcastContact) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	now := time.Now()
+	docs := make([]any, len(contacts))
+	for i, c := range contacts {
+		c.CreatedAt = now
+		docs[i] = c
+	}
+	_, err := col("broadcast_contacts").InsertMany(ctx, docs)
+	return err
+}
+
+func DeleteBroadcastContact(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = col("broadcast_contacts").DeleteOne(ctx, bson.M{"_id": oid})
+	return err
+}
+
+func CreateBroadcastLog(blog BroadcastLog) (primitive.ObjectID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	blog.StartedAt = time.Now()
+	blog.Status = "sending"
+	res, err := col("broadcast_logs").InsertOne(ctx, blog)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+	return res.InsertedID.(primitive.ObjectID), nil
+}
+
+func UpdateBroadcastLog(id primitive.ObjectID, fields map[string]any) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := col("broadcast_logs").UpdateByID(ctx, id, bson.M{"$set": fields})
+	return err
+}
+
+func GetBroadcastLogs(limit int) ([]BroadcastLog, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	opts := options.Find().SetSort(bson.D{{Key: "started_at", Value: -1}})
+	if limit > 0 {
+		opts.SetLimit(int64(limit))
+	}
+	cur, err := col("broadcast_logs").Find(ctx, bson.M{}, opts)
+	if err != nil {
+		return nil, err
+	}
+	var res []BroadcastLog
+	if err := cur.All(ctx, &res); err != nil {
+		return nil, err
+	}
+	if res == nil {
+		res = []BroadcastLog{}
+	}
+	return res, nil
+}
+
+func GetBroadcastLog(id string) (*BroadcastLog, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	var blog BroadcastLog
+	if err := col("broadcast_logs").FindOne(ctx, bson.M{"_id": oid}).Decode(&blog); err != nil {
+		return nil, err
+	}
+	return &blog, nil
+}
+
+func CreateRecipientLogs(logs []BroadcastRecipientLog) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	docs := make([]any, len(logs))
+	for i, l := range logs {
+		docs[i] = l
+	}
+	_, err := col("broadcast_recipient_logs").InsertMany(ctx, docs)
+	return err
+}
+
+func GetRecipientLogs(logID string) ([]BroadcastRecipientLog, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	oid, err := primitive.ObjectIDFromHex(logID)
+	if err != nil {
+		return nil, err
+	}
+	cur, err := col("broadcast_recipient_logs").Find(ctx, bson.M{"log_id": oid})
+	if err != nil {
+		return nil, err
+	}
+	var res []BroadcastRecipientLog
+	if err := cur.All(ctx, &res); err != nil {
+		return nil, err
+	}
+	if res == nil {
+		res = []BroadcastRecipientLog{}
+	}
+	return res, nil
+}
+
+func GetMembersFiltered(filter bson.M) ([]Member, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	opts := options.Find().SetSort(bson.D{{Key: "full_name", Value: 1}})
+	cur, err := col("members").Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	var res []Member
+	if err := cur.All(ctx, &res); err != nil {
+		return nil, err
+	}
+	if res == nil {
+		res = []Member{}
+	}
+	return res, nil
 }

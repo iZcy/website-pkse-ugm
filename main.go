@@ -8,6 +8,7 @@ import (
 
 	"webapp/internal/admin"
 	"webapp/internal/auth"
+	"webapp/internal/broadcast"
 	"webapp/internal/cms"
 	"webapp/internal/db"
 	"webapp/internal/handlers"
@@ -94,6 +95,18 @@ func main() {
 	mux.HandleFunc("/api/cms/accounts", cms.Accounts)
 	mux.HandleFunc("/api/cms/accounts/", cms.Accounts)
 	mux.HandleFunc("/api/cms/upload", cms.Upload)
+
+	// Broadcast API
+	mux.HandleFunc("/api/broadcast/ws", broadcast.WebSocket)
+	mux.HandleFunc("/api/broadcast/status", broadcast.Status)
+	mux.HandleFunc("/api/broadcast/qr", broadcast.QR)
+	mux.HandleFunc("/api/broadcast/contacts", broadcast.Contacts)
+	mux.HandleFunc("/api/broadcast/contacts/", broadcast.Contacts)
+	mux.HandleFunc("/api/broadcast/import-contacts", broadcast.ImportContacts)
+	mux.HandleFunc("/api/broadcast/send", broadcast.Send)
+	mux.HandleFunc("/api/broadcast/logs", broadcast.Logs)
+	mux.HandleFunc("/api/broadcast/logs/", broadcast.LogDetail)
+	mux.HandleFunc("/api/broadcast/members-phone", broadcast.MembersWithPhone)
 
 	addr := fmt.Sprintf(":%s", port)
 	fmt.Printf("Server running at http://localhost%s\n", addr)
