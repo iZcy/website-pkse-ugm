@@ -554,6 +554,34 @@ func Periods(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, 200, map[string]string{"status": "ok"})
 
+	case http.MethodDelete:
+		if !requireSuperAdmin(w, r) {
+			return
+		}
+		label := strings.Trim(seg, "/")
+		if label == "" {
+			writeJSON(w, 400, map[string]string{"error": "period label required"})
+			return
+		}
+		if label == "GLOBAL" {
+			writeJSON(w, 400, map[string]string{"error": "cannot delete default period"})
+			return
+		}
+		hasData, err := db.PeriodHasData(label)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		if hasData {
+			writeJSON(w, 400, map[string]string{"error": "periode ini memiliki data (anggota, pengumuman, dll) dan tidak dapat dihapus"})
+			return
+		}
+		if err := db.DeletePeriod(label); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]string{"status": "deleted"})
+
 	default:
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 	}

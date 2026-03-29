@@ -1492,6 +1492,7 @@ async function loadPeriode() {
         <div class="flex gap-2 flex-shrink-0 items-center">
           <button onclick="editPeriode('${p.label}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100">Edit</button>
           ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button>` : ''}
+          ${!p.is_active ? `<button onclick="deletePeriode('${p.label}')" class="text-red-600 bg-red-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-100">Hapus</button>` : ''}
         </div>
       </div>`).join('');
     // also populate akun period selector
@@ -1532,6 +1533,14 @@ async function activatePeriode(label) {
   if (!await uiConfirm(`Jadikan periode "${label}" sebagai aktif?`, 'Konfirmasi Aktivasi')) return;
   try {
     await api('PUT', `/api/cms/periods/${label}/activate`);
+    loadPeriode();
+  } catch(ex) { uiAlert('Error: ' + ex.message); }
+}
+
+async function deletePeriode(label) {
+  if (!await uiConfirm(`Hapus periode "${label}"? Periode hanya bisa dihapus jika tidak memiliki data (anggota, pengumuman, dll).`, 'Konfirmasi Hapus')) return;
+  try {
+    await api('DELETE', `/api/cms/periods/${label}`);
     loadPeriode();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
