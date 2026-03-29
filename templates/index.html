@@ -62,10 +62,8 @@
         <h2 class="text-3xl md:text-5xl font-extrabold text-brand-900 leading-tight mb-6">Mengenal Paguyuban KSE UGM</h2>
         <div class="relative mb-8">
           <div class="text-lg text-gray-600 leading-relaxed text-justify max-h-[8.5rem] overflow-hidden">
-            {{if and .PeriodAbout .PeriodAbout.Sejarah}}
-              {{safeHTML .PeriodAbout.Sejarah}}
-            {{else}}
-            Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat secara khusus pada level Perguruan Tinggi. KSE UGM menjadi fasilitator bagi para mahasiswa yang menerima beasiswa untuk aktif berkontribusi dalam berbagai program yang mendukung pengembangan karakter, pelestarian lingkungan, partisipasi dalam inovasi sosial masyarakat, serta kepedulian terhadap isu-isu penting lainnya.
+            {{if and .GlobalSetting .GlobalSetting.AboutHTML}}
+              {{safeHTML .GlobalSetting.AboutHTML}}
             {{end}}
           </div>
           <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent"></div>

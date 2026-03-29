@@ -696,10 +696,9 @@ async function deleteArtikel(id) {
 
 // ── TENTANG PERIODE ──────────────────────────────────────────────────────────
 async function loadTentang() {
-  initQuill('editor-sejarah');
   initQuill('editor-visi');
   initQuill('editor-misi');
-  ['editor-sejarah', 'editor-visi', 'editor-misi'].forEach((id) => {
+  ['editor-visi', 'editor-misi'].forEach((id) => {
     const q = quills[id];
     if (q && !q.__previewBound) {
       q.on('text-change', () => renderTentangPreview());
@@ -712,7 +711,6 @@ async function loadTentang() {
   try {
     const pa = await api('GET', `/api/cms/period-about?period=${PERIOD}`);
     state.periodAbout = pa || {};
-    quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
     document.getElementById('tentang-tagline-title').value = pa.tagline_title || '';
@@ -739,7 +737,6 @@ document.getElementById('formTentang')?.addEventListener('submit', async e => {
   try {
     await api('PUT', '/api/cms/period-about', {
       period_label: PERIOD,
-      sejarah: quillGetHTML('editor-sejarah'),
       tagline_title: document.getElementById('tentang-tagline-title').value,
       tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
       tagline_description: document.getElementById('tentang-tagline-desc').value,
@@ -753,7 +750,6 @@ document.getElementById('formTentang')?.addEventListener('submit', async e => {
     state.periodAbout = {
       ...(state.periodAbout || {}),
       period_label: PERIOD,
-      sejarah: quillGetHTML('editor-sejarah'),
       tagline_title: document.getElementById('tentang-tagline-title').value,
       tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
       tagline_description: document.getElementById('tentang-tagline-desc').value,
