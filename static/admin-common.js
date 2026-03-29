@@ -2688,7 +2688,7 @@ function populatePeriodFilter() {
 
 async function loadBCContacts() {
   try {
-    const period = document.getElementById('bc-contact-filter')?.value || window.PERIOD || 'ALL';
+    let period = document.getElementById('bc-contact-filter')?.value || window.PERIOD || '';
     const contacts = await api('GET', '/api/broadcast/anggota-contacts?period=' + encodeURIComponent(period));
     if (!contacts || !Array.isArray(contacts)) {
       bcContactRows = [];
