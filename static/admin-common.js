@@ -2611,6 +2611,9 @@ let bcRedoStack = [];
 let bcSelRange = null;
 let bcSelAnchor = null;
 let bcSelecting = false;
+let bcCurrentTab = 'connection';
+let bcBroadcasting = false;
+let bcLiveLogCount = 0;
 
 function initBroadcast() {
   loadWAStatus();
@@ -2626,6 +2629,97 @@ function initBroadcast() {
     else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); bcRedo(); }
     else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && bcSelRange) { e.preventDefault(); bcCopySelection(); }
   });
+}
+
+// -- Tab Switching --
+
+function bcSwitchTab(tab) {
+  if (bcBroadcasting && tab !== 'broadcast') return;
+  bcCurrentTab = tab;
+  document.querySelectorAll('.bc-tab-panel').forEach(function(el) { el.classList.add('hidden'); });
+  document.querySelectorAll('.bc-tab-btn').forEach(function(el) {
+    el.classList.remove('bg-white', 'text-blue-700', 'shadow-sm');
+    el.classList.add('text-slate-500');
+  });
+  var panel = document.getElementById('bc-tab-' + tab);
+  if (panel) panel.classList.remove('hidden');
+  var btn = document.getElementById('bc-tab-btn-' + tab);
+  if (btn) {
+    btn.classList.remove('text-slate-500');
+    btn.classList.add('bg-white', 'text-blue-700', 'shadow-sm');
+  }
+  if (tab === 'log') loadBCHistory();
+}
+
+function bcToggleHelp() {
+  var modal = document.getElementById('bc-help-modal');
+  if (!modal) return;
+  if (modal.classList.contains('hidden')) {
+    modal.classList.remove('hidden');
+    var hc = document.getElementById('bc-help-content');
+    if (hc && !hc.dataset.loaded) {
+      hc.dataset.loaded = '1';
+      var LB = String.fromCharCode(123,123);
+      var RB = String.fromCharCode(125,125);
+      hc.innerHTML = '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-mono">' + LB + 'var' + RB + '</span>'
+        + ' Variabel</h4>'
+        + '<p class="text-slate-600 mb-2">Gunakan <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">' + LB + 'nama_kolom' + RB + '</code> untuk menyisipkan nilai dari kolom kontak.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3">'
+        + '<p class="text-xs text-slate-400 mb-1">Contoh:</p>'
+        + '<p class="font-mono text-xs text-slate-700">Halo <span class="text-blue-600">' + LB + 'nickname' + RB + '</span>, selamat datang di <span class="text-blue-600">' + LB + 'kementerian' + RB + '</span>!</p>'
+        + '</div></div>'
+        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-mono">' + LB + 'if' + RB + '</span>'
+        + ' Kondisional</h4>'
+        + '<p class="text-slate-600 mb-2">Tampilkan teks berbeda berdasarkan nilai kolom.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
+        + LB + 'if jabatan == "Ketua"' + RB + '\nSelamat datang, Ketua!\n' + LB + 'else' + RB + '\nHalo anggota!\n' + LB + 'endif' + RB + '</div></div>'
+        + '<div><h4 class="font-bold text-slate-700 mb-2">Tips</h4>'
+        + '<ul class="text-slate-600 space-y-1.5 list-disc list-inside">'
+        + '<li>Nama variabel harus sama persis dengan nama kolom (case-sensitive)</li>'
+        + '<li>Bisa menggabung beberapa variabel dalam satu kalimat</li>'
+        + '<li>Kondisional hanya mendukung perbandingan <code class="bg-slate-100 px-1 rounded text-xs">==</code></li>'
+        + '<li>Gunakan tab untuk paste data dari spreadsheet langsung ke tabel kontak</li>'
+        + '<li>Centang baris di tabel kontak untuk memilih penerima broadcast</li>'
+        + '</ul></div>';
+    }
+  } else {
+    modal.classList.add('hidden');
+  }
+}
+
+function bcLockBroadcast() {
+  bcBroadcasting = true;
+  var lock = document.getElementById('bc-send-lock');
+  if (lock) lock.classList.remove('hidden');
+  var liveProgress = document.getElementById('bc-live-progress');
+  if (liveProgress) liveProgress.classList.remove('hidden');
+  bcLiveLogCount = 0;
+  var logEl = document.getElementById('bc-live-log');
+  if (logEl) logEl.innerHTML = '';
+}
+
+function bcUnlockBroadcast() {
+  bcBroadcasting = false;
+  var lock = document.getElementById('bc-send-lock');
+  if (lock) lock.classList.add('hidden');
+  var btn = document.getElementById('bc-send-btn');
+  if (btn) { btn.disabled = false; btn.classList.remove('opacity-50'); }
+}
+
+function bcAddLiveLogEntry(phone, status, error) {
+  var logEl = document.getElementById('bc-live-log');
+  if (!logEl) return;
+  bcLiveLogCount++;
+  var ok = status === 'sent';
+  var icon = ok ? '<span class="text-green-500 flex-shrink-0">&#10003;</span>' : '<span class="text-red-500 flex-shrink-0">&#10007;</span>';
+  var errText = error ? '<span class="text-red-400 truncate max-w-[200px]"> — ' + escHtml(error) + '</span>' : '';
+  var div = document.createElement('div');
+  div.className = 'bc-log-entry flex items-center gap-2 text-xs py-1 px-2 rounded ' + (ok ? 'bg-green-50' : 'bg-red-50');
+  div.innerHTML = '<span class="text-slate-400 w-6 text-right flex-shrink-0">' + bcLiveLogCount + '</span>' + icon + '<span class="text-slate-700 font-mono">' + escHtml(phone) + '</span>' + errText;
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
 }
 
 // ── Step Navigation ──────────────────────────────────────────────────────
@@ -3319,11 +3413,7 @@ async function sendBroadcast() {
   var delayEl = document.getElementById('bc-delay');
   var delayMs = delayEl ? (parseInt(delayEl.value) || 3) * 1000 : 3000;
 
-  var btn = document.getElementById('bc-send-btn');
-  if (btn) { btn.disabled = true; btn.classList.add('opacity-50'); }
-
-  var progressEl = document.getElementById('bc-progress');
-  if (progressEl) progressEl.classList.remove('hidden');
+  bcLockBroadcast();
 
   try {
     await api('POST', '/api/broadcast/send', {
@@ -3334,8 +3424,9 @@ async function sendBroadcast() {
     });
   } catch(e) {
     uiAlert('Gagal memulai broadcast: ' + e.message);
-    if (btn) { btn.disabled = false; btn.classList.remove('opacity-50'); }
-    if (progressEl) progressEl.classList.add('hidden');
+    bcUnlockBroadcast();
+    var liveProgress = document.getElementById('bc-live-progress');
+    if (liveProgress) liveProgress.classList.add('hidden');
   }
 }
 
@@ -3433,16 +3524,20 @@ function connectBCWebSocket() {
 function handleBCEvent(data) {
   if (!data || !data.type) return;
   if (data.type === 'broadcast_progress') {
-    var bar = document.getElementById('bc-progress-bar');
-    var text = document.getElementById('bc-progress-text');
-    var progressEl = document.getElementById('bc-progress');
-    if (progressEl) progressEl.classList.remove('hidden');
+    var bar = document.getElementById('bc-live-bar');
+    var sentEl = document.getElementById('bc-live-sent');
+    var failedEl = document.getElementById('bc-live-failed');
+    var percentEl = document.getElementById('bc-live-percent');
     if (bar) bar.style.width = (data.percentage || 0) + '%';
-    if (text) text.textContent = (data.sent || 0) + '/' + (data.total || 0);
+    if (sentEl) sentEl.textContent = (data.sent || 0) + ' terkirim';
+    if (failedEl) failedEl.textContent = (data.failed || 0) + ' gagal';
+    if (percentEl) percentEl.textContent = Math.round(data.percentage || 0) + '%';
+    if (data.phone) {
+      bcAddLiveLogEntry(data.phone, data.status || 'sent', data.error || '');
+    }
   }
   if (data.type === 'broadcast_completed') {
-    var btn = document.getElementById('bc-send-btn');
-    if (btn) { btn.disabled = false; btn.classList.remove('opacity-50'); }
+    bcUnlockBroadcast();
     loadBCHistory();
     loadWAStatus();
     var msg = data.status === 'done' ? 'Broadcast selesai! ' + (data.sent || 0) + ' pesan terkirim.'

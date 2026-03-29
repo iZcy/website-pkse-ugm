@@ -347,10 +347,25 @@ func sendPerContact(blogID primitive.ObjectID, phones []string, messages []strin
 			status = "failed"
 			errMsg = err.Error()
 		} else {
-			resp.Body.Close()
 			if resp.StatusCode != 200 {
 				status = "failed"
-				errMsg = "wa-service error: " + resp.Status
+				var errBody map[string]any
+				bodyBytes, _ := io.ReadAll(resp.Body)
+				resp.Body.Close()
+				if json.Unmarshal(bodyBytes, &errBody) == nil {
+					if msg, ok := errBody["error"].(string); ok && msg != "" {
+						errMsg = msg
+					} else {
+						errMsg = "wa-service error: " + resp.Status
+					}
+				} else {
+					errMsg = "wa-service error: " + resp.Status
+					if len(bodyBytes) > 0 {
+						errMsg += " (" + string(bodyBytes) + ")"
+					}
+				}
+			} else {
+				resp.Body.Close()
 			}
 		}
 
@@ -370,6 +385,9 @@ func sendPerContact(blogID primitive.ObjectID, phones []string, messages []strin
 		broadcastProgress(map[string]any{
 			"type":       "broadcast_progress",
 			"id":         blogID.Hex(),
+			"phone":      phone,
+			"status":     status,
+			"error":      errMsg,
 			"sent":       sentCount,
 			"failed":     failedCount,
 			"total":      len(phones),
