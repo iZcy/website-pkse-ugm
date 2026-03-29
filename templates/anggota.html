@@ -41,7 +41,7 @@
         data-angkatan="{{.Angkatan}}"
         data-department="{{.Department}}"
         data-position="{{.Position}}"
-        data-track-records='{{range $k,$v := .ActivePeriods}}{{$k}}|{{$v}}|{{index .ActivePositions $k}};;{{end}}'>
+        data-track-records='{{range $k,$v := .ActivePeriods}}{{$k}}|{{$v}}|{{if $.ActivePositions}}{{index $.ActivePositions $k}}{{end}};;{{end}}'>
         <div class="h-28 bg-gray-100 overflow-hidden">
           {{if .CoverURL}}
           <img src="{{.CoverURL}}" alt="Cover {{.FullName}}" class="w-full h-full object-cover">
