@@ -12,7 +12,7 @@
   <div class="relative z-10 max-w-7xl mx-auto px-6">
     <p class="text-sm uppercase tracking-wider text-brand-200 mb-3">Tentang Organisasi</p>
     <h1 class="text-4xl md:text-6xl font-black mb-4">{{if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{else}}PKSE UGM{{end}}</h1>
-    <p class="text-brand-100 max-w-3xl">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{safeHTML .GlobalSetting.AboutHTML}}{{else}}Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada.{{end}}</p>
+    <div class="text-brand-100 max-w-3xl leading-relaxed prose prose-invert">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{safeHTML .GlobalSetting.AboutHTML}}{{else}}<p>Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada. Berdiri sejak 2006, PKSE UGM hadir sebagai wadah pengembangan diri, kolaborasi, dan kontribusi sosial bagi para beswan (penerima beasiswa KSE). Melalui berbagai program kerja yang mencakup pendidikan, pengembangan soft skill, serta kepedulian sosial, PKSE UGM berkomitmen mencetak pemimpin muda yang berkarakter empati, kompeten, dan berdedikasi tinggi.</p>{{end}}</div>
   </div>
 </section>
 
@@ -28,11 +28,11 @@
     <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
         <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Visi</p>
-        <div class="text-sm text-gray-700 leading-relaxed">{{if and .PeriodAbout .PeriodAbout.Visi}}{{safeHTML .PeriodAbout.Visi}}{{else}}Visi belum ditambahkan.{{end}}</div>
+        <div class="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none">{{if and .PeriodAbout .PeriodAbout.Visi}}{{safeHTML .PeriodAbout.Visi}}{{else}}<p>Visi belum ditambahkan.</p>{{end}}</div>
       </div>
       <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
         <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Misi</p>
-        <div class="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{{if and .PeriodAbout .PeriodAbout.Misi}}{{safeHTML .PeriodAbout.Misi}}{{else}}Misi belum ditambahkan.{{end}}</div>
+        <div class="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none">{{if and .PeriodAbout .PeriodAbout.Misi}}{{safeHTML .PeriodAbout.Misi}}{{else}}<p>Misi belum ditambahkan.</p>{{end}}</div>
       </div>
     </div>
   </div>

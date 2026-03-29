@@ -262,6 +262,7 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		Period  string   `json:"period"`
 		Group   string   `json:"group"`
 		Phones  []string `json:"phones"`
+		DelayMs int      `json:"delay_ms"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeJSON(w, 400, map[string]string{"error": err.Error()})
@@ -323,9 +324,14 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send via WA service
+	delayMs := 0
+	if body.DelayMs > 0 {
+		delayMs = body.DelayMs
+	}
 	sendBody, _ := json.Marshal(map[string]any{
 		"numbers": numbers,
 		"message": body.Message,
+		"delay_ms": delayMs,
 	})
 
 	broadcastProgress(map[string]any{
@@ -543,6 +549,26 @@ func LogDetail(w http.ResponseWriter, r *http.Request) {
 		"log":        logEntry,
 		"recipients": recipients,
 	})
+}
+
+
+func Disconnect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		return
+	}
+	if !requireSuperAdmin(w, r) {
+		return
+	}
+	resp, err := proxyToWA(http.MethodPost, "/logout", nil)
+	if err != nil {
+		writeJSON(w, 502, map[string]string{"error": "wa-service unreachable"})
+		return
+	}
+	defer resp.Body.Close()
+	var result map[string]any
+	json.NewDecoder(resp.Body).Decode(&result)
+	writeJSON(w, resp.StatusCode, result)
 }
 
 func WebSocket(w http.ResponseWriter, r *http.Request) {

@@ -53,6 +53,7 @@ func main() {
 	mux.HandleFunc("/faq-beasiswa", h.FAQ)
 	mux.HandleFunc("/statistik", h.Statistik)
 	mux.HandleFunc("/alumni", h.Alumni)
+	mux.HandleFunc("/galeri", h.Galeri)
 	mux.HandleFunc("/l/", h.ShortLinkRedirect)
 
 	// Public API
@@ -64,6 +65,22 @@ func main() {
 	mux.HandleFunc("/admin", admin.Login)
 	mux.HandleFunc("/admin/logout", admin.Logout)
 	mux.HandleFunc("/admin/dashboard", admin.Dashboard)
+	mux.HandleFunc("/admin/pengumuman", admin.Pengumuman)
+	mux.HandleFunc("/admin/artikel", admin.Artikel)
+	mux.HandleFunc("/admin/departemen", admin.Departemen)
+	mux.HandleFunc("/admin/program", admin.Program)
+	mux.HandleFunc("/admin/faq-periode", admin.FAQPeriode)
+	mux.HandleFunc("/admin/tentang", admin.Tentang)
+	mux.HandleFunc("/admin/galeri", admin.Galeri)
+	mux.HandleFunc("/admin/statistik", admin.Statistik)
+	mux.HandleFunc("/admin/anggota", admin.Anggota)
+	mux.HandleFunc("/admin/global", admin.Global)
+	mux.HandleFunc("/admin/shortlink", admin.Shortlink)
+	mux.HandleFunc("/admin/broadcast", admin.Broadcast)
+	mux.HandleFunc("/admin/faq-global", admin.FAQGlobal)
+	mux.HandleFunc("/admin/global-stats", admin.GlobalStats)
+	mux.HandleFunc("/admin/periode", admin.Periode)
+	mux.HandleFunc("/admin/akun", admin.Akun)
 
 	// CMS API
 
@@ -104,6 +121,7 @@ func main() {
 	mux.HandleFunc("/api/broadcast/contacts/", broadcast.Contacts)
 	mux.HandleFunc("/api/broadcast/import-contacts", broadcast.ImportContacts)
 	mux.HandleFunc("/api/broadcast/send", broadcast.Send)
+	mux.HandleFunc("/api/broadcast/disconnect", broadcast.Disconnect)
 	mux.HandleFunc("/api/broadcast/logs", broadcast.Logs)
 	mux.HandleFunc("/api/broadcast/logs/", broadcast.LogDetail)
 	mux.HandleFunc("/api/broadcast/members-phone", broadcast.MembersWithPhone)

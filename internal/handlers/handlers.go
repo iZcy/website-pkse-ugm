@@ -383,3 +383,28 @@ func (h *Handler) Alumni(w http.ResponseWriter, r *http.Request) {
 	data := h.baseData()
 	h.render(w, "alumni.html", data)
 }
+
+func (h *Handler) Galeri(w http.ResponseWriter, r *http.Request) {
+	data := h.baseData()
+	selectedPeriod := r.URL.Query().Get("period")
+	data["SelectedPeriod"] = selectedPeriod
+
+	periods, _ := db.GetPeriods()
+	data["Periods"] = periods
+
+	type galleryPeriod struct {
+		PeriodLabel string
+		Gallery     []db.GalleryItem
+	}
+	var gps []galleryPeriod
+	for _, p := range periods {
+		pa, err := db.GetPeriodAbout(p.Label)
+		if err != nil || len(pa.Gallery) == 0 {
+			continue
+		}
+		gps = append(gps, galleryPeriod{PeriodLabel: p.Label, Gallery: pa.Gallery})
+	}
+	data["GalleryPeriods"] = gps
+	h.render(w, "galeri.html", data)
+}
+
