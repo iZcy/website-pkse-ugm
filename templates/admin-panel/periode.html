@@ -134,14 +134,5 @@ document.addEventListener('click', function(e) {
 document.addEventListener('input', function(e) {
   if (e.target.matches('[data-subperiod-index]')) { const idx = parseInt(e.target.getAttribute('data-subperiod-index'), 10); if (!Number.isNaN(idx)) periodSubperiodDraft[idx] = e.target.value; }
 });
-document.getElementById('formPeriode')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const label = document.getElementById('periode-label').value;
-  const isEditing = document.getElementById('periode-label').readOnly;
-  const body = { label: label, display_name: document.getElementById('periode-displayname').value, sub_periods: (isEditing ? periodSubperiodDraft : ['Gelombang 1']).map(s => s.trim()).filter(Boolean) };
-  try { if (isEditing) await api('PUT', '/api/cms/periods/' + label, body); else await api('POST', '/api/cms/periods', body);
-    closeModal('modalPeriode'); document.getElementById('formPeriode').reset(); loadPeriode();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
-});
 </script>
 </body></html>

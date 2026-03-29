@@ -1296,6 +1296,7 @@ function collectAnggotaActivation() {
 
 async function loadAnggota() {
   const el = document.getElementById('list-anggota');
+  if (!el) return;
   try {
     const items = await api('GET', `/api/cms/members?period=${PERIOD}`);
     memberCache = items || [];
