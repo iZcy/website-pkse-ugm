@@ -8,21 +8,33 @@
 {{template "navbar" .}}
 
 <section class="pt-32 pb-16 bg-white border-b border-gray-100">
-  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+  <div class="max-w-7xl mx-auto px-6">
     <div>
       <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Direktori</p>
       <h1 class="text-4xl md:text-5xl font-black text-brand-900">Anggota Lintas Periode</h1>
       <p class="text-gray-500 mt-3">Menampilkan seluruh anggota, baik yang aktif maupun tidak aktif pada periode saat ini.</p>
     </div>
-    <form id="periodForm" method="get" class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center gap-2">
-      <label for="period" class="text-xs uppercase font-bold tracking-wider text-gray-500">Filter Periode</label>
-      <select id="period" name="period" onchange="document.getElementById('periodForm').submit()" class="bg-transparent text-sm font-semibold text-brand-700 focus:outline-none">
-        <option value="" {{if eq .SelectedPeriod ""}}selected{{end}}>Semua Periode</option>
-        {{range .Periods}}
-        <option value="{{.Label}}" {{if eq .Label $.SelectedPeriod}}selected{{end}}>{{.DisplayName}}</option>
+    <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+      <form id="periodForm" method="get" class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center gap-2">
+        <label for="period" class="text-xs uppercase font-bold tracking-wider text-gray-500">Periode</label>
+        <select id="period" name="period" onchange="document.getElementById('periodForm').submit()" class="bg-transparent text-sm font-semibold text-brand-700 focus:outline-none">
+          <option value="" {{if eq .SelectedPeriod ""}}selected{{end}}>Semua</option>
+          {{range .Periods}}
+          <option value="{{.Label}}" {{if eq .Label $.SelectedPeriod}}selected{{end}}>{{.DisplayName}}</option>
+          {{end}}
+        </select>
+      </form>
+      <select id="deptFilter" class="bg-gray-50 border border-gray-200 rounded-2xl p-3 text-sm font-semibold text-brand-700 focus:outline-none">
+        <option value="">Semua Kementerian</option>
+        {{range .Departments}}
+        <option value="{{.Name}}">{{.Name}}</option>
         {{end}}
       </select>
-    </form>
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center gap-2">
+        <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+        <input id="searchInput" type="text" placeholder="Cari nama..." class="bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none w-40">
+      </div>
+    </div>
   </div>
 </section>
 
@@ -35,22 +47,15 @@
         data-name="{{.FullName}}"
         data-nickname="{{.Nickname}}"
         data-photo="{{.PhotoURL}}"
-        data-cover="{{.CoverURL}}"
         data-program="{{.ProgramStudi}}"
         data-fakultas="{{.Fakultas}}"
         data-angkatan="{{.Angkatan}}"
         data-department="{{.Department}}"
         data-position="{{.Position}}"
-        data-track-records='{{range $k,$v := .ActivePeriods}}{{$k}}|{{$v}}|{{index .ActivePositions $k}};;{{end}}'>
-        <div class="h-28 bg-gray-100 overflow-hidden">
-          {{if .CoverURL}}
-          <img src="{{.CoverURL}}" alt="Cover {{.FullName}}" class="w-full h-full object-cover">
-          {{else}}
-          <div class="w-full h-full bg-gradient-to-r from-brand-200 to-brand-400"></div>
-          {{end}}
-        </div>
-        <div class="p-5 -mt-8 relative">
-          <div class="w-16 h-16 rounded-2xl bg-white border-2 border-white overflow-hidden shadow-sm mb-3">
+        data-phone="{{.Phone}}"
+        data-track-records='{{range $k,$v := .ActivePeriods}}{{$k}}|{{$v}}|{{if $.ActivePositions}}{{index $.ActivePositions $k}}{{end}};;{{end}}'>
+        <div class="p-5">
+          <div class="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm mb-3">
             {{if .PhotoURL}}
             <img src="{{.PhotoURL}}" alt="{{.FullName}}" class="w-full h-full object-cover">
             {{else}}
@@ -63,6 +68,14 @@
         </div>
       </article>
       {{end}}
+    </div>
+    <div id="emptyFilterMsg" class="hidden flex items-center justify-center min-h-[300px]">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <p class="text-gray-500 font-medium">Tidak ada anggota yang cocok dengan filter.</p>
+      </div>
     </div>
     {{else}}
     <div class="flex items-center justify-center min-h-[300px]">
@@ -77,19 +90,19 @@
   </div>
 </section>
 
-<div id="memberModal" class="fixed inset-0 bg-black/60 hidden z-[60] p-4">
+<div id="memberModal" class="fixed inset-0 bg-black/60 hidden z-[60] p-4" onclick="if(event.target===this)closeMemberModal()">
   <div class="max-w-2xl w-full mx-auto mt-20 bg-white rounded-3xl overflow-hidden shadow-2xl">
-    <div id="memberModalCover" class="h-40 bg-gradient-to-r from-brand-200 to-brand-400"></div>
-    <div class="p-6 md:p-8 -mt-10 relative">
-      <button type="button" onclick="closeMemberModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-gray-700">x</button>
+    <div class="p-6 md:p-8">
       <div class="flex items-end gap-4 mb-6">
-        <img id="memberModalPhoto" src="" alt="Foto" class="w-20 h-20 rounded-2xl border-4 border-white shadow-sm bg-white object-cover">
+        <div id="memberModalPhotoWrap" class="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
+          <i data-lucide="user" class="w-8 h-8 text-gray-300"></i>
+        </div>
         <div>
           <h3 id="memberModalName" class="text-2xl font-black text-gray-900"></h3>
           <p id="memberModalMeta" class="text-sm text-gray-500"></p>
+          <p id="memberModalPhone" class="text-sm text-gray-400"></p>
         </div>
       </div>
-
       <div>
         <h4 class="text-sm font-bold uppercase tracking-wider text-brand-600 mb-3">Track Record Periode</h4>
         <div id="memberModalTrack" class="space-y-2"></div>
@@ -101,50 +114,31 @@
 <script>
 function parseTrackRecords(raw) {
   if (!raw) return [];
-  return raw
-    .split(';;')
-    .map((chunk) => chunk.trim())
-    .filter(Boolean)
-    .map((chunk) => {
-      const [period, subPeriod, position] = chunk.split('|');
-      return { period: period || '-', subPeriod: subPeriod || '-', position: position || '' };
-    })
-    .sort((a, b) => String(a.period).localeCompare(String(b.period)));
+  return raw.split(';;').map(c => c.trim()).filter(Boolean).map(c => {
+    const [period, subPeriod, position] = c.split('|');
+    return { period: period || '-', subPeriod: subPeriod || '-', position: position || '' };
+  }).sort((a, b) => String(a.period).localeCompare(String(b.period)));
 }
 
 function openMemberModal(card) {
-  const name = card.dataset.name || '-';
   const photo = card.dataset.photo || '';
-  const cover = card.dataset.cover || '';
-  const program = card.dataset.program || '-';
-  const fakultas = card.dataset.fakultas || '-';
-  const angkatan = card.dataset.angkatan || '-';
-  const positionFallback = card.dataset.position || 'Anggota';
-  const records = parseTrackRecords(card.dataset.trackRecords);
-
-  document.getElementById('memberModalName').textContent = name;
-  document.getElementById('memberModalMeta').textContent = `${program} • ${fakultas} • ${angkatan}`;
-  document.getElementById('memberModalPhoto').src = photo || '';
-
-  const coverEl = document.getElementById('memberModalCover');
-  if (cover) {
-    coverEl.style.backgroundImage = `url('${cover}')`;
-    coverEl.style.backgroundSize = 'cover';
-    coverEl.style.backgroundPosition = 'center';
+  document.getElementById('memberModalName').textContent = card.dataset.name || '-';
+  document.getElementById('memberModalMeta').textContent = [card.dataset.program, card.dataset.fakultas, card.dataset.angkatan].filter(Boolean).join(' \u2022 ');
+  const photoWrap = document.getElementById('memberModalPhotoWrap');
+  if (photo) {
+    photoWrap.innerHTML = '<img src="' + photo + '" class="w-full h-full object-cover">';
   } else {
-    coverEl.style.backgroundImage = 'linear-gradient(90deg, #bfdbfe, #60a5fa)';
+    photoWrap.innerHTML = '<i data-lucide="user" class="w-8 h-8 text-gray-300"></i>';
+    if (window.lucide) lucide.createIcons();
   }
-
+  const records = parseTrackRecords(card.dataset.trackRecords);
+  const posFallback = card.dataset.position || 'Anggota';
   const trackWrap = document.getElementById('memberModalTrack');
   if (!records.length) {
     trackWrap.innerHTML = '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-400">Belum ada track record periode.</div>';
   } else {
-    trackWrap.innerHTML = records.map((r) => {
-      const pos = r.position || positionFallback;
-      return `<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700"><span class="font-semibold text-gray-900">Periode ${r.period}</span> • ${r.subPeriod} • ${pos}</div>`;
-    }).join('');
+    trackWrap.innerHTML = records.map(r => '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700"><span class="font-semibold text-gray-900">Periode ' + r.period + '</span> \u2022 ' + r.subPeriod + ' \u2022 ' + (r.position || posFallback) + '</div>').join('');
   }
-
   document.getElementById('memberModal').classList.remove('hidden');
 }
 
@@ -152,13 +146,38 @@ function closeMemberModal() {
   document.getElementById('memberModal').classList.add('hidden');
 }
 
-document.querySelectorAll('.member-card').forEach((card) => {
+document.querySelectorAll('.member-card').forEach(card => {
   card.addEventListener('click', () => openMemberModal(card));
 });
 
-document.getElementById('memberModal').addEventListener('click', (e) => {
-  if (e.target.id === 'memberModal') closeMemberModal();
-});
+
+function filterMembers() {
+  const dept = document.getElementById('deptFilter').value.toLowerCase();
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  let visibleCount = 0;
+
+  document.querySelectorAll('.member-card').forEach((card) => {
+    const cardDept = (card.dataset.department || '').toLowerCase();
+    const cardName = (card.dataset.name || '').toLowerCase();
+    const cardNick = (card.dataset.nickname || '').toLowerCase();
+
+    const matchDept = !dept || cardDept === dept;
+    const matchSearch = !query || cardName.includes(query) || cardNick.includes(query);
+
+    card.style.display = (matchDept && matchSearch) ? '' : 'none';
+    if (matchDept && matchSearch) visibleCount++;
+  });
+
+  const emptyEl = document.getElementById('emptyFilterMsg');
+  if (emptyEl) {
+    emptyEl.style.display = visibleCount === 0 ? '' : 'none';
+  }
+}
+
+document.getElementById('deptFilter').addEventListener('change', filterMembers);
+document.getElementById('searchInput').addEventListener('input', filterMembers);
+
+
 </script>
 
 {{template "footer" .}}

@@ -43,7 +43,7 @@
           </div>
           <h3 class="font-bold text-gray-900 group-hover:text-brand-600 transition-colors leading-snug line-clamp-2">{{.Title}}</h3>
         </div>
-        <p class="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-4 flex-1">{{.Content}}</p>
+        <div class="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-4 flex-1">{{safeHTML .Content}}</div>
         <div class="text-brand-600 text-xs font-bold flex items-center gap-1 uppercase tracking-wider mt-auto">Telusuri <i data-lucide="chevron-right" class="w-3 h-3"></i></div>
       </a>
       {{end}}
@@ -61,13 +61,12 @@
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 text-brand-600 font-bold text-xs uppercase tracking-wider mb-6">Tentang Kami</div>
         <h2 class="text-3xl md:text-5xl font-extrabold text-brand-900 leading-tight mb-6">Mengenal Paguyuban KSE UGM</h2>
         <div class="relative mb-8">
-          <p class="text-lg text-gray-600 leading-relaxed text-justify line-clamp-4">
-            {{if and .PeriodAbout .PeriodAbout.Sejarah}}
-              {{safeHTML .PeriodAbout.Sejarah}}
-            {{else}}
-            Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat secara khusus pada level Perguruan Tinggi. KSE UGM menjadi fasilitator bagi para mahasiswa yang menerima beasiswa untuk aktif berkontribusi dalam berbagai program yang mendukung pengembangan karakter, pelestarian lingkungan, partisipasi dalam inovasi sosial masyarakat, serta kepedulian terhadap isu-isu penting lainnya.
+          <div class="text-lg text-gray-600 leading-relaxed text-justify max-h-[8.5rem] overflow-hidden">
+            {{if and .GlobalSetting .GlobalSetting.AboutHTML}}
+              {{safeHTML .GlobalSetting.AboutHTML}}
             {{end}}
-          </p>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent"></div>
         </div>
         <a href="/tentang-kami" class="inline-flex items-center gap-2 text-brand-600 font-bold hover:text-brand-800 transition-colors">Baca profil lengkap <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
       </div>
@@ -78,13 +77,13 @@
           {{if and .PeriodAbout .PeriodAbout.Visi}}
           <div class="mb-10">
             <div class="flex items-center gap-3 mb-4 text-accent-400 font-bold text-xl uppercase tracking-wide"><i data-lucide="eye"></i> Visi</div>
-            <p class="text-white/90 leading-relaxed text-sm">{{safeHTML .PeriodAbout.Visi}}</p>
+            <div class="text-white/90 leading-relaxed text-sm prose prose-invert prose-sm max-w-none">{{safeHTML .PeriodAbout.Visi}}</div>
           </div>
           {{end}}
           {{if and .PeriodAbout .PeriodAbout.Misi}}
           <div>
             <div class="flex items-center gap-3 mb-4 text-accent-400 font-bold text-xl uppercase tracking-wide"><i data-lucide="target"></i> Misi</div>
-            <p class="text-white/90 leading-relaxed text-sm whitespace-pre-wrap">{{safeHTML .PeriodAbout.Misi}}</p>
+            <div class="text-white/90 leading-relaxed text-sm prose prose-invert prose-sm max-w-none">{{safeHTML .PeriodAbout.Misi}}</div>
           </div>
           {{end}}
         </div>

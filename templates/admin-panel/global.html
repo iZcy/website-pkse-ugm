@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengaturan Global - PKSE UGM Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<style>
+.sidebar-item{transition:background .15s,color .15s}.sidebar-item.active{background:#1e40af;color:#fff}.sidebar-item:not(.active):hover{background:#1e3a8a;color:#fff}
+.ql-container{font-size:14px;border-radius:0 0 8px 8px}.ql-toolbar{border-radius:8px 8px 0 0;background:#f8fafc}
+.img-picker{border:2px dashed #cbd5e1;border-radius:8px}.img-picker.dragover{border-color:#3b82f6;background:#eff6ff}.img-picker-preview{width:100%;max-height:180px;object-fit:contain;border-radius:6px;background:#f8fafc}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden">
+<header class="bg-blue-900 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0 sticky top-0 z-50">
+<div class="flex items-center gap-3">{{if and .GlobalSetting .GlobalSetting.LogoURL}}
+<img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-auto object-contain" onerror="this.style.display='none'">{{end}}
+<span class="font-bold text-lg">{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}} &mdash; Admin</span></div>
+<div class="flex items-center gap-4">
+<span class="text-blue-200 text-sm hidden sm:block"><span class="mr-1">&#128100;</span>{{.Username}} <span class="ml-2 bg-blue-700 text-xs px-2 py-0.5 rounded-full">{{.Role}}</span></span>
+<a href="/" class="bg-blue-700 hover:bg-blue-600 text-white text-sm px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>Web Utama</a>
+<a href="/admin/logout" class="bg-blue-800 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-lg transition">Keluar</a></div></header>
+<div class="bg-blue-800 px-6 py-2 flex items-center gap-4 flex-shrink-0">
+<label class="text-blue-200 text-sm font-medium flex-shrink-0">Periode:</label>
+<form action="/admin/global" method="get" class="min-w-[240px] max-w-full">
+<select id="period-switcher" name="period" onchange="this.form.submit()" class="w-full px-3 py-1.5 rounded-md text-sm font-medium bg-white text-blue-900 border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300">{{range .AccessiblePeriods}}<option value="{{.Label}}" {{if eq $.SelectedPeriod .Label}}selected{{end}}>{{.DisplayName}}{{if .IsActive}} &#10022;{{end}}</option>{{end}}</select></form>
+{{if eq .Role "superadmin"}}<span class="ml-auto text-blue-300 text-xs">Superadmin dapat mengakses semua periode</span>{{end}}</div>
+<div class="flex flex-1 overflow-hidden"><aside class="w-56 bg-blue-900 text-blue-100 flex-shrink-0 overflow-y-auto sticky top-0"><nav class="p-3 space-y-1">
+<div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider">Konten Periode</div>
+<a href="/admin/pengumuman?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "pengumuman"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+  Pengumuman</a>
+<a href="/admin/artikel?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "artikel"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+  Artikel</a>
+<a href="/admin/departemen?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "departemen"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+  Kementerian</a>
+<a href="/admin/program?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "program"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  Program</a>
+<a href="/admin/faq-periode?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "faq-periode"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  FAQ Periode</a>
+<a href="/admin/tentang?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "tentang"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Tentang Periode</a>
+<a href="/admin/galeri?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "galeri"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+  Galeri</a>
+<a href="/admin/statistik?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "statistik"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+  Statistik</a>
+{{if eq .Role "superadmin"}}
+<div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-3">Superadmin</div>
+<a href="/admin/anggota?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "anggota"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+  Anggota</a>
+<a href="/admin/global?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "global"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Pengaturan Global</a>
+<a href="/admin/shortlink?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "shortlink"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 010 5.656l-3 3a4 4 0 11-5.656-5.656l1.5-1.5m6.328-1.328a4 4 0 010-5.656l3-3a4 4 0 015.656 5.656l-1.5 1.5M8 16l8-8"/></svg>
+  Shorten Link</a>
+<a href="/admin/broadcast?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "broadcast"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-9V12a9 9 0 0118 0v4.118c0 3.057-1.85 5.755-4.255 8.005z"/></svg>
+  WhatsApp Broadcast</a>
+<a href="/admin/faq-global?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "faq-global"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  FAQ Global</a>
+<a href="/admin/global-stats?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "global-stats"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+  Template Statistik</a>
+<a href="/admin/periode?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "periode"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+  Manajemen Periode</a>
+<a href="/admin/akun?period={{.SelectedPeriod}}" class="sidebar-item {{if eq .ActiveSection "akun"}}active{{end}} w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+  Manajemen Akun</a>
+{{end}}
+</nav></aside>
+<main class="flex-1 overflow-y-auto p-6">
+<h2 class="text-2xl font-bold text-slate-800 mb-6">Pengaturan Global Organisasi</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Identitas Organisasi &amp; Logo</h3>
+          <form id="formGlobal" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Organisasi</label>
+              <input type="text" id="global-orgname" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Organisasi</label>
+              <div id="picker-logo"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Universitas</label>
+                <div id="picker-logo-university"></div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Yayasan KSE</label>
+                <div id="picker-logo-yayasan"></div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Header</label>
+                <input type="text" id="global-header-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Subjudul Header</label>
+                <input type="text" id="global-header-subtitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Organisasi Beasiswa">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Badge</label>
+                <input type="text" id="global-hero-badge" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kepengurusan">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Judul Utama</label>
+                <input type="text" id="global-hero-title-main" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mengabdi Bersama,">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Judul Aksen</label>
+                <input type="text" id="global-hero-title-accent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Berkarya Nyata.">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Footer</label>
+                <input type="text" id="global-footer-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Copyright Footer</label>
+                <input type="text" id="global-footer-copy" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Deskripsi Footer</label>
+                <textarea id="global-footer-text" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Paguyuban Karya Salemba Empat UGM"></textarea>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Tentang Organisasi (Global)</label>
+              <div id="editor-global-about" class="min-h-[140px]"></div>
+            </div>
+          <div class="flex items-center gap-4">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Pengaturan</button>
+              <div id="global-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
+            </div>
+          </form>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Media Sosial</h3>
+          <form id="formSocmed" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                Instagram
+              </label>
+              <input type="url" id="sm-instagram" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://instagram.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-sky-500" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Twitter / X
+              </label>
+              <input type="url" id="sm-twitter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://twitter.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.8l-.5 2.9h-2.3v7A10 10 0 0022 12z"/></svg>
+                Facebook
+              </label>
+              <input type="url" id="sm-facebook" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://facebook.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+              </label>
+              <input type="url" id="sm-youtube" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://youtube.com/@...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+              </label>
+              <input type="url" id="sm-linkedin" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://linkedin.com/company/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                TikTok
+              </label>
+              <input type="url" id="sm-tiktok" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://tiktok.com/@...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Email
+              </label>
+              <input type="email" id="sm-email" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contact@example.com">
+            </div>
+          <div class="flex items-center gap-4">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Media Sosial</button>
+              <div id="socmed-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
+            </div>
+          </form>
+        </div>
+      </div>
+</main></div>
+<div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
+
+<script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
+<script src="/static/admin-common.js?v=1774787084"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() { loadGlobal(); });
+document.getElementById('formGlobal')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = document.getElementById('global-msg');
+  try {
+    const cur = await api('GET', '/api/cms/global-setting').catch(() => ({}));
+    await api('PUT', '/api/cms/global-setting', {
+      org_name: document.getElementById('global-orgname').value, logo_url: pickerGetUrl('picker-logo'),
+      logo_university_url: pickerGetUrl('picker-logo-university'), logo_yayasan_url: pickerGetUrl('picker-logo-yayasan'),
+      header_title: document.getElementById('global-header-title').value, header_subtitle: document.getElementById('global-header-subtitle').value,
+      hero_badge_text: document.getElementById('global-hero-badge').value, hero_title_main: document.getElementById('global-hero-title-main').value,
+      hero_title_accent: document.getElementById('global-hero-title-accent').value, footer_title: document.getElementById('global-footer-title').value,
+      footer_text: document.getElementById('global-footer-text').value, footer_copy_text: document.getElementById('global-footer-copy').value,
+      about_html: quillGetHTML('editor-global-about'), social_media: cur.social_media || {}
+    });
+    state.globalSetting = { ...cur, org_name: document.getElementById('global-orgname').value, logo_url: pickerGetUrl('picker-logo'),
+      logo_university_url: pickerGetUrl('picker-logo-university'), logo_yayasan_url: pickerGetUrl('picker-logo-yayasan'),
+      header_title: document.getElementById('global-header-title').value, header_subtitle: document.getElementById('global-header-subtitle').value,
+      hero_badge_text: document.getElementById('global-hero-badge').value, hero_title_main: document.getElementById('global-hero-title-main').value,
+      hero_title_accent: document.getElementById('global-hero-title-accent').value, footer_title: document.getElementById('global-footer-title').value,
+      footer_text: document.getElementById('global-footer-text').value, footer_copy_text: document.getElementById('global-footer-copy').value,
+      about_html: quillGetHTML('editor-global-about'), social_media: cur.social_media || {} };
+    renderGlobalPreview(); msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(ex) { uiAlert('Error: ' + ex.message); }
+});
+document.getElementById('formSocmed')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = document.getElementById('socmed-msg');
+  try {
+    const cur = await api('GET', '/api/cms/global-setting').catch(() => ({}));
+    await api('PUT', '/api/cms/global-setting', {
+      org_name: cur.org_name || '', logo_url: cur.logo_url || '', header_title: cur.header_title || '',
+      header_subtitle: cur.header_subtitle || '', hero_badge_text: cur.hero_badge_text || '',
+      hero_title_main: cur.hero_title_main || '', hero_title_accent: cur.hero_title_accent || '',
+      footer_title: cur.footer_title || '', footer_text: cur.footer_text || '',
+      footer_copy_text: cur.footer_copy_text || '', about_html: cur.about_html || '',
+      social_media: { instagram: document.getElementById('sm-instagram').value, twitter: document.getElementById('sm-twitter').value,
+        facebook: document.getElementById('sm-facebook').value, youtube: document.getElementById('sm-youtube').value,
+        linkedin: document.getElementById('sm-linkedin').value, tiktok: document.getElementById('sm-tiktok').value, email: document.getElementById('sm-email').value }
+    });
+    state.globalSetting = { ...cur, social_media: { instagram: document.getElementById('sm-instagram').value, twitter: document.getElementById('sm-twitter').value,
+        facebook: document.getElementById('sm-facebook').value, youtube: document.getElementById('sm-youtube').value,
+        linkedin: document.getElementById('sm-linkedin').value, tiktok: document.getElementById('sm-tiktok').value, email: document.getElementById('sm-email').value } };
+    renderGlobalPreview(); msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(ex) { uiAlert('Error: ' + ex.message); }
+});
+document.addEventListener('input', function(e) {
+  const t = e.target; if (!t) return;
+  if (['global-orgname','global-header-title','global-header-subtitle','global-hero-badge','global-hero-title-main','global-hero-title-accent','global-footer-title','global-footer-copy','global-footer-text','sm-instagram','sm-twitter','sm-facebook','sm-youtube','sm-linkedin','sm-tiktok','sm-email'].includes(t.id)) { renderGlobalPreview(); }
+});
+</script>
+</body></html>

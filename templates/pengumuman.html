@@ -32,9 +32,12 @@
           
         </div>
         
+        {{if .ImageURL}}
+        <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-48 object-cover rounded-2xl mb-4">
+        {{end}}
         <h3 class="text-2xl font-bold text-gray-900 mb-4">{{.Title}}</h3>
         <div class="prose prose-sm prose-gray max-w-none mb-6">
-          <p class="whitespace-pre-wrap leading-relaxed text-gray-600">{{safeHTML .Content}}</p>
+          {{safeHTML .Content}}
         </div>
         
         

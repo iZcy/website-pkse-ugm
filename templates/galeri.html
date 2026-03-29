@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  {{template "head" .}}
+  <title>PKSE UGM | Galeri</title>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+{{template "navbar" .}}
+
+<section class="pt-32 pb-16 bg-white border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div>
+      <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Dokumentasi</p>
+      <h1 class="text-4xl md:text-5xl font-black text-brand-900">Galeri</h1>
+      <p class="text-gray-500 mt-3">Momen-momen berharga dari berbagai kegiatan dan program PKSE UGM.</p>
+    </div>
+    <form id="periodForm" method="get" class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center gap-2">
+      <label for="period" class="text-xs uppercase font-bold tracking-wider text-gray-500">Periode</label>
+      <select id="period" name="period" onchange="document.getElementById('periodForm').submit()" class="bg-transparent text-sm font-semibold text-brand-700 focus:outline-none">
+        <option value="" {{if eq .SelectedPeriod ""}}selected{{end}}>Semua</option>
+        {{range .Periods}}
+        <option value="{{.Label}}" {{if eq .Label $.SelectedPeriod}}selected{{end}}>{{.DisplayName}}</option>
+        {{end}}
+      </select>
+    </form>
+  </div>
+</section>
+
+<section class="py-16 min-h-screen">
+  <div class="max-w-7xl mx-auto px-6">
+    {{if .GalleryPeriods}}
+    <div class="space-y-12">
+      {{range .GalleryPeriods}}
+      {{if or (not $.SelectedPeriod) (eq .PeriodLabel $.SelectedPeriod)}}
+      <div>
+        <div class="mb-6">
+          <h2 class="text-2xl font-black text-brand-900">Periode {{.PeriodLabel}}</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {{range .Gallery}}
+          <div class="group cursor-pointer" onclick="openLightbox(this)">
+            <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
+              <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+            </div>
+            {{if .Title}}<p class="mt-2 font-semibold text-gray-900 text-sm">{{.Title}}</p>{{end}}
+            {{if .Caption}}<p class="text-xs text-gray-500">{{.Caption}}</p>{{end}}
+          </div>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+      {{end}}
+    </div>
+    {{else}}
+    <div class="flex items-center justify-center min-h-[300px]">
+      <div class="text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <p class="text-gray-500 font-medium">Belum ada galeri.</p>
+      </div>
+    </div>
+    {{end}}
+  </div>
+</section>
+
+<div id="lightbox" class="fixed inset-0 bg-black/90 hidden z-[70] flex items-center justify-center p-4" onclick="closeLightbox()">
+  <button class="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-light z-10">&times;</button>
+  <button onclick="event.stopPropagation(); navigateLightbox(-1)" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl z-10">&lsaquo;</button>
+  <button onclick="event.stopPropagation(); navigateLightbox(1)" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl z-10">&rsaquo;</button>
+  <img id="lightbox-img" src="" alt="" class="max-w-full max-h-[85vh] object-contain rounded-lg" onclick="event.stopPropagation()">
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
+    <p id="lightbox-title" class="text-white font-semibold"></p>
+    <p id="lightbox-caption" class="text-white/60 text-sm"></p>
+  </div>
+</div>
+
+<script>
+let allImages = [];
+let currentIndex = 0;
+
+function collectImages() {
+  allImages = [];
+  document.querySelectorAll('[onclick="openLightbox(this)"]').forEach(el => {
+    const img = el.querySelector('img');
+    const title = el.querySelector('p.font-semibold')?.textContent || '';
+    const caption = el.querySelector('p.text-xs')?.textContent || '';
+    if (img) allImages.push({ src: img.src, title, caption });
+  });
+}
+
+function openLightbox(el) {
+  collectImages();
+  const img = el.querySelector('img');
+  const idx = allImages.findIndex(i => i.src === img.src);
+  if (idx >= 0) currentIndex = idx;
+  showLightboxImage();
+  document.getElementById('lightbox').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function navigateLightbox(dir) {
+  currentIndex = (currentIndex + dir + allImages.length) % allImages.length;
+  showLightboxImage();
+}
+
+function showLightboxImage() {
+  const item = allImages[currentIndex];
+  document.getElementById('lightbox-img').src = item.src;
+  document.getElementById('lightbox-title').textContent = item.title;
+  document.getElementById('lightbox-caption').textContent = item.caption;
+}
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('lightbox').classList.contains('hidden')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navigateLightbox(-1);
+  if (e.key === 'ArrowRight') navigateLightbox(1);
+});
+</script>
+
+{{template "footer" .}}
+</body>
+</html>

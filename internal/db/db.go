@@ -65,6 +65,7 @@ type SocialMedia struct {
 	YouTube   string `bson:"youtube"   json:"youtube"`
 	TikTok    string `bson:"tiktok"    json:"tiktok"`
 	LinkedIn  string `bson:"linkedin"  json:"linkedin"`
+	Email     string `bson:"email"     json:"email"`
 }
 
 type GlobalSetting struct {
@@ -353,6 +354,34 @@ func CountPeriods() (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	return col("periods").CountDocuments(ctx, bson.M{})
+}
+
+func DeletePeriod(label string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := col("periods").DeleteOne(ctx, bson.M{"label": label})
+	return err
+}
+
+// PeriodHasData checks if any collection has data referencing this period
+func PeriodHasData(label string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collections := []string{"period_abouts", "announcements", "articles", "departments", "programs", "stats"}
+	for _, c := range collections {
+		count, err := database.Collection(c).CountDocuments(ctx, bson.M{"period_label": label})
+		if err != nil {
+			return false, err
+		}
+		if count > 0 {
+			return true, nil
+		}
+	}
+	memberCount, err := database.Collection("members").CountDocuments(ctx, bson.M{"active_periods." + label: bson.M{"$exists": true}})
+	if err != nil {
+		return false, err
+	}
+	return memberCount > 0, nil
 }
 
 // ── PeriodAbout ──────────────────────────────────────────────────────────────
