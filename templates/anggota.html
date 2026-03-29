@@ -43,7 +43,7 @@
     {{if .Members}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {{range .Members}}
-      <article class="member-card bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition"
+      <article class="member-card bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer"
         data-name="{{.FullName}}"
         data-nickname="{{.Nickname}}"
         data-photo="{{.PhotoURL}}"
@@ -89,7 +89,64 @@
   </div>
 </section>
 
+<div id="memberModal" class="fixed inset-0 bg-black/60 hidden z-[60] p-4" onclick="if(event.target===this)closeMemberModal()">
+  <div class="max-w-2xl w-full mx-auto mt-20 bg-white rounded-3xl overflow-hidden shadow-2xl">
+    <div class="p-6 md:p-8">
+      <div class="flex items-end gap-4 mb-6">
+        <div id="memberModalPhotoWrap" class="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
+          <i data-lucide="user" class="w-8 h-8 text-gray-300"></i>
+        </div>
+        <div>
+          <h3 id="memberModalName" class="text-2xl font-black text-gray-900"></h3>
+          <p id="memberModalMeta" class="text-sm text-gray-500"></p>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold uppercase tracking-wider text-brand-600 mb-3">Track Record Periode</h4>
+        <div id="memberModalTrack" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+function parseTrackRecords(raw) {
+  if (!raw) return [];
+  return raw.split(';;').map(c => c.trim()).filter(Boolean).map(c => {
+    const [period, subPeriod, position] = c.split('|');
+    return { period: period || '-', subPeriod: subPeriod || '-', position: position || '' };
+  }).sort((a, b) => String(a.period).localeCompare(String(b.period)));
+}
+
+function openMemberModal(card) {
+  const photo = card.dataset.photo || '';
+  document.getElementById('memberModalName').textContent = card.dataset.name || '-';
+  document.getElementById('memberModalMeta').textContent = [card.dataset.program, card.dataset.fakultas, card.dataset.angkatan].filter(Boolean).join(' \u2022 ');
+  const photoWrap = document.getElementById('memberModalPhotoWrap');
+  if (photo) {
+    photoWrap.innerHTML = '<img src="' + photo + '" class="w-full h-full object-cover">';
+  } else {
+    photoWrap.innerHTML = '<i data-lucide="user" class="w-8 h-8 text-gray-300"></i>';
+    if (window.lucide) lucide.createIcons();
+  }
+  const records = parseTrackRecords(card.dataset.trackRecords);
+  const posFallback = card.dataset.position || 'Anggota';
+  const trackWrap = document.getElementById('memberModalTrack');
+  if (!records.length) {
+    trackWrap.innerHTML = '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-400">Belum ada track record periode.</div>';
+  } else {
+    trackWrap.innerHTML = records.map(r => '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700"><span class="font-semibold text-gray-900">Periode ' + r.period + '</span> \u2022 ' + r.subPeriod + ' \u2022 ' + (r.position || posFallback) + '</div>').join('');
+  }
+  document.getElementById('memberModal').classList.remove('hidden');
+}
+
+function closeMemberModal() {
+  document.getElementById('memberModal').classList.add('hidden');
+}
+
+document.querySelectorAll('.member-card').forEach(card => {
+  card.addEventListener('click', () => openMemberModal(card));
+});
 
 
 function filterMembers() {

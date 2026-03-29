@@ -287,12 +287,27 @@
 
     <!-- PROGRAM -->
     <div id="tab-program" class="tab-content">
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-col gap-4 mb-6">
+        <div class="flex items-center justify-between">
         <h2 class="text-2xl font-bold text-slate-800">Program</h2>
         <button onclick="openProgramModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Tambah Program
         </button>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label class="text-xs uppercase font-bold tracking-wider text-slate-500">Kementerian</label>
+            <select id="programDeptFilter" onchange="filterPrograms()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">Semua</option>
+            </select>
+          </div>
+          <div class="w-px h-6 bg-slate-200"></div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input id="programSearchInput" type="text" placeholder="Cari program..." oninput="filterPrograms()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48">
+          </div>
+        </div>
       </div>
       <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
         <table class="w-full text-sm">
@@ -310,7 +325,7 @@
     </div>
 
     <!-- SHORTEN LINK (superadmin) -->
-    <div id="tab-shortlink" class="tab-content hidden">
+    <div id="tab-shortlink" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Shorten Link</h2>
       </div>
@@ -452,153 +467,9 @@
       </div>
     </div>
 
-  </main>
-</div>
+  
 
-<!-- ═══════════════ MODALS ═══════════════ -->
-
-<!-- Statistik Modal -->
-<div id="modalStatistik" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
-      <h3 id="modalStatistikTitle" class="text-lg font-bold">Tambah Statistik</h3>
-      <button onclick="closeModal('modalStatistik')" class="text-slate-400 hover:text-slate-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-    </div>
-    <form id="formStatistik" class="p-6 space-y-4">
-      <input type="hidden" id="stat-id"><input type="hidden" id="stat-period"><input type="hidden" id="stat-template-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Label</label>
-        <input type="text" id="stat-label" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Total Anggota">
-      </div>
-      <div id="stat-value-wrap">
-        <label id="stat-value-label" class="block text-sm font-semibold text-slate-700 mb-1">Nilai</label>
-        <input type="hidden" id="stat-value" value="">
-        <div id="stat-simple-wrap" class="space-y-2">
-          <input type="text" id="stat-simple-value" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="150">
-        </div>
-        <div id="stat-series-wrap" class="space-y-2 hidden">
-          <div id="stat-series-list" class="space-y-2"></div>
-          <button type="button" id="btn-add-series" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Baris Data</button>
-        </div>
-        <p id="stat-value-help" class="text-xs text-slate-500 mt-1">Masukkan nilai statistik sesuai tipe chart.</p>
-      </div>
-      <div id="stat-preview-wrap" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <p class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Preview Chart</p>
-        <div class="h-44 bg-white border border-slate-200 rounded-lg p-2">
-          <canvas id="stat-preview-canvas" class="w-full h-full"></canvas>
-          <div id="stat-preview-empty" class="h-full hidden items-center justify-center text-xs text-slate-400">Isi data untuk melihat preview.</div>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Tambahan</label>
-        <input type="text" id="stat-desc" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Orang dari berbagai jurusan">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Chart</label>
-        <input type="hidden" id="stat-chart-type" value="bar">
-        <div id="stat-chart-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
-      </div>
-      <div id="stat-flags-wrap" class="grid grid-cols-2 gap-3">
-        <label class="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="stat-fillable" class="rounded"> Fillable</label>
-        <label class="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="stat-visible" class="rounded" checked> Tampilkan</label>
-      </div>
-      <div class="flex justify-end gap-3 mt-6">
-        <button type="button" onclick="closeModal('modalStatistik')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Simpan</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-
-<!-- Modal Pengumuman -->
-<div id="modalPengumuman" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
-      <h3 id="modalPengumumanTitle" class="text-lg font-bold">Tambah Pengumuman</h3>
-      <button onclick="closeModal('modalPengumuman')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="p-6 space-y-4">
-      <input type="hidden" id="pengumuman-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Judul</label>
-        <input type="text" id="pengumuman-title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Konten</label>
-        <div id="editor-pengumuman" class="min-h-[160px]"></div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Pengumuman</label>
-        <div id="picker-pengumuman-image"></div>
-      </div>
-      <div class="flex items-center gap-2">
-        <input type="checkbox" id="pengumuman-published" class="rounded text-blue-600">
-        <label for="pengumuman-published" class="text-sm font-medium text-slate-700">Publikasikan</label>
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button onclick="submitPengumuman()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalPengumuman')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Artikel -->
-<div id="modalArtikel" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
-      <h3 id="modalArtikelTitle" class="text-lg font-bold">Tambah Artikel</h3>
-      <button onclick="closeModal('modalArtikel')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="p-6 space-y-4">
-      <input type="hidden" id="artikel-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Judul</label>
-        <input type="text" id="artikel-title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" oninput="autoSlug()">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Slug (URL)</label>
-        <input type="text" id="artikel-slug" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-xs">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Ringkasan</label>
-        <textarea id="artikel-excerpt" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ringkasan singkat artikel..."></textarea>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Isi Artikel</label>
-        <div id="editor-artikel" class="min-h-[240px]"></div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Cover</label>
-        <div id="picker-artikel-cover"></div>
-      </div>
-      <div class="flex items-center gap-2">
-        <input type="checkbox" id="artikel-published" class="rounded text-blue-600">
-        <label for="artikel-published" class="text-sm font-medium text-slate-700">Publikasikan</label>
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button onclick="submitArtikel()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalArtikel')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Kementerian -->
-<div id="modalKementerian" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 id="modalDeptTitle" class="text-lg font-bold">Tambah Kementerian</h3>
-      <button onclick="closeModal('modalKementerian')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-
-    <!-- TEMPLATE STATISTIK (superadmin) -->
-    <div id="tab-global-stats" class="tab-content hidden">
+        <div id="tab-global-stats" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Template Format Statistika</h2>
         <button onclick="openStatModalGlobal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
@@ -624,8 +495,7 @@
       </div>
     </div>
 
-    <!-- PENGATURAN GLOBAL (superadmin) -->
-    <div id="tab-global" class="tab-content">
+        <div id="tab-global" class="tab-content">
       <h2 class="text-2xl font-bold text-slate-800 mb-6">Pengaturan Global Organisasi</h2>
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -747,8 +617,7 @@
       </div>
     </div>
 
-    <!-- FAQ PERIODE -->
-    <div id="tab-faq-periode" class="tab-content">
+        <div id="tab-faq-periode" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">FAQ Periode</h2>
         <button onclick="openFAQModal(currentPeriod())" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
@@ -771,8 +640,7 @@
       </div>
     </div>
 
-    <!-- STATISTIK -->
-    <div id="tab-statistik" class="tab-content">
+        <div id="tab-statistik" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Statistik Periode</h2>
       </div>
@@ -793,8 +661,7 @@
       </div>
     </div>
 
-    <!-- FAQ GLOBAL -->
-    <div id="tab-faq-global" class="tab-content hidden">
+        <div id="tab-faq-global" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">FAQ Global</h2>
         <button onclick="openFAQModal('GLOBAL')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
@@ -817,8 +684,7 @@
       </div>
     </div>
 
-    <!-- MANAJEMEN PERIODE (superadmin) -->
-    <div id="tab-periode" class="tab-content">
+        <div id="tab-periode" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Manajemen Periode</h2>
         <button onclick="openPeriodeCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
@@ -831,8 +697,7 @@
       </div>
     </div>
 
-    <!-- MANAJEMEN AKUN (superadmin) -->
-    <div id="tab-akun" class="tab-content">
+        <div id="tab-akun" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Manajemen Akun</h2>
         <button onclick="openAkunModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
@@ -846,10 +711,7 @@
     </div>
 
   </main>
-</div>
-
 <!-- ═══════════════ MODALS ═══════════════ -->
-
 <!-- Statistik Modal -->
 <div id="modalStatistik" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -872,16 +734,12 @@
         <div id="stat-series-wrap" class="space-y-2 hidden">
           <div id="stat-series-list" class="space-y-2"></div>
           <button type="button" id="btn-add-series" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Baris Data</button>
-        </div>
         <p id="stat-value-help" class="text-xs text-slate-500 mt-1">Masukkan nilai statistik sesuai tipe chart.</p>
-      </div>
       <div id="stat-preview-wrap" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
         <p class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Preview Chart</p>
         <div class="h-44 bg-white border border-slate-200 rounded-lg p-2">
           <canvas id="stat-preview-canvas" class="w-full h-full"></canvas>
           <div id="stat-preview-empty" class="h-full hidden items-center justify-center text-xs text-slate-400">Isi data untuk melihat preview.</div>
-        </div>
-      </div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Tambahan</label>
         <input type="text" id="stat-desc" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Orang dari berbagai jurusan">
@@ -890,7 +748,6 @@
         <label class="block text-sm font-semibold text-slate-700 mb-2">Jenis Chart</label>
         <input type="hidden" id="stat-chart-type" value="bar">
         <div id="stat-chart-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
-      </div>
       <div id="stat-flags-wrap" class="grid grid-cols-2 gap-3">
         <label class="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="stat-fillable" class="rounded"> Fillable</label>
         <label class="inline-flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" id="stat-visible" class="rounded" checked> Tampilkan</label>
@@ -900,10 +757,6 @@
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">Simpan</button>
       </div>
     </form>
-  </div>
-</div>
-
-
 <!-- Modal Pengumuman -->
 <div id="modalPengumuman" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -922,11 +775,9 @@
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Konten</label>
         <div id="editor-pengumuman" class="min-h-[160px]"></div>
-      </div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Pengumuman</label>
         <div id="picker-pengumuman-image"></div>
-      </div>
       <div class="flex items-center gap-2">
         <input type="checkbox" id="pengumuman-published" class="rounded text-blue-600">
         <label for="pengumuman-published" class="text-sm font-medium text-slate-700">Publikasikan</label>
@@ -935,10 +786,6 @@
         <button onclick="submitPengumuman()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
         <button type="button" onclick="closeModal('modalPengumuman')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
       </div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal Artikel -->
 <div id="modalArtikel" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -965,11 +812,9 @@
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Isi Artikel</label>
         <div id="editor-artikel" class="min-h-[240px]"></div>
-      </div>
       <div>
         <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Cover</label>
         <div id="picker-artikel-cover"></div>
-      </div>
       <div class="flex items-center gap-2">
         <input type="checkbox" id="artikel-published" class="rounded text-blue-600">
         <label for="artikel-published" class="text-sm font-medium text-slate-700">Publikasikan</label>
@@ -978,10 +823,6 @@
         <button onclick="submitArtikel()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
         <button type="button" onclick="closeModal('modalArtikel')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
       </div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal Kementerian -->
 <div id="modalKementerian" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
@@ -989,250 +830,250 @@
       <h3 id="modalDeptTitle" class="text-lg font-bold">Tambah Kementerian</h3>
       <button onclick="closeModal('modalKementerian')" class="text-slate-400 hover:text-slate-600 p-1">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <form id="formKementerian" class="p-6 space-y-4">
-      <input type="hidden" id="dept-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Parent Kementerian</label>
-        <select id="dept-parent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <option value="">Tidak ada (Kementerian Utama)</option>
-        </select>
-        <p class="text-xs text-slate-500 mt-1">Pilih parent jika ini adalah sub-kementerian</p>
+    <!-- TEMPLATE STATISTIK (superadmin) -->
+    <div id="tab-global-stats" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Template Format Statistika</h2>
+        <button onclick="openStatModalGlobal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Template
+        </button>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Kementerian</label>
-        <input type="text" id="dept-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600 text-left uppercase text-xs tracking-wider">
+            <tr>
+              <th class="p-4 font-semibold w-10"></th>
+              <th class="p-4 font-semibold">Label/Nama Format</th>
+              <th class="p-4 font-semibold">Deskripsi Format</th>
+              <th class="p-4 font-semibold">Chart</th>
+              <th class="p-4 font-semibold">Fillable</th>
+              <th class="p-4 font-semibold">Tampilkan</th>
+              <th class="p-4 font-semibold text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="global-stats-tbody"></tbody>
+        </table>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>
-        <textarea id="dept-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+    <!-- PENGATURAN GLOBAL (superadmin) -->
+    <div id="tab-global" class="tab-content">
+      <h2 class="text-2xl font-bold text-slate-800 mb-6">Pengaturan Global Organisasi</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Identitas Organisasi &amp; Logo</h3>
+          <form id="formGlobal" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Organisasi</label>
+              <input type="text" id="global-orgname" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Organisasi</label>
+              <div id="picker-logo"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Universitas</label>
+                <div id="picker-logo-university"></div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Logo Yayasan KSE</label>
+                <div id="picker-logo-yayasan"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Header</label>
+                <input type="text" id="global-header-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Subjudul Header</label>
+                <input type="text" id="global-header-subtitle" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Organisasi Beasiswa">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Badge</label>
+                <input type="text" id="global-hero-badge" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kepengurusan">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Judul Utama</label>
+                <input type="text" id="global-hero-title-main" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mengabdi Bersama,">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Hero Judul Aksen</label>
+                <input type="text" id="global-hero-title-accent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Berkarya Nyata.">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Footer</label>
+                <input type="text" id="global-footer-title" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Copyright Footer</label>
+                <input type="text" id="global-footer-copy" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="PKSE UGM">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Deskripsi Footer</label>
+                <textarea id="global-footer-text" rows="2" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Paguyuban Karya Salemba Empat UGM"></textarea>
+              </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Tentang Organisasi (Global)</label>
+              <div id="editor-global-about" class="min-h-[140px]"></div>
+          <div class="flex items-center gap-4">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Pengaturan</button>
+              <div id="global-msg" class="text-sm text-green-600 hidden">✓ Tersimpan!</div>
+          </form>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-semibold text-slate-700 mb-4">Media Sosial</h3>
+          <form id="formSocmed" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                Instagram
+              </label>
+              <input type="url" id="sm-instagram" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://instagram.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-sky-500" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Twitter / X
+              </label>
+              <input type="url" id="sm-twitter" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://twitter.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.8l-.5 2.9h-2.3v7A10 10 0 0022 12z"/></svg>
+                Facebook
+              </label>
+              <input type="url" id="sm-facebook" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://facebook.com/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                YouTube
+              </label>
+              <input type="url" id="sm-youtube" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://youtube.com/@...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+              </label>
+              <input type="url" id="sm-linkedin" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://linkedin.com/company/...">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                TikTok
+              </label>
+              <input type="url" id="sm-tiktok" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://tiktok.com/@...">
+            </div>
+          <div class="flex items-center gap-4">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Media Sosial</button>
+              <div id="socmed-msg" class="text-sm text-green-600 hidden">✓ Tersimpan!</div>
+          </form>
+    <!-- FAQ PERIODE -->
+    <div id="tab-faq-periode" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">FAQ Periode</h2>
+        <button onclick="openFAQModal(currentPeriod())" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah FAQ
+        </button>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Icon Kementerian</label>
-        <div id="picker-dept-icon"></div>
+      <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+            <tr>
+              <th class="p-4 text-left font-medium w-10"></th>
+              <th class="p-4 text-left font-medium">Pertanyaan</th>
+              <th class="p-4 text-left font-medium">Jawaban</th>
+              <th class="p-4 text-right font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="faq-periode-tbody"></tbody>
+        </table>
       </div>
-      <div class="flex gap-3 pt-2">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalKementerian')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+    <!-- STATISTIK -->
+    <div id="tab-statistik" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Statistik Periode</h2>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Program -->
-<div id="modalProgram" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 id="modalProgramTitle" class="text-lg font-bold">Tambah Program</h3>
-      <button onclick="closeModal('modalProgram')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <form id="formProgram" class="p-6 space-y-4">
-      <input type="hidden" id="program-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Kementerian</label>
-        <select id="program-department" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></select>
+      <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+            <tr>
+              <th class="p-4 text-left font-medium w-10"></th>
+              <th class="p-4 text-left font-medium">Label</th>
+              <th class="p-4 text-left font-medium">Input Nilai</th>
+              <th class="p-4 text-left font-medium">Preview Chart</th>
+              <th class="p-4 text-left font-medium">Deskripsi</th>
+              <th class="p-4 text-right font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="statistik-tbody"></tbody>
+        </table>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Judul Program</label>
-        <input type="text" id="program-title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+    <!-- FAQ GLOBAL -->
+    <div id="tab-faq-global" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">FAQ Global</h2>
+        <button onclick="openFAQModal('GLOBAL')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah FAQ
+        </button>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label>
-        <textarea id="program-desc" rows="4" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+      <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+            <tr>
+              <th class="p-4 text-left font-medium w-10"></th>
+              <th class="p-4 text-left font-medium">Pertanyaan</th>
+              <th class="p-4 text-left font-medium">Jawaban</th>
+              <th class="p-4 text-right font-medium">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="faq-global-tbody"></tbody>
+        </table>
       </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Gambar Program</label>
-        <div id="picker-program-image"></div>
+    <!-- MANAJEMEN PERIODE (superadmin) -->
+    <div id="tab-periode" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Manajemen Periode</h2>
+        <button onclick="openPeriodeCreateModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Periode
+        </button>
       </div>
-      <div class="flex gap-3 pt-2">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalProgram')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
+      <div id="list-periode" class="space-y-3">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
+    <!-- MANAJEMEN AKUN (superadmin) -->
+    <div id="tab-akun" class="tab-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Manajemen Akun</h2>
+        <button onclick="openAkunModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Akun
+        </button>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Anggota -->
-<div id="modalAnggota" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white z-10">
-      <h3 id="modalAnggotaTitle" class="text-lg font-bold">Tambah Anggota</h3>
-      <button onclick="closeModal('modalAnggota')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="p-6 space-y-4">
-      <input type="hidden" id="anggota-id">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="col-span-2">
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-          <input type="text" id="anggota-fullname" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Panggilan</label>
-          <input type="text" id="anggota-nickname" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Program Studi</label>
-          <input type="text" id="anggota-program-studi" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Fakultas</label>
-          <input type="text" id="anggota-fakultas" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Angkatan</label>
-          <input type="text" id="anggota-angkatan" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="2024">
-        </div>
-      </div>
-      <div id="anggota-activation-wrap" class="space-y-2"></div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Foto Anggota</label>
-        <div id="picker-anggota-photo"></div>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Cover Anggota (Halaman Anggota)</label>
-        <div id="picker-anggota-cover"></div>
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button onclick="submitAnggota()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalAnggota')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Assign Member -->
-<div id="modalAssignMember" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 class="text-lg font-bold">Assign Anggota ke Kementerian</h3>
-      <button onclick="closeModal('modalAssignMember')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <div class="p-6 space-y-4">
-      <input type="hidden" id="assign-dept-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Anggota</label>
-        <select id="assign-member-id" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></select>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Jabatan</label>
-        <input type="text" id="assign-member-position" placeholder="Contoh: Koordinator" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button onclick="submitAssignMember()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Assign</button>
-        <button type="button" onclick="closeModal('modalAssignMember')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Periode -->
-<div id="modalPeriode" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 id="modalPeriodeTitle" class="text-lg font-bold">Tambah Periode</h3>
-      <button onclick="closeModal('modalPeriode')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <form id="formPeriode" class="p-6 space-y-4">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Label (Kode Unik)</label>
-        <input type="text" id="periode-label" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono" placeholder="25.26">
-        <p class="text-xs text-slate-400 mt-1">Format: YY.YY (mis: 25.26 untuk 2025/2026)</p>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Tampilan</label>
-        <input type="text" id="periode-displayname" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Kepengurusan 2025/2026">
-      </div>
-      <div id="periode-subperiod-editor" class="hidden">
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Sub-Periode</label>
-        <div id="periode-subperiod-list" class="space-y-2"></div>
-        <button type="button" id="btn-add-subperiod" class="mt-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg">+ Tambah Sub-Periode</button>
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalPeriode')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal Akun -->
-<div id="modalAkun" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between">
-      <h3 id="modalAkunTitle" class="text-lg font-bold">Tambah Akun</h3>
-      <button onclick="closeModal('modalAkun')" class="text-slate-400 hover:text-slate-600 p-1">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <form id="formAkun" class="p-6 space-y-4">
-      <input type="hidden" id="akun-id">
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Username</label>
-        <input type="text" id="akun-username" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Kata Sandi <span id="akun-pw-hint" class="text-slate-400 font-normal">(kosong = tidak diubah)</span></label>
-        <input type="password" id="akun-password" autocomplete="new-password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-      </div>
-      <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Role</label>
-        <select id="akun-role" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="toggleAssignedPeriod()">
-          <option value="admin">admin</option>
-          <option value="superadmin">superadmin</option>
-        </select>
-      </div>
-      <div id="akun-period-wrap">
-        <label class="block text-sm font-semibold text-slate-700 mb-1">Periode yang Ditugaskan</label>
-        <select id="akun-assigned-period" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-          <option value="">-- Pilih Periode --</option>
-        </select>
-      </div>
-      <div class="flex gap-3 pt-2">
-        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button>
-        <button type="button" onclick="closeModal('modalAkun')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      </div>
-    </form>
-  </div>
-</div>
-
+      <div id="list-akun" class="overflow-x-auto">
+        <div class="text-slate-400 text-center py-8">Memuat...</div>
 <script>
 let state = { periods: [], faqs: [], stats: [], periodGallery: [], globalSetting: null, periodAbout: null };
-
 const PERIOD = "{{.SelectedPeriod}}";
 const ROLE = "{{.Role}}";
 let statPreviewChart = null;
-
 function selectedSectionFromURL() {
   const section = new URLSearchParams(window.location.search).get('section') || 'pengumuman';
   const allowed = new Set(['pengumuman', 'artikel', 'departemen', 'program', 'faq-periode', 'tentang', 'galeri', 'statistik', 'anggota', 'global', 'shortlink', 'faq-global', 'global-stats', 'periode', 'akun', 'broadcast']);
   return allowed.has(section) ? section : 'pengumuman';
 }
-
 function syncPeriodSwitcherRouteSection() {
   const hidden = document.getElementById('period-route-section');
   if (!hidden) return;
   hidden.value = selectedSectionFromURL();
 }
-
 // ── Image Picker Component ───────────────────────────────────────────────────
 // Creates a reusable image picker: drag-drop zone + file upload + URL input
 const imagePickers = {};
-
 function createImagePicker(containerId, opts = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const state = { url: opts.initialUrl || '', uploading: false };
   imagePickers[containerId] = state;
-
   container.innerHTML = `
     <div class="space-y-2">
       <div id="${containerId}-dropzone"
@@ -1259,7 +1100,6 @@ function createImagePicker(containerId, opts = {}) {
           <svg class="w-5 h-5 animate-spin inline mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
           Mengupload...
         </div>
-      </div>
       <div class="flex gap-2 items-center">
         <span class="text-xs text-slate-400 whitespace-nowrap">atau URL:</span>
         <input type="url" id="${containerId}-url-input" value="${state.url}" placeholder="https://..." 
@@ -1268,7 +1108,6 @@ function createImagePicker(containerId, opts = {}) {
       </div>
     </div>`;
 }
-
 function pickerDragOver(e, id) {
   e.preventDefault();
   document.getElementById(id + '-dropzone').classList.add('dragover');
@@ -1352,7 +1191,6 @@ function pickerClear(id) {
 function pickerGetUrl(id) {
   return imagePickers[id] ? imagePickers[id].url : '';
 }
-
 // ── Quill instances ──────────────────────────────────────────────────────────
 const quills = {};
 const toolbarOptions = [
@@ -1370,7 +1208,6 @@ const toolbarFull = [
   [{ align: [] }],
   ['clean']
 ];
-
 function initQuill(id, toolbar) {
   if (quills[id]) return quills[id];
   quills[id] = new Quill('#' + id, {
@@ -1391,7 +1228,6 @@ function quillSetHTML(id, html) {
   if (!html) { q.setContents([]); return; }
   q.root.innerHTML = html;
 }
-
 // ── Tab switching ────────────────────────────────────────────────────────────
 function switchTab(name) {
   const target = document.getElementById('tab-' + name);
@@ -1407,7 +1243,6 @@ function switchTab(name) {
   if (hidden) hidden.value = name;
   loadTab(name);
 }
-
 function loadTab(name) {
   if (name === 'pengumuman') loadPengumuman();
   if (name === 'artikel') loadArtikel();
@@ -1421,7 +1256,6 @@ function loadTab(name) {
   if (name === 'broadcast') initBroadcast();
   if (name === 'galeri') loadGaleri();
   if (name === 'shortlink') loadShortlinks();
-  
   if (name === 'faq-global') loadFAQs('GLOBAL');
   if (name === 'faq-periode' && currentPeriod()) loadFAQs(currentPeriod());
   if (name === 'global-stats') loadGlobalStatsTab();
@@ -1429,14 +1263,11 @@ function loadTab(name) {
     // Load templates first, then statistics
     loadGlobalStatsTab().then(() => loadStatistik());
   }
-
 }
-
 // ── Shortlink ───────────────────────────────────────────────────────────────
 function shortlinkURL(code) {
   return `${window.location.origin}/l/${encodeURIComponent(code || '')}`;
 }
-
 async function loadShortlinks() {
   const tb = document.getElementById('shortlink-tbody');
   if (!tb) return;
@@ -1451,6 +1282,12 @@ async function loadShortlinks() {
     tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>';
     return;
   }
+  window._programRows = rows;
+  programDeptCache = [...new Set(rows.map(function(r){return r.department||'';}).filter(Boolean))].sort();
+  var deptSelect = document.getElementById('programDeptFilter');
+  if (deptSelect && !deptSelect.dataset.populated) { deptSelect.innerHTML = '<option value="">Semua</option>' + programDeptCache.map(function(d){return '<option value="'+escHtml(d)+'">'+escHtml(d)+'</option>';}).join(''); deptSelect.dataset.populated = '1'; }
+  renderProgramTable(rows);
+  return;
   tb.innerHTML = rows.map((row) => `
     <tr class="border-b border-slate-100 hover:bg-slate-50">
       <td class="p-4 align-top font-medium text-slate-700">${escHtml(row.label || '-')}</td>
@@ -1465,7 +1302,6 @@ async function loadShortlinks() {
     </tr>
   `).join('');
 }
-
 async function createShortlink(targetURL, label, code) {
   const body = {
     target_url: targetURL,
@@ -1476,7 +1312,6 @@ async function createShortlink(targetURL, label, code) {
   await loadShortlinks();
   return shortlinkURL(created.code || '');
 }
-
 async function copyShortlink(url) {
   try {
     await navigator.clipboard.writeText(url);
@@ -1485,7 +1320,6 @@ async function copyShortlink(url) {
     uiAlert('Gagal menyalin short link.');
   }
 }
-
 async function deleteShortlink(id) {
   if (!id) return;
   if (!await uiConfirm('Hapus short link ini?', 'Konfirmasi')) return;
@@ -1496,7 +1330,6 @@ async function deleteShortlink(id) {
     uiAlert(ex);
   }
 }
-
 async function clearShortlinks() {
   if (!await uiConfirm('Bersihkan seluruh riwayat short link?', 'Konfirmasi')) return;
   try {
@@ -1506,7 +1339,6 @@ async function clearShortlinks() {
     uiAlert(ex);
   }
 }
-
 document.getElementById('formShortlink')?.addEventListener('submit', async e => {
   e.preventDefault();
   const longURL = (document.getElementById('shortlink-long-url')?.value || '').trim();
@@ -1524,13 +1356,10 @@ document.getElementById('formShortlink')?.addEventListener('submit', async e => 
     uiAlert(ex);
   }
 });
-
 // ── Modal helpers ────────────────────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
 let actionModalResolver = null;
-
 function toUiMessage(errLike) {
   if (typeof errLike === 'string') return errLike;
   if (errLike && typeof errLike.message === 'string') return errLike.message;
@@ -1540,7 +1369,6 @@ function toUiMessage(errLike) {
     return String(errLike);
   }
 }
-
 function uiActionModal(opts = {}) {
   const {
     title = 'Konfirmasi',
@@ -1550,7 +1378,6 @@ function uiActionModal(opts = {}) {
     showCancel = false,
     danger = false
   } = opts;
-
   const modal = document.getElementById('modalAction');
   const titleEl = document.getElementById('modalActionTitle');
   const msgEl = document.getElementById('modalActionMessage');
@@ -1559,7 +1386,6 @@ function uiActionModal(opts = {}) {
   if (!modal || !titleEl || !msgEl || !btnOk || !btnCancel) {
     return Promise.resolve(showCancel ? true : undefined);
   }
-
   titleEl.textContent = title;
   msgEl.textContent = toUiMessage(message);
   btnOk.textContent = confirmText;
@@ -1569,9 +1395,7 @@ function uiActionModal(opts = {}) {
   btnOk.classList.toggle('hover:bg-red-700', !!danger);
   btnOk.classList.toggle('bg-blue-600', !danger);
   btnOk.classList.toggle('hover:bg-blue-700', !danger);
-
   openModal('modalAction');
-
   return new Promise(resolve => {
     actionModalResolver = resolve;
     btnOk.onclick = () => {
@@ -1593,15 +1417,12 @@ function uiActionModal(opts = {}) {
     };
   });
 }
-
 async function uiAlert(message, title = 'Informasi') {
   await uiActionModal({ title, message, confirmText: 'OK', showCancel: false });
 }
-
 async function uiConfirm(message, title = 'Konfirmasi', danger = false) {
   return uiActionModal({ title, message, confirmText: danger ? 'Ya, lanjutkan' : 'Ya', cancelText: 'Batal', showCancel: true, danger });
 }
-
 // ── Generic fetch ────────────────────────────────────────────────────────────
 async function api(method, url, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -1610,9 +1431,7 @@ async function api(method, url, body) {
   if (!r.ok) { const e = await r.json().catch(() => ({error: r.status})); throw new Error(e.error || r.status); }
   return r.json().catch(() => ({}));
 }
-
 function errHtml(e) { return `<div class="bg-red-50 text-red-700 rounded-lg p-4 text-sm border border-red-200">${e}</div>`; }
-
 const CHART_CHOICES = [
   { value: 'bar', label: 'Bar' },
   { value: 'line', label: 'Line' },
@@ -1631,7 +1450,6 @@ const CHART_CHOICES = [
   { value: 'kpi', label: 'KPI Card' },
   { value: 'table', label: 'Table' }
 ];
-
 function chartPreviewSVG(type) {
   const s = {
     bar: '<svg viewBox="0 0 100 56" class="w-full h-10"><rect x="8" y="28" width="14" height="20" rx="2" fill="#2563eb"/><rect x="30" y="20" width="14" height="28" rx="2" fill="#60a5fa"/><rect x="52" y="12" width="14" height="36" rx="2" fill="#93c5fd"/><rect x="74" y="24" width="14" height="24" rx="2" fill="#1d4ed8"/></svg>',
@@ -1653,7 +1471,6 @@ function chartPreviewSVG(type) {
   };
   return s[type] || s.bar;
 }
-
 function renderChartChoices(selectedValue = 'bar', readOnly = false) {
   const wrap = document.getElementById('stat-chart-options');
   if (!wrap) return;
@@ -1670,7 +1487,6 @@ function renderChartChoices(selectedValue = 'bar', readOnly = false) {
   renderStatValueInput(current, currentRaw);
   renderStatPreview(current, currentRaw);
 }
-
 document.addEventListener('click', e => {
   const addGalleryBtn = e.target.closest('#btn-add-gallery-item');
   if (addGalleryBtn) {
@@ -1716,18 +1532,15 @@ document.addEventListener('click', e => {
   const value = btn.getAttribute('data-chart-value') || 'bar';
   renderChartChoices(value);
 });
-
 function currentPeriod() {
     return window.customPeriodOverride || "{{.SelectedPeriod}}";
 }
 function emptyHtml(msg) { return `<div class="text-center py-12 text-slate-400"><p>${msg}</p></div>`; }
-
 function periodSubPeriods(period) {
   const src = Array.isArray(period?.sub_periods) ? period.sub_periods : [];
   const cleaned = src.map(s => (s || '').trim()).filter(Boolean);
   return cleaned.length ? cleaned : ['Gelombang 1'];
 }
-
 // ── PENGUMUMAN ───────────────────────────────────────────────────────────────
 async function loadPengumuman() {
   const el = document.getElementById('list-pengumuman');
@@ -1744,8 +1557,6 @@ async function loadPengumuman() {
             <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${a.published ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">${a.published ? 'Terbit' : 'Draft'}</span>
           </div>
           <p class="text-slate-500 text-sm line-clamp-2">${stripHtml(a.content)}</p>
-          </div>
-        </div>
         <div class="flex gap-2 flex-shrink-0">
           <button onclick='editPengumuman(${JSON.stringify(a)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -1757,7 +1568,6 @@ async function loadPengumuman() {
       </div>`).join('');
   } catch(e) { el.innerHTML = errHtml(e.message); }
 }
-
 function openPengumumanModal() {
   document.getElementById('pengumuman-id').value = '';
   document.getElementById('pengumuman-title').value = '';
@@ -1768,7 +1578,6 @@ function openPengumumanModal() {
   createImagePicker('picker-pengumuman-image');
   openModal('modalPengumuman');
 }
-
 function editPengumuman(a) {
   document.getElementById('pengumuman-id').value = a.id;
   document.getElementById('pengumuman-title').value = a.title;
@@ -1779,7 +1588,6 @@ function editPengumuman(a) {
   createImagePicker('picker-pengumuman-image', { initialUrl: a.image_url || '' });
   openModal('modalPengumuman');
 }
-
 async function submitPengumuman() {
   const id = document.getElementById('pengumuman-id').value;
   const body = {
@@ -1797,13 +1605,11 @@ async function submitPengumuman() {
     loadPengumuman();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
-
 async function deletePengumuman(id) {
   if (!await uiConfirm('Hapus pengumuman ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/announcements/${id}`);
   loadPengumuman();
 }
-
 // ── ARTIKEL ──────────────────────────────────────────────────────────────────
 async function loadArtikel() {
   const el = document.getElementById('list-artikel');
@@ -1821,8 +1627,6 @@ async function loadArtikel() {
             </div>
             <p class="text-slate-400 text-xs font-mono">/artikel/${a.slug}</p>
             ${a.excerpt ? `<p class="text-slate-500 text-sm line-clamp-1 mt-1">${escHtml(a.excerpt)}</p>` : ''}
-          </div>
-        </div>
         <div class="flex gap-2 flex-shrink-0">
           <button onclick='editArtikel(${JSON.stringify(a)})' class="text-blue-600 hover:text-blue-800 p-1" title="Edit">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -1834,7 +1638,6 @@ async function loadArtikel() {
       </div>`).join('');
   } catch(e) { el.innerHTML = errHtml(e.message); }
 }
-
 function openArtikelModal() {
   document.getElementById('artikel-id').value = '';
   document.getElementById('artikel-title').value = '';
@@ -1847,7 +1650,6 @@ function openArtikelModal() {
   createImagePicker('picker-artikel-cover');
   openModal('modalArtikel');
 }
-
 function editArtikel(a) {
   document.getElementById('artikel-id').value = a.id;
   document.getElementById('artikel-title').value = a.title;
@@ -1860,14 +1662,12 @@ function editArtikel(a) {
   createImagePicker('picker-artikel-cover', { initialUrl: a.cover_url || '' });
   openModal('modalArtikel');
 }
-
 function autoSlug() {
   const title = document.getElementById('artikel-title').value;
   document.getElementById('artikel-slug').value = title
     .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-');
 }
-
 async function submitArtikel() {
   const id = document.getElementById('artikel-id').value;
   const body = {
@@ -1887,13 +1687,11 @@ async function submitArtikel() {
     loadArtikel();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
-
 async function deleteArtikel(id) {
   if (!await uiConfirm('Hapus artikel ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/articles/${id}`);
   loadArtikel();
 }
-
 // ── TENTANG PERIODE ──────────────────────────────────────────────────────────
 async function loadTentang() {
   initQuill('editor-sejarah');
@@ -1932,7 +1730,6 @@ async function loadTentang() {
     renderTentangPreview();
   }
 }
-
 document.getElementById('formTentang').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = document.getElementById('tentang-msg');
@@ -1968,14 +1765,12 @@ document.getElementById('formTentang').addEventListener('submit', async e => {
     setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
-
 async function loadGaleri() {
   if (!state.periodAbout) {
     await loadTentang();
   }
   renderTentangGalleryEditor(state.periodGallery || []);
 }
-
 document.getElementById('btn-save-gallery')?.addEventListener('click', async () => {
   const msg = document.getElementById('galeri-msg');
   const current = await api('GET', `/api/cms/period-about?period=${PERIOD}`).catch(() => ({ period_label: PERIOD }));
@@ -1994,21 +1789,16 @@ document.getElementById('btn-save-gallery')?.addEventListener('click', async () 
     uiAlert('Error: ' + ex.message);
   }
 });
-
-
-
 // ── DEPARTEMEN ───────────────────────────────────────────────────────────────
 let deptSortInstance = null;
 let memberSortInstances = [];
 let deptCache = [];
 let memberCache = [];
-
 function getMembersByDept(deptName) {
   return memberCache
     .filter(m => (m.department || '') === deptName)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 }
-
 function renderDeptMemberItem(m) {
   return `<li class="dept-member-item flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2" data-member-id="${m.id}">
     <div class="flex items-center gap-2 min-w-0">
@@ -2022,11 +1812,9 @@ function renderDeptMemberItem(m) {
         <p class="text-sm font-medium text-slate-800 truncate">${escHtml(m.full_name || '')}</p>
         <p class="text-xs text-slate-500 truncate">${escHtml(m.position || '-')}</p>
       </div>
-    </div>
     <button onclick="unassignMember('${m.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium">Lepas</button>
   </li>`;
 }
-
 function destroyDeptSortables() {
   if (deptSortInstance) {
     deptSortInstance.destroy();
@@ -2035,7 +1823,6 @@ function destroyDeptSortables() {
   memberSortInstances.forEach(s => s.destroy());
   memberSortInstances = [];
 }
-
 async function persistDepartmentOrderFromDom() {
   const cards = Array.from(document.querySelectorAll('#dept-cards .dept-card'));
   if (!cards.length) return;
@@ -2044,7 +1831,6 @@ async function persistDepartmentOrderFromDom() {
     await api('PUT', `/api/cms/departments/${id}`, { sort_order: idx });
   }
 }
-
 async function persistMemberOrderFromList(ul, deptName) {
   const ids = Array.from(ul.querySelectorAll('.dept-member-item')).map(li => li.dataset.memberId);
   if (!ids.length) return;
@@ -2055,13 +1841,11 @@ async function persistMemberOrderFromList(ul, deptName) {
     });
   }
 }
-
 async function handleMemberDrop(evt) {
   const movedId = evt.item?.dataset?.memberId;
   const fromDept = evt.from?.dataset?.deptName || '';
   const toDept = evt.to?.dataset?.deptName || '';
   if (!movedId) return;
-
   if (fromDept !== toDept) {
     const moved = memberCache.find(m => m.id === movedId);
     await api('PUT', `/api/cms/members/${movedId}`, {
@@ -2070,7 +1854,6 @@ async function handleMemberDrop(evt) {
       sort_order: evt.newIndex || 0
     });
   }
-
   if (evt.from && evt.from.classList.contains('dept-member-list')) {
     await persistMemberOrderFromList(evt.from, fromDept);
   }
@@ -2080,7 +1863,6 @@ async function handleMemberDrop(evt) {
   await loadKementerian();
   await loadAnggota();
 }
-
 function initDeptSortables() {
   destroyDeptSortables();
   const deptCards = document.getElementById('dept-cards');
@@ -2099,7 +1881,6 @@ function initDeptSortables() {
       }
     });
   }
-
   document.querySelectorAll('.dept-member-list').forEach(ul => {
     const sortable = Sortable.create(ul, {
       group: 'members-cross-dept',
@@ -2117,7 +1898,6 @@ function initDeptSortables() {
     memberSortInstances.push(sortable);
   });
 }
-
 function buildDeptTree(depts) {
   const map = {};
   const roots = [];
@@ -2128,7 +1908,6 @@ function buildDeptTree(depts) {
   });
   return roots;
 }
-
 function renderDeptCard(d, depth) {
   const members = getMembersByDept(d.name);
   const ml = depth * 24;
@@ -2151,7 +1930,6 @@ function renderDeptCard(d, depth) {
             <h3 class="font-semibold text-slate-800">${escHtml(d.name)}</h3>
             ${d.description ? `<p class="text-slate-500 text-sm">${escHtml(d.description)}</p>` : ''}
           </div>
-        </div>
         <div class="flex gap-2 flex-shrink-0">
           <button onclick="addSubDept('${d.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium">+ Sub</button>
           <button onclick="openAssignMemberModal('${d.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium">Assign</button>
@@ -2162,7 +1940,6 @@ function renderDeptCard(d, depth) {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </button>
         </div>
-      </div>
       <ul class="dept-member-list space-y-2 min-h-[40px] rounded-lg bg-slate-50 p-2" data-dept-name="${escHtml(d.name)}">
         ${members.length
           ? members.map(renderDeptMemberItem).join('')
@@ -2171,7 +1948,6 @@ function renderDeptCard(d, depth) {
       ${childrenHtml}
     </div>`;
 }
-
 async function loadKementerian() {
   const el = document.getElementById('list-departemen');
   try {
@@ -2181,13 +1957,11 @@ async function loadKementerian() {
     ]);
     deptCache = depts || [];
     memberCache = members || [];
-
     if (!deptCache.length) {
       el.innerHTML = emptyHtml('Belum ada departemen.');
       destroyDeptSortables();
       return;
     }
-
     const tree = buildDeptTree(deptCache);
     el.innerHTML = `<div id="dept-cards" class="space-y-3">${tree.map(d => renderDeptCard(d, 0)).join('')}</div>`;
     initDeptSortables();
@@ -2195,11 +1969,9 @@ async function loadKementerian() {
     el.innerHTML = errHtml(e.message);
   }
 }
-
 function populateDeptParentDropdown(excludeId = null) {
   const select = document.getElementById('dept-parent');
   select.innerHTML = '<option value="">Tidak ada (Kementerian Utama)</option>';
-  
   function addOptions(depts, level = 0) {
     depts.forEach(d => {
       if (d.id !== excludeId) {
@@ -2212,10 +1984,8 @@ function populateDeptParentDropdown(excludeId = null) {
       }
     });
   }
-  
   addOptions(deptCache);
 }
-
 function resetDeptForm() {
   document.getElementById('dept-id').value = '';
   document.getElementById('dept-name').value = '';
@@ -2225,7 +1995,6 @@ function resetDeptForm() {
   populateDeptParentDropdown();
   document.getElementById('modalDeptTitle').textContent = 'Tambah Kementerian';
 }
-
 function editDept(d) {
   document.getElementById('dept-id').value = d.id;
   document.getElementById('dept-name').value = d.name;
@@ -2236,20 +2005,17 @@ function editDept(d) {
   document.getElementById('modalDeptTitle').textContent = 'Edit Kementerian';
   openModal('modalKementerian');
 }
-
 function addSubDept(parentId) {
   resetDeptForm();
   document.getElementById('dept-parent').value = parentId;
   document.getElementById('modalDeptTitle').textContent = 'Tambah Sub-Kementerian';
   openModal('modalKementerian');
 }
-
 async function deleteDept(id) {
   if (!await uiConfirm('Hapus kementerian ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/departments/${id}`);
   await loadKementerian();
 }
-
 document.getElementById('formKementerian').addEventListener('submit', async e => {
   e.preventDefault();
   const id = document.getElementById('dept-id').value;
@@ -2270,7 +2036,6 @@ document.getElementById('formKementerian').addEventListener('submit', async e =>
     await loadKementerian();
   } catch (ex) { uiAlert('Error: ' + ex.message); }
 });
-
 function openAssignMemberModal(deptId) {
   const dept = deptCache.find(d => d.id === deptId);
   if (!dept) return;
@@ -2281,7 +2046,6 @@ function openAssignMemberModal(deptId) {
   const sel = document.getElementById('assign-member-id');
   document.getElementById('assign-dept-id').value = deptId;
   document.getElementById('assign-member-position').value = '';
-
   if (!available.length) {
     sel.innerHTML = '<option value="">Tidak ada anggota yang belum ditempatkan</option>';
   } else {
@@ -2289,7 +2053,6 @@ function openAssignMemberModal(deptId) {
   }
   openModal('modalAssignMember');
 }
-
 async function submitAssignMember() {
   const deptId = document.getElementById('assign-dept-id').value;
   const memberId = document.getElementById('assign-member-id').value;
@@ -2299,7 +2062,6 @@ async function submitAssignMember() {
     uiAlert('Pilih anggota yang valid.');
     return;
   }
-
   const currentCount = getMembersByDept(dept.name).length;
   await api('PUT', `/api/cms/members/${memberId}`, {
     department: dept.name,
@@ -2310,7 +2072,6 @@ async function submitAssignMember() {
   await loadKementerian();
   await loadAnggota();
 }
-
 async function unassignMember(memberId) {
   if (!await uiConfirm('Lepas anggota dari departemen?', 'Konfirmasi')) return;
   await api('PUT', `/api/cms/members/${memberId}`, {
@@ -2321,10 +2082,25 @@ async function unassignMember(memberId) {
   await loadKementerian();
   await loadAnggota();
 }
-
 // ── PROGRAM ──────────────────────────────────────────────────────────────────
 let programCache = [];
 let programDeptCache = [];
+
+let programDeptCache = [];
+function renderProgramTable(rows) {
+  var dept = (document.getElementById('programDeptFilter') || {}).value || '';
+  var query = (document.getElementById('programSearchInput') || {}).value || '';
+  var queryLower = query.toLowerCase().trim();
+  var filtered = rows.filter(function(r) {
+    var matchDept = !dept || (r.department || '') === dept;
+    var matchSearch = !queryLower || (r.title || '').toLowerCase().includes(queryLower) || (r.description || '').toLowerCase().includes(queryLower);
+    return matchDept && matchSearch;
+  });
+  var tb = document.getElementById('program-tbody');
+  if (!filtered.length) { tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada program yang cocok.</td></tr>'; return; }
+  tb.innerHTML = filtered.map(function(r) { return '<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-4 font-medium text-slate-700">'+escHtml(r.department||'-')+'</td><td class="p-4">'+escHtml(r.title||'-')+'</td><td class="p-4 text-slate-500 max-w-xs truncate">'+escHtml((r.description||'').substring(0,80))+'</td><td class="p-4 text-right"><button onclick="editProgram(\''+r.id+'\')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button><button onclick="deleteProgram(\''+r.id+'\')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button></td></tr>'; }).join('');
+}
+function filterPrograms() { renderProgramTable(window._programRows || []); }
 
 async function loadPrograms() {
   const tb = document.getElementById('program-tbody');
@@ -2336,12 +2112,10 @@ async function loadPrograms() {
     ]);
     programCache = programs || [];
     programDeptCache = depts || [];
-
     if (!programCache.length) {
       tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada program untuk periode ini.</td></tr>';
       return;
     }
-
     tb.innerHTML = programCache.map(p => `
       <tr class="border-b border-slate-100 hover:bg-slate-50">
         <td class="p-4 align-top text-slate-700">${escHtml(p.department || '-')}</td>
@@ -2366,7 +2140,6 @@ async function loadPrograms() {
     tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(e.message)}</td></tr>`;
   }
 }
-
 function fillProgramDepartmentOptions(selected = '') {
   const sel = document.getElementById('program-department');
   if (!sel) return;
@@ -2376,7 +2149,6 @@ function fillProgramDepartmentOptions(selected = '') {
   }
   sel.innerHTML = programDeptCache.map(d => `<option value="${escHtml(d.name)}" ${d.name === selected ? 'selected' : ''}>${escHtml(d.name)}</option>`).join('');
 }
-
 async function openProgramModal() {
   if (!programDeptCache.length) {
     try {
@@ -2395,7 +2167,6 @@ async function openProgramModal() {
   fillProgramDepartmentOptions(programDeptCache[0]?.name || '');
   openModal('modalProgram');
 }
-
 function editProgramById(id) {
   const p = programCache.find(x => x.id === id);
   if (!p) return;
@@ -2407,13 +2178,11 @@ function editProgramById(id) {
   fillProgramDepartmentOptions(p.department || '');
   openModal('modalProgram');
 }
-
 async function deleteProgram(id) {
   if (!await uiConfirm('Hapus program ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/programs/${id}`);
   await loadPrograms();
 }
-
 document.getElementById('formProgram')?.addEventListener('submit', async e => {
   e.preventDefault();
   const id = document.getElementById('program-id').value;
@@ -2425,12 +2194,10 @@ document.getElementById('formProgram')?.addEventListener('submit', async e => {
     image_url: pickerGetUrl('picker-program-image'),
     order: id ? (programCache.find(x => x.id === id)?.order || 0) : programCache.length
   };
-
   if (!payload.department || !payload.title) {
     uiAlert('Kementerian dan judul program wajib diisi.');
     return;
   }
-
   try {
     if (id) await api('PUT', `/api/cms/programs/${id}`, payload);
     else await api('POST', '/api/cms/programs', payload);
@@ -2440,7 +2207,6 @@ document.getElementById('formProgram')?.addEventListener('submit', async e => {
     uiAlert('Error: ' + ex.message);
   }
 });
-
 // ── ANGGOTA ──────────────────────────────────────────────────────────────────
 function renderAnggotaActivationEditor(activePeriods = {}) {
   const wrap = document.getElementById('anggota-activation-wrap');
@@ -2462,7 +2228,6 @@ function renderAnggotaActivationEditor(activePeriods = {}) {
       </div>`;
     }).join('')}</div>`;
 }
-
 function collectAnggotaActivation() {
   const periods = {};
   document.querySelectorAll('.anggota-active-subperiod').forEach(sel => {
@@ -2472,7 +2237,6 @@ function collectAnggotaActivation() {
   });
   return { periods };
 }
-
 async function loadAnggota() {
   const el = document.getElementById('list-anggota');
   try {
@@ -2526,7 +2290,6 @@ async function loadAnggota() {
     </table></div>`;
   } catch (e) { el.innerHTML = errHtml(e.message); }
 }
-
 async function openAnggotaModal() {
   if (ROLE === 'superadmin' && (!state.periods || !state.periods.length)) {
     try { state.periods = await api('GET', '/api/cms/periods'); } catch (_) {}
@@ -2543,7 +2306,6 @@ async function openAnggotaModal() {
   createImagePicker('picker-anggota-cover');
   openModal('modalAnggota');
 }
-
 async function editAnggota(m) {
   if (ROLE === 'superadmin' && (!state.periods || !state.periods.length)) {
     try { state.periods = await api('GET', '/api/cms/periods'); } catch (_) {}
@@ -2560,7 +2322,6 @@ async function editAnggota(m) {
   createImagePicker('picker-anggota-cover', { initialUrl: m.cover_url || '' });
   openModal('modalAnggota');
 }
-
 async function submitAnggota() {
   const id = document.getElementById('anggota-id').value;
   const activation = collectAnggotaActivation();
@@ -2584,18 +2345,15 @@ async function submitAnggota() {
     await loadKementerian();
   } catch (ex) { uiAlert('Error: ' + ex.message); }
 }
-
 async function deleteAnggota(id) {
   if (!await uiConfirm('Hapus anggota ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/members/${id}`);
   await loadAnggota();
   await loadKementerian();
 }
-
 // ── MANAJEMEN PERIODE ────────────────────────────────────────────────────────
 let periodSubperiodDraft = [];
 let periodUsedSubperiods = new Set();
-
 function renderPeriodSubperiodEditor() {
   const list = document.getElementById('periode-subperiod-list');
   if (!list) return;
@@ -2608,7 +2366,6 @@ function renderPeriodSubperiodEditor() {
     </div>`;
   }).join('');
 }
-
 async function loadSubperiodUsage(periodLabel) {
   try {
     const members = await api('GET', `/api/cms/members?period=${encodeURIComponent(periodLabel)}`);
@@ -2622,7 +2379,6 @@ async function loadSubperiodUsage(periodLabel) {
     periodUsedSubperiods = new Set();
   }
 }
-
 document.addEventListener('click', e => {
   if (e.target.matches('#btn-add-subperiod')) {
     periodSubperiodDraft.push(`Gelombang ${periodSubperiodDraft.length + 1}`);
@@ -2636,14 +2392,12 @@ document.addEventListener('click', e => {
     }
   }
 });
-
 document.addEventListener('input', e => {
   if (e.target.matches('[data-subperiod-index]')) {
     const idx = parseInt(e.target.getAttribute('data-subperiod-index'), 10);
     if (!Number.isNaN(idx)) periodSubperiodDraft[idx] = e.target.value;
   }
 });
-
 async function loadPeriode() {
   const el = document.getElementById('list-periode');
   try {
@@ -2658,8 +2412,6 @@ async function loadPeriode() {
             <h3 class="font-semibold text-slate-800">${escHtml(p.display_name)}</h3>
             <p class="text-xs text-slate-400 font-mono">${p.label}</p>
           </div>
-        </div>
-        
         <div class="flex gap-2 flex-shrink-0 items-center">
           <button onclick="editPeriode('${p.label}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100">Edit</button>
           ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button>` : ''}
@@ -2674,8 +2426,6 @@ async function loadPeriode() {
     }
   } catch(e) { el.innerHTML = errHtml(e.message); }
 }
-
-
 function editPeriode(label) {
     const p = (state.periods || []).find(x => x.label === label);
     if(!p) return;
@@ -2688,7 +2438,6 @@ function editPeriode(label) {
     loadSubperiodUsage(p.label).then(renderPeriodSubperiodEditor);
     openModal('modalPeriode');
 }
-
 function openPeriodeCreateModal() {
   document.getElementById('periode-label').readOnly = false;
   document.getElementById('modalPeriodeTitle').textContent = 'Tambah Periode';
@@ -2698,7 +2447,6 @@ function openPeriodeCreateModal() {
   periodUsedSubperiods = new Set();
   openModal('modalPeriode');
 }
-
 async function activatePeriode(label) {
   if (!await uiConfirm(`Jadikan periode "${label}" sebagai aktif?`, 'Konfirmasi Aktivasi')) return;
   try {
@@ -2706,13 +2454,10 @@ async function activatePeriode(label) {
     loadPeriode();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
-
-
 document.getElementById('formPeriode').addEventListener('submit', async e => {
   e.preventDefault();
   const label = document.getElementById('periode-label').value;
   const isEditing = document.getElementById('periode-label').readOnly;
-  
   const body = {
     label: label,
     display_name: document.getElementById('periode-displayname').value,
@@ -2730,8 +2475,6 @@ document.getElementById('formPeriode').addEventListener('submit', async e => {
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
 //__REPLACE_ME__
-
-
 // ── MANAJEMEN AKUN ───────────────────────────────────────────────────────────
 async function loadAkun() {
   const el = document.getElementById('list-akun');
@@ -2766,7 +2509,6 @@ async function loadAkun() {
     </table></div>`;
   } catch(e) { el.innerHTML = errHtml(e.message); }
 }
-
 function openAkunModal() {
   document.getElementById('akun-id').value = '';
   document.getElementById('akun-username').value = '';
@@ -2777,7 +2519,6 @@ function openAkunModal() {
   toggleAssignedPeriod();
   openModal('modalAkun');
 }
-
 function editAkun(u) {
   document.getElementById('akun-id').value = u.id;
   document.getElementById('akun-username').value = u.username;
@@ -2789,13 +2530,11 @@ function editAkun(u) {
   toggleAssignedPeriod();
   openModal('modalAkun');
 }
-
 async function deleteAkun(id) {
   if (!await uiConfirm('Hapus akun ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/accounts/${id}`);
   loadAkun();
 }
-
 document.getElementById('formAkun').addEventListener('submit', async e => {
   e.preventDefault();
   const id = document.getElementById('akun-id').value;
@@ -2812,12 +2551,10 @@ document.getElementById('formAkun').addEventListener('submit', async e => {
     loadAkun();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
-
 function toggleAssignedPeriod() {
   const role = document.getElementById('akun-role').value;
   document.getElementById('akun-period-wrap').style.display = role === 'admin' ? '' : 'none';
 }
-
 // ── GLOBAL SETTING ───────────────────────────────────────────────────────────
 async function loadGlobal() {
   initQuill('editor-global-about');
@@ -2857,7 +2594,6 @@ async function loadGlobal() {
     renderGlobalPreview();
   }
 }
-
 document.getElementById('formGlobal').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = document.getElementById('global-msg');
@@ -2901,7 +2637,6 @@ document.getElementById('formGlobal').addEventListener('submit', async e => {
     setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
-
 document.getElementById('formSocmed').addEventListener('submit', async e => {
   e.preventDefault();
   const msg = document.getElementById('socmed-msg');
@@ -2944,7 +2679,6 @@ document.getElementById('formSocmed').addEventListener('submit', async e => {
     setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function escHtml(s) {
   if (!s) return '';
@@ -2954,7 +2688,6 @@ function stripHtml(s) {
   if (!s) return '';
   return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
-
 function statValuePreview(raw, chartType) {
   const parsed = parseStatInputValue(raw, chartType);
   if (parsed.mode === 'single') return String(parsed.single || '-');
@@ -2962,14 +2695,12 @@ function statValuePreview(raw, chartType) {
   if (parsed.mode === 'xy') return `${parsed.points.length} titik koordinat`;
   return `${parsed.points.length} baris data`;
 }
-
 function statChartMode(chartType) {
   const t = String(chartType || '').toLowerCase();
   if (t === 'kpi') return 'single';
   if (t === 'scatter' || t === 'bubble') return 'xy';
   return 'series';
 }
-
 function parseStatInputValue(raw, chartType) {
   const txt = String(raw || '').trim();
   const mode = statChartMode(chartType);
@@ -3012,7 +2743,6 @@ function parseStatInputValue(raw, chartType) {
     return { mode, single: txt, points: [] };
   }
 }
-
 function statRowInputTemplate(mode, idx, row = {}) {
   if (mode === 'xy') {
     return `<div class="grid grid-cols-12 gap-2 items-center stat-row" data-row-idx="${idx}">
@@ -3028,14 +2758,12 @@ function statRowInputTemplate(mode, idx, row = {}) {
     <button type="button" class="col-span-2 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded-lg py-2" data-remove-series="${idx}">Hapus</button>
   </div>`;
 }
-
 function renderStatSeriesRows(mode, rows = []) {
   const list = document.getElementById('stat-series-list');
   if (!list) return;
   const safeRows = rows.length ? rows : [{}];
   list.innerHTML = safeRows.map((row, idx) => statRowInputTemplate(mode, idx, row)).join('');
 }
-
 function collectStatInputValue(chartType) {
   const mode = statChartMode(chartType);
   if (mode === 'single') {
@@ -3067,7 +2795,6 @@ function collectStatInputValue(chartType) {
   });
   return JSON.stringify(points);
 }
-
 function renderStatValueInput(chartType, rawValue = '') {
   const mode = statChartMode(chartType);
   const label = document.getElementById('stat-value-label');
@@ -3076,9 +2803,7 @@ function renderStatValueInput(chartType, rawValue = '') {
   const seriesWrap = document.getElementById('stat-series-wrap');
   const addBtn = document.getElementById('btn-add-series');
   const parsed = parseStatInputValue(rawValue, chartType);
-
   if (!label || !help || !simpleWrap || !seriesWrap || !addBtn) return;
-
   if (mode === 'single') {
     label.textContent = 'Nilai Utama';
     help.textContent = 'Nilai tunggal untuk KPI card.';
@@ -3103,7 +2828,6 @@ function renderStatValueInput(chartType, rawValue = '') {
     renderStatSeriesRows('series', parsed.points);
   }
 }
-
 function buildPreviewDataset(chartType, rawValue) {
   const parsed = parseStatInputValue(rawValue, chartType);
   const type = String(chartType || 'bar').toLowerCase();
@@ -3128,7 +2852,6 @@ function buildPreviewDataset(chartType, rawValue) {
     chartType: ['line', 'radar'].includes(type) ? type : ['pie', 'doughnut'].includes(type) ? type : type === 'polar' ? 'polarArea' : 'bar'
   };
 }
-
 function renderStatPreview(chartType, rawValue) {
   const canvas = document.getElementById('stat-preview-canvas');
   const empty = document.getElementById('stat-preview-empty');
@@ -3158,7 +2881,6 @@ function renderStatPreview(chartType, rawValue) {
     }
   });
 }
-
 function renderTentangPreview() {
   const wrap = document.getElementById('tentang-preview');
   if (!wrap) return;
@@ -3186,7 +2908,6 @@ function renderTentangPreview() {
           <p class="text-xs text-slate-500 mb-2">Struktur</p>
           ${struktur ? `<img src="${escHtml(struktur)}" alt="struktur" class="w-full h-24 object-cover rounded">` : '<p class="text-xs text-slate-400">Belum ada gambar struktur.</p>'}
         </div>
-      </div>
       <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
         <p class="text-xs text-slate-500">Ringkasan Tentang</p>
         <p class="text-xs text-slate-700 mt-1"><span class="font-semibold">Latar Belakang:</span> ${escHtml(sejarah || '-')}</p>
@@ -3194,10 +2915,8 @@ function renderTentangPreview() {
         <p class="text-xs text-slate-700 mt-1"><span class="font-semibold">Misi:</span> ${escHtml(misi || '-')}</p>
       </div>
       <p class="text-xs text-slate-500">Galeri saat ini: <span class="font-semibold text-slate-700">${galleryCount}</span> item.</p>
-    </div>
   `;
 }
-
 function renderGlobalPreview() {
   const wrap = document.getElementById('global-preview');
   if (!wrap) return;
@@ -3230,12 +2949,10 @@ function renderGlobalPreview() {
           ${logo ? `<img src="${escHtml(logo)}" alt="logo" class="h-8 w-8 rounded object-contain border border-slate-200">` : '<div class="h-8 w-8 rounded bg-slate-100 border border-slate-200"></div>'}
           ${logoUniversity ? `<img src="${escHtml(logoUniversity)}" alt="university" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
           ${logoYayasan ? `<img src="${escHtml(logoYayasan)}" alt="yayasan" class="h-8 w-8 rounded object-contain border border-slate-200">` : ''}
-        </div>
         <div>
           <p class="text-sm font-semibold text-slate-800">${escHtml(orgName || '-')}</p>
           <p class="text-xs text-slate-500">${escHtml(headerTitle || '-')} • ${escHtml(headerSubtitle || '-')}</p>
         </div>
-      </div>
       <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
         <p class="text-xs text-slate-500">Hero</p>
         <p class="text-xs text-blue-600 font-semibold">${escHtml(heroBadge || '-')}</p>
@@ -3252,10 +2969,8 @@ function renderGlobalPreview() {
         <p class="text-xs text-slate-700 mt-1">${escHtml(aboutSummary || '-')}</p>
       </div>
       <p class="text-xs text-slate-500">Tautan media sosial aktif: <span class="font-semibold text-slate-700">${socialCount}</span></p>
-    </div>
   `;
 }
-
 function renderTentangGalleryEditor(items = []) {
   state.periodGallery = Array.isArray(items) ? items.map((it, idx) => ({
     title: it?.title || '',
@@ -3284,19 +2999,15 @@ function renderTentangGalleryEditor(items = []) {
           <label class="block text-xs font-semibold text-slate-600 mb-1">Caption</label>
           <input type="text" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" data-gallery-caption="${idx}" value="${escHtml(item.caption || '')}">
         </div>
-      </div>
       <div class="mt-3">
         <label class="block text-xs font-semibold text-slate-600 mb-1">Gambar</label>
         <div id="picker-gallery-${idx}"></div>
-      </div>
-    </div>
   `).join('');
   state.periodGallery.forEach((item, idx) => {
     createImagePicker(`picker-gallery-${idx}`, { initialUrl: item.image_url || '' });
   });
   renderTentangPreview();
 }
-
 function collectTentangGallery() {
   return state.periodGallery.map((_, idx) => {
     const title = (document.querySelector(`[data-gallery-title="${idx}"]`)?.value || '').trim();
@@ -3310,11 +3021,9 @@ function collectTentangGallery() {
     };
   }).filter(item => item.image_url);
 }
-
 document.addEventListener('input', (e) => {
   const t = e.target;
   if (!t) return;
-
   if (t.id === 'stat-simple-value' || t.matches('#stat-series-list input')) {
     const chartType = document.getElementById('stat-chart-type')?.value || 'bar';
     try {
@@ -3326,25 +3035,19 @@ document.addEventListener('input', (e) => {
     }
     return;
   }
-
   if (['tentang-tagline-title', 'tentang-tagline-subtitle', 'tentang-tagline-desc'].includes(t.id)) {
     renderTentangPreview();
     return;
   }
-
   if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok'].includes(t.id)) {
     renderGlobalPreview();
   }
 });
-
-
 // ── FAQ GLOBAL & PERIODE ──────────────────────────────────────────────────
-
 function initFAQSorable(pLabel) {
   const isGlobal = (pLabel === 'GLOBAL');
   const tb = document.getElementById(isGlobal ? 'faq-global-tbody' : 'faq-periode-tbody');
   if(!tb) return;
-  
   if (tb._sortable) tb._sortable.destroy();
   tb._sortable = Sortable.create(tb, {
     animation: 180,
@@ -3425,9 +3128,7 @@ document.getElementById('formFAQ')?.addEventListener('submit', async e => {
      loadFAQs(data.period_label);
   } catch(ex) { uiAlert(ex); }
 });
-
 // ── STATISTIK ──────────────────────────────────────────────────────────
-
 async function syncStats() {
     const cur = currentPeriod();
     if(!cur || cur === '_TEMPLATE_') return uiAlert("Pilih periode valid!");
@@ -3466,7 +3167,6 @@ function initStatsSortable(tbodyId) {
     }
   });
 }
-
 async function toggleTemplateFlag(id, key, checked) {
   const s = (state.global_stats || []).find(x => x.id === id);
   if (!s) return;
@@ -3481,7 +3181,6 @@ async function toggleTemplateFlag(id, key, checked) {
   await api('PUT', '/api/cms/stats/' + id, payload);
   loadGlobalStatsTab();
 }
-
 async function loadGlobalStatsTab() {
     const tb = document.getElementById('global-stats-tbody');
     try {
@@ -3507,7 +3206,6 @@ async function loadGlobalStatsTab() {
         tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">${e}</td></tr>`;
     }
 }
-
 function openStatModalGlobal() {
   document.getElementById('formStatistik').reset();
   document.getElementById('modalStatistikTitle').textContent = 'Tambah Template Statistik';
@@ -3529,7 +3227,6 @@ function openStatModalGlobal() {
   document.getElementById('stat-visible').disabled = true;
   openModal('modalStatistik');
 }
-
 function editGlobalStat(id) {
   const s = state.global_stats.find(x => x.id === id);
   if(!s) return;
@@ -3554,7 +3251,6 @@ function editGlobalStat(id) {
   document.getElementById('stat-visible').disabled = false;
   openModal('modalStatistik');
 }
-
 async function deleteGlobalStat(id) {
   if(!await uiConfirm('Hapus template ini?', 'Konfirmasi Hapus', true)) return;
   try {
@@ -3562,7 +3258,6 @@ async function deleteGlobalStat(id) {
     loadGlobalStatsTab();
   } catch(e) { uiAlert(e); }
 }
-
 async function loadStatistik() {
   const cur = currentPeriod();
   if(!cur) return;
@@ -3571,18 +3266,15 @@ async function loadStatistik() {
     // Load template statistik with Fillable=true
     const templates = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
     const fillableTemplates = (templates||[]).filter(t => t.fillable);
-    
     // Load period statistik values
     const periodStats = await api('GET', '/api/cms/stats?period=' + cur);
     state.stats = periodStats || [];
-    
     // Create map of period stats by template_id
     const statsMap = {};
     state.stats.forEach(s => {
       const templateId = s.template_id || s.id;
       statsMap[templateId] = s;
     });
-    
     tb.innerHTML = fillableTemplates.map(template => {
       const stat = statsMap[template.id];
       const value = stat ? stat.value : '';
@@ -3603,20 +3295,17 @@ async function loadStatistik() {
         </td>
       </tr>
     `}).join('');
-    
     if(!fillableTemplates.length) {
       tb.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
     }
   } catch(e) { tb.innerHTML = `<tr><td colspan="6">${errHtml(e.message)}</td></tr>`; }
 }
-
 // Display formatted stat value based on chart type  
 function statValueDisplay(value, chartType) {
   if (!value) return '-';
   try {
     const mode = statChartMode(chartType);
     if (mode === 'single') return value;
-    
     // For series mode, try to parse and show summary
     try {
       const data = typeof value === 'string' ? JSON.parse(value) : value;
@@ -3625,10 +3314,10 @@ function statValueDisplay(value, chartType) {
         return count === 1 ? `${data[0].label}: ${data[0].value}` : `${count} data points`;
       }
       return String(value).substring(0, 50);
-    } catch {
+    } catch(ex) {
       return String(value).substring(0, 50);
     }
-  } catch {
+  } catch(ex) {
     return String(value).substring(0, 50);
   }
 }
@@ -3658,14 +3347,11 @@ function openStatModal() {
 function editStatPeriod(templateId) {
   const cur = currentPeriod();
   if(!cur) return uiAlert('Pilih periode dulu.');
-  
   // Find template
   const template = state.global_stats && state.global_stats.find(x => x.id === templateId);
   if(!template) return uiAlert('Template tidak ditemukan.');
-  
   // Find existing period stat
   const existing = state.stats && state.stats.find(x => (x.template_id || x.id) === templateId);
-  
   document.getElementById('formStatistik').reset();
   document.getElementById('modalStatistikTitle').textContent = 'Isi Nilai: ' + escHtml(template.label||'');
   document.getElementById('stat-id').value = existing ? existing.id : '';
@@ -3674,12 +3360,10 @@ function editStatPeriod(templateId) {
   document.getElementById('stat-label').value = template.label||'';
   document.getElementById('stat-value').value = existing ? existing.value : '';
   document.getElementById('stat-desc').value = template.desc||'';
-  
   // Hide label, desc, type, flags - only show value input
   document.getElementById('stat-value-wrap').classList.remove('hidden');
   document.getElementById('stat-preview-wrap').classList.remove('hidden');
   document.getElementById('stat-flags-wrap').classList.add('hidden');
-  
   // Hide label/desc/type inputs and disable chart type switching
   document.getElementById('stat-label').disabled = true;
   document.getElementById('stat-desc').disabled = true;
@@ -3687,15 +3371,12 @@ function editStatPeriod(templateId) {
   document.getElementById('stat-fillable').disabled = true;
   document.getElementById('stat-visible').disabled = true;
   document.getElementById('stat-value').disabled = false;
-  
   // Setup value input UI
   renderChartChoices(template.chart_type || 'bar', true);
   renderStatValueInput(template.chart_type || 'bar', existing ? existing.value : '');
   renderStatPreview(template.chart_type || 'bar', existing ? existing.value : '');
-  
   openModal('modalStatistik');
 }
-
 function editStat(id) {
   const s = state.stats.find(x => x.id === id);
   if(!s) return;
@@ -3762,8 +3443,6 @@ document.getElementById('formStatistik').addEventListener('submit', async e => {
      }
   } catch(ex) { uiAlert(ex); }
 });
-
-
 // ── Initialize ───────────────────────────────────────────────────────────────
 // Boot: switch to first tab
 (() => {
@@ -3781,11 +3460,9 @@ document.getElementById('formStatistik').addEventListener('submit', async e => {
 syncPeriodSwitcherRouteSection();
 switchTab(selectedSectionFromURL());
 renderChartChoices('bar');
-
 // ── Broadcast ────────────────────────────────────────────────────────────────
 let bcWs = null;
 let qrRefreshTimer = null;
-
 function initBroadcast() {
   loadWAStatus();
   loadBCContacts();
@@ -3795,7 +3472,6 @@ function initBroadcast() {
     document.getElementById('bc-char-count').textContent = e.target.value.length;
   });
 }
-
 function showBCSub(name) {
   document.querySelectorAll('.bc-sub-content').forEach(el => el.classList.add('hidden'));
   document.querySelectorAll('.bc-sub-tab').forEach(el => { el.className = el.className.replace('bg-blue-600 text-white', 'bg-slate-200 text-slate-700'); });
@@ -3803,7 +3479,6 @@ function showBCSub(name) {
   const tab = document.getElementById('bc-tab-' + name);
   if (tab) { tab.className = tab.className.replace('bg-slate-200 text-slate-700', 'bg-blue-600 text-white'); }
 }
-
 async function loadWAStatus() {
   try {
     const data = await api('GET', '/api/broadcast/status');
@@ -3827,7 +3502,6 @@ async function loadWAStatus() {
     document.getElementById('wa-status-text').textContent = 'Service tidak tersedia';
   }
 }
-
 async function loadWAQR() {
   try {
     const resp = await fetch('/api/broadcast/qr');
@@ -3838,7 +3512,6 @@ async function loadWAQR() {
     }
   } catch(e) {}
 }
-
 async function loadBCContacts() {
   try {
     const period = document.getElementById('bc-contact-filter')?.value || 'ALL';
@@ -3863,7 +3536,6 @@ async function loadBCContacts() {
     document.getElementById('bc-contacts-list').innerHTML = errHtml(e);
   }
 }
-
 async function deleteBCContact(id) {
   if (!await uiConfirm('Hapus kontak ini?', 'Konfirmasi', true)) return;
   try {
@@ -3873,7 +3545,6 @@ async function deleteBCContact(id) {
     await uiAlert('Gagal menghapus: ' + e.message);
   }
 }
-
 document.getElementById('formBroadcastContact')?.addEventListener('submit', async e => {
   e.preventDefault();
   const body = {
@@ -3893,7 +3564,6 @@ document.getElementById('formBroadcastContact')?.addEventListener('submit', asyn
     await uiAlert('Gagal menambah: ' + e.message);
   }
 });
-
 async function importBCContacts() {
   const csv = document.getElementById('bc-csv-input').value.trim();
   if (!csv) { await uiAlert('CSV kosong'); return; }
@@ -3921,25 +3591,19 @@ async function importBCContacts() {
     await uiAlert('Gagal import: ' + e.message);
   }
 }
-
 async function sendBroadcast() {
   const message = document.getElementById('bc-message').value.trim();
   if (!message) { await uiAlert('Pesan tidak boleh kosong'); return; }
-
   const phones = document.getElementById('bc-phones').value.trim().split('\n').filter(p => p.trim());
   const period = document.getElementById('bc-send-filter').value;
-
   const body = { message, period };
   if (phones.length > 0) body.phones = phones;
-
   if (!await uiConfirm(`Kirim broadcast ke ${phones.length > 0 ? phones.length + ' nomor' : 'semua kontak periode ' + period}?`, 'Konfirmasi Broadcast', true)) return;
-
   const btn = document.getElementById('bc-send-btn');
   const progress = document.getElementById('bc-progress');
   btn.disabled = true;
   btn.classList.add('opacity-50');
   progress.classList.remove('hidden');
-
   try {
     const result = await api('POST', '/api/broadcast/send', body);
     // Progress will be updated via WebSocket
@@ -3950,7 +3614,6 @@ async function sendBroadcast() {
     progress.classList.add('hidden');
   }
 }
-
 async function loadBCHistory() {
   try {
     const logs = await api('GET', '/api/broadcast/logs');
@@ -3981,7 +3644,6 @@ async function loadBCHistory() {
     document.getElementById('bc-history-list').innerHTML = errHtml(e);
   }
 }
-
 async function showBCDetail(id) {
   try {
     const data = await api('GET', `/api/broadcast/logs/${id}`);
@@ -4008,7 +3670,6 @@ async function showBCDetail(id) {
     await uiAlert('Gagal memuat detail: ' + e.message);
   }
 }
-
 function connectBCWebSocket() {
   try {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -4025,7 +3686,6 @@ function connectBCWebSocket() {
     bcWs.onerror = () => { bcWs?.close(); };
   } catch(e) {}
 }
-
 function handleBCEvent(data) {
   if (data.type === 'broadcast_progress') {
     const bar = document.getElementById('bc-progress-bar');
@@ -4046,100 +3706,7 @@ function handleBCEvent(data) {
     uiAlert(msg, 'Hasil Broadcast');
   }
 }
-
 function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
-
 </script>
-
-<!-- FAQ Modal -->
-<div id="modalFAQ" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-    <div class="p-6 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
-      <h3 class="text-lg font-bold">FAQ</h3>
-      <button onclick="closeModal('modalFAQ')" class="text-slate-400 hover:text-slate-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-    </div>
-    <form id="formFAQ" class="p-6 space-y-4">
-      <input type="hidden" id="faq-id"><input type="hidden" id="faq-period">
-      <div><label class="block text-sm font-semibold mb-1">Pertanyaan</label><textarea id="faq-question" required rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2"></textarea></div>
-      <div><label class="block text-sm font-semibold mb-1">Jawaban</label><textarea id="faq-answer" required rows="4" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2"></textarea></div>
-      
-      <div class="flex justify-end pt-4"><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Simpan</button></div>
-    </form>
-  </div>
-</div>
-
-<!-- Global Action Modal -->
-<div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-    <div class="p-6 border-b border-slate-200">
-      <h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3>
-    </div>
-    <div class="p-6">
-      <p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p>
-    </div>
-    <div class="px-6 pb-6 flex justify-end gap-3">
-      <button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-      <button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button>
-    </div>
-  </div>
-</div>
-
-
-
-
-    <!-- Broadcast Contact Modal -->
-    <div id="modalBroadcastContact" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div class="flex items-center justify-between p-5 border-b">
-          <h3 class="text-lg font-bold">Tambah Kontak Broadcast</h3>
-          <button onclick="closeModal('modalBroadcastContact')" class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-        </div>
-        <form id="formBroadcastContact" class="p-5 space-y-3">
-          <div>
-            <label class="text-xs text-slate-500 block mb-1">Nama</label>
-            <input type="text" id="bc-contact-name" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="Nama kontak">
-          </div>
-          <div>
-            <label class="text-xs text-slate-500 block mb-1">Nomor WhatsApp</label>
-            <input type="text" id="bc-contact-phone" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="08123456789">
-          </div>
-          <div>
-            <label class="text-xs text-slate-500 block mb-1">Periode</label>
-            <input type="text" id="bc-contact-period" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="GLOBAL atau nama periode">
-          </div>
-          <div>
-            <label class="text-xs text-slate-500 block mb-1">Grup (opsional)</label>
-            <input type="text" id="bc-contact-group" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="Nama grup">
-          </div>
-          <div class="flex gap-2 pt-2">
-            <button type="button" onclick="closeModal('modalBroadcastContact')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Simpan</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Broadcast Import Modal -->
-    <div id="modalBroadcastImport" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg">
-        <div class="flex items-center justify-between p-5 border-b">
-          <h3 class="text-lg font-bold">Import Kontak (CSV)</h3>
-          <button onclick="closeModal('modalBroadcastImport')" class="text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-        </div>
-        <div class="p-5 space-y-3">
-          <p class="text-xs text-slate-500">Format CSV: <code class="bg-slate-100 px-1 rounded">nama,nomor,periode,grup</code></p>
-          <textarea id="bc-csv-input" rows="8" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono" placeholder="Budi,08123456789,GLOBAL,
-Ani,08234567890,2024/2025,Kementerian"></textarea>
-          <div>
-            <label class="text-xs text-slate-500 block mb-1">Periode default (jika kosong di CSV)</label>
-            <input type="text" id="bc-import-period" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="GLOBAL" value="GLOBAL">
-          </div>
-          <div class="flex gap-2 pt-2">
-            <button type="button" onclick="closeModal('modalBroadcastImport')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button>
-            <button type="button" onclick="importBCContacts()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Import</button>
-          </div>
-        </div>
-      </div>
-    </div>
 </body>
 </html>

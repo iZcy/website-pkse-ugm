@@ -27,6 +27,8 @@ services:
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
     volumes:
       - ./templates:/app/templates
+      - ./webapp-prod:/app/webapp-prod
+      - ./static/uploads:/app/static/uploads
     depends_on:
       mongo:
         condition: service_healthy

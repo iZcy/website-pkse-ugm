@@ -2588,14 +2588,17 @@ document.getElementById('formStatistik')?.addEventListener('submit', async e => 
 let bcWs = null;
 let qrRefreshTimer = null;
 
+// Global broadcast contact state
+let bcContactRows = [];
+let bcColumnHeaders = ['full_name', 'phone', 'department', 'position', 'program_studi', 'angkatan'];
+let bcColumnLabels = ['Nama', 'No. HP', 'Kementerian', 'Jabatan', 'Program Studi', 'Angkatan'];
+
 function initBroadcast() {
   loadWAStatus();
-  loadBCContacts();
   loadBCHistory();
   connectBCWebSocket();
-  document.getElementById('bc-message')?.addEventListener('input', e => {
-    document.getElementById('bc-char-count').textContent = e.target.value.length;
-  });
+  populatePeriodFilter();
+  loadBCContacts();
 }
 
 function showBCSub(name) {
@@ -2641,54 +2644,307 @@ async function loadWAQR() {
   } catch(e) {}
 }
 
+function populatePeriodFilter() {
+  const sel = document.getElementById('bc-contact-filter');
+  if (!sel) return;
+  const current = window.PERIOD || '';
+  // Fetch periods from API
+  api('GET', '/api/periods').then(periods => {
+    if (!periods || !Array.isArray(periods)) return;
+    sel.innerHTML = '<option value="ALL">Semua Periode</option>';
+    periods.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.label || p.Label;
+      opt.textContent = p.display_name || p.DisplayName || p.label || p.Label;
+      if ((p.label || p.Label) === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }).catch(() => {});
+}
+
 async function loadBCContacts() {
   try {
-    const period = document.getElementById('bc-contact-filter')?.value || 'ALL';
-    const contacts = await api('GET', '/api/broadcast/contacts?period=' + period);
-    const el = document.getElementById('bc-contacts-list');
-    if (!contacts || contacts.length === 0) {
-      el.innerHTML = '<p class=text-sm text-slate-400>Belum ada kontak.</p>';
+    const period = document.getElementById('bc-contact-filter')?.value || window.PERIOD || 'ALL';
+    const contacts = await api('GET', '/api/broadcast/anggota-contacts?period=' + encodeURIComponent(period));
+    if (!contacts || !Array.isArray(contacts)) {
+      bcContactRows = [];
+      renderBCContactsTable();
       return;
     }
-    el.innerHTML = '<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm"><thead><tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase"><th class="px-3 py-2">Nama</th><th class="px-3 py-2">Nomor</th><th class="px-3 py-2">Periode</th><th class="px-3 py-2">Grup</th><th class="px-3 py-2 w-20"></th></tr></thead><tbody>' + contacts.map(c => '<tr class="border-t border-slate-100 hover:bg-slate-50"><td class="px-3 py-2">' + escHtml(c.name || '-') + '</td><td class="px-3 py-2 font-mono text-xs">' + escHtml(c.phone) + '</td><td class="px-3 py-2 text-xs">' + escHtml(c.period) + '</td><td class="px-3 py-2 text-xs">' + escHtml(c.group || '-') + '</td><td class="px-3 py-2"><button onclick="deleteBCContact(\'' + c.id + '\')" class="text-red-500 hover:text-red-700 text-xs">Hapus</button></td></tr>').join('') + '</tbody></table></div><p class="text-xs text-slate-400 mt-2">' + contacts.length + ' kontak</p>';
+    // Map API response to our row format
+    bcContactRows = contacts.map(c => ({
+      full_name: c.full_name || c.FullName || '',
+      nickname: c.nickname || c.Nickname || '',
+      phone: c.phone || c.Phone || '',
+      department: c.department || c.Department || '',
+      position: c.position || c.Position || '',
+      program_studi: c.program_studi || c.ProgramStudi || '',
+      fakultas: c.fakultas || c.Fakultas || '',
+      angkatan: c.angkatan || c.Angkatan || '',
+      _selected: false
+    }));
+    renderBCContactsTable();
   } catch(e) {
-    document.getElementById('bc-contacts-list').innerHTML = errHtml(e);
+    bcContactRows = [];
+    renderBCContactsTable();
   }
 }
 
-async function deleteBCContact(id) {
-  if (!await uiConfirm('Hapus kontak ini?', 'Konfirmasi', true)) return;
-  try {
-    await api('DELETE', '/api/broadcast/contacts/' + id);
-    await loadBCContacts();
-  } catch(e) {
-    await uiAlert('Gagal menghapus: ' + e.message);
+function renderBCContactsTable() {
+  const tbody = document.getElementById('bc-contacts-tbody');
+  const countEl = document.getElementById('bc-contact-count');
+  if (!tbody) return;
+
+  // Update selected count
+  const selectedCount = bcContactRows.filter(r => r._selected).length;
+  const selCountEl = document.getElementById('bc-selected-count');
+  if (selCountEl) selCountEl.textContent = selectedCount;
+  if (countEl) countEl.textContent = bcContactRows.length + ' kontak' + (selectedCount > 0 ? ' (' + selectedCount + ' dipilih)' : '');
+
+  // Update variable list
+  updateBCVarList();
+
+  // Update preview row selector
+  updateBCPreviewRows();
+
+  if (bcContactRows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-slate-400 py-8 text-sm">Tidak ada kontak dengan nomor HP. Tambahkan nomor HP pada data anggota atau tambah baris manual.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = bcContactRows.map((row, ri) => {
+    const cells = bcColumnHeaders.map((col, ci) => {
+      const val = row[col] || '';
+      return '<td class="px-2 py-1 border-r border-slate-100 last:border-r-0" contenteditable="true" data-row="' + ri + '" data-col="' + ci + '" onblur="onBCCellEdit(this, ' + ri + ', \'' + col + '\')" onkeydown="onBCellKey(event, this)">' + escHtml(val) + '</td>';
+    }).join('');
+    return '<tr class="border-t border-slate-100 hover:bg-blue-50/50">' +
+      '<td class="px-2 py-1 text-center w-8"><input type="checkbox" ' + (row._selected ? 'checked' : '') + ' onchange="bcContactRows[' + ri + ']._selected=this.checked;renderBCContactsTable()" class="rounded"></td>' +
+      cells +
+      '<td class="px-2 py-1 text-center w-10"><button onclick="deleteBCRow(' + ri + ')" class="text-red-400 hover:text-red-600 text-xs p-1" title="Hapus">&times;</button></td>' +
+      '</tr>';
+  }).join('');
+
+  // Update thead
+  renderBCHeaders();
+}
+
+function renderBCHeaders() {
+  const thead = document.querySelector('#bc-contacts-table thead tr');
+  if (!thead) return;
+  let html = '<th class="px-3 py-2 w-8 text-center"><input type="checkbox" onchange="toggleAllBCRows(this.checked)" class="rounded" title="Pilih semua"></th>';
+  bcColumnHeaders.forEach((col, ci) => {
+    const label = bcColumnLabels[ci] || col;
+    html += '<th class="px-3 py-2 min-w-[120px] cursor-pointer hover:text-blue-600 select-none" ondblclick="renameBCColumn(' + ci + ')" title="Double-click untuk rename variabel">' + escHtml(label) + '</th>';
+  });
+  html += '<th class="px-3 py-2 w-10"></th>';
+  thead.innerHTML = html;
+}
+
+function onBCCellEdit(el, rowIdx, colKey) {
+  if (rowIdx >= 0 && rowIdx < bcContactRows.length) {
+    bcContactRows[rowIdx][colKey] = el.textContent.trim();
   }
 }
 
-async function importBCContacts() {
-  const csv = document.getElementById('bc-csv-input').value.trim();
-  if (!csv) { await uiAlert('CSV kosong'); return; }
-  const lines = csv.split('\n').filter(l => l.trim());
-  const contacts = [];
-  for (const line of lines) {
-    const parts = line.split(',').map(s => s.trim());
-    if (parts.length >= 2 && parts[1]) {
-      contacts.push({ name: parts[0] || '', phone: parts[1], period: parts[2] || document.getElementById('bc-import-period').value || 'GLOBAL', group: parts[3] || '' });
+function onBCellKey(event, el) {
+  if (event.key === 'Enter') { event.preventDefault(); el.blur(); }
+  if (event.key === 'Tab') { event.preventDefault(); el.blur(); }
+}
+
+function toggleAllBCRows(checked) {
+  bcContactRows.forEach(r => r._selected = checked);
+  renderBCContactsTable();
+}
+
+function addBCRow() {
+  const newRow = {};
+  bcColumnHeaders.forEach(h => newRow[h] = '');
+  newRow._selected = false;
+  bcContactRows.push(newRow);
+  renderBCContactsTable();
+}
+
+function deleteBCRow(idx) {
+  bcContactRows.splice(idx, 1);
+  renderBCContactsTable();
+}
+
+async function renameBCColumn(colIdx) {
+  const col = bcColumnHeaders[colIdx];
+  const currentLabel = bcColumnLabels[colIdx] || col;
+  const newLabel = prompt('Nama variabel untuk kolom "' + currentLabel + '":', col);
+  if (newLabel === null || !newLabel.trim()) return;
+  const newKey = newLabel.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+  // Update key in all rows
+  bcContactRows.forEach(row => {
+    row[newKey] = row[col] || '';
+    delete row[col];
+  });
+  bcColumnHeaders[colIdx] = newKey;
+  bcColumnLabels[colIdx] = newLabel.trim();
+  renderBCContactsTable();
+}
+
+function importBCFromCSV() {
+  const csv = prompt('Paste data CSV/tab-separated.\nBaris pertama = header kolom.\nData dipisahkan tab atau koma.');
+  if (!csv || !csv.trim()) return;
+
+  const lines = csv.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) { uiAlert('Minimal 2 baris (header + data)'); return; }
+
+  // Detect separator
+  const sep = lines[0].includes('\t') ? '\t' : ',';
+  const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+  const labels = lines[0].split(sep).map(h => h.trim());
+
+  // Merge new columns
+  headers.forEach((h, i) => {
+    if (!bcColumnHeaders.includes(h)) {
+      bcColumnHeaders.push(h);
+      bcColumnLabels.push(labels[i] || h);
+    }
+  });
+
+  // Add rows
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(sep).map(c => c.trim());
+    const row = { _selected: false };
+    bcColumnHeaders.forEach(h => row[h] = '');
+    headers.forEach((h, ci) => { row[h] = cols[ci] || ''; });
+    if (Object.values(row).some(v => typeof v === 'string' && v)) {
+      bcContactRows.push(row);
     }
   }
-  if (contacts.length === 0) { await uiAlert('Tidak ada kontak valid'); return; }
-  try {
-    const result = await api('POST', '/api/broadcast/import-contacts', { contacts, period: document.getElementById('bc-import-period').value || 'GLOBAL' });
-    closeModal('modalBroadcastImport');
-    document.getElementById('bc-csv-input').value = '';
-    await loadBCContacts();
-    await uiAlert((result.count || contacts.length) + ' kontak berhasil diimport');
-  } catch(e) {
-    await uiAlert('Gagal import: ' + e.message);
+  renderBCContactsTable();
+}
+
+function updateBCVarList() {
+  const el = document.getElementById('bc-var-list');
+  if (!el) return;
+  if (bcColumnHeaders.length === 0) {
+    el.innerHTML = '<p class="text-slate-400 italic">Muat kontak dulu...</p>';
+    return;
+  }
+  el.innerHTML = bcColumnHeaders.map((h, i) => {
+    const label = bcColumnLabels[i] || h;
+    return '<div class="py-0.5 cursor-pointer hover:text-blue-600" onclick="insertBCVar(\'' + escHtml(h) + '\')" title="Klik untuk insert">{{' + escHtml(h) + '}}</div><div class="text-slate-400 text-[10px]">' + escHtml(label) + '</div>';
+  }).join('<hr class="border-slate-100 my-0.5">');
+}
+
+function insertBCVar(varName) {
+  const ta = document.getElementById('bc-template');
+  if (ta) {
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const text = ta.value;
+    ta.value = text.substring(0, start) + '{{' + varName + '}}' + text.substring(end);
+    ta.focus();
+    ta.selectionStart = ta.selectionEnd = start + varName.length + 4;
   }
 }
 
+function updateBCPreviewRows() {
+  const sel = document.getElementById('bc-preview-row');
+  if (!sel) return;
+  sel.innerHTML = '';
+  bcContactRows.forEach((row, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = (row.full_name || row.phone || 'Baris ' + (i + 1));
+    sel.appendChild(opt);
+  });
+}
+
+function renderBCTemplateJS(template, vars) {
+  // Handle {{if col == "val"}}...{{else}}...{{endif}}
+  const re = /\{\{if\s+(\w+)\s*==\s*"([^"]*?)"\}\}(.*?)\{\{else\}\}(.*?)\{\{endif\}\}/gs;
+  template = template.replace(re, (match, col, compareVal, trueBody, falseBody) => {
+    const actual = vars[col] || '';
+    return actual === compareVal ? trueBody : falseBody;
+  });
+  // Replace {{var}}
+  Object.keys(vars).forEach(k => {
+    template = template.replaceAll('{{' + k + '}}', vars[k] || '');
+  });
+  return template;
+}
+
+function previewBCTemplate() {
+  const template = document.getElementById('bc-template')?.value;
+  const rowIdx = parseInt(document.getElementById('bc-preview-row')?.value);
+  const box = document.getElementById('bc-preview-box');
+  if (!template || isNaN(rowIdx) || !bcContactRows[rowIdx]) {
+    if (box) box.classList.add('hidden');
+    return;
+  }
+  const vars = {};
+  bcColumnHeaders.forEach(h => vars[h] = bcContactRows[rowIdx][h] || '');
+  const rendered = renderBCTemplateJS(template, vars);
+  if (box) {
+    box.textContent = rendered;
+    box.classList.remove('hidden');
+  }
+}
+
+async function sendBCTest() {
+  const template = document.getElementById('bc-template')?.value?.trim();
+  const phone = document.getElementById('bc-test-phone')?.value?.trim();
+  if (!template) { await uiAlert('Template pesan kosong'); return; }
+  if (!phone) { await uiAlert('Nomor tujuan test kosong'); return; }
+  if (!await uiConfirm('Kirim test ke ' + phone + '?', 'Test Broadcast', true)) return;
+  try {
+    const msg = renderBCTemplateJS(template, { full_name: 'Test', phone: phone });
+    await api('POST', '/api/broadcast/send', { message: msg, phones: [phone], delay_ms: 0 });
+    await uiAlert('Test terkirim!');
+  } catch(e) {
+    await uiAlert('Gagal: ' + e.message);
+  }
+}
+
+async function sendBroadcast() {
+  const template = document.getElementById('bc-template')?.value?.trim();
+  if (!template) { await uiAlert('Template pesan kosong'); return; }
+  const selected = bcContactRows.filter(r => r._selected);
+  if (selected.length === 0) { await uiAlert('Pilih minimal 1 kontak (centang baris)'); return; }
+
+  const phones = selected.map(r => r.phone).filter(p => p);
+  if (phones.length === 0) { await uiAlert('Tidak ada nomor HP pada kontak terpilih'); return; }
+
+  const delayMs = (parseInt(document.getElementById('bc-delay')?.value) || 3) * 1000;
+
+  if (!await uiConfirm('Kirim broadcast ke ' + phones.length + ' kontak dengan delay ' + (delayMs / 1000) + ' detik?', 'Konfirmasi Broadcast', true)) return;
+
+  // Render each message per row
+  const phonesFinal = [];
+  const messages = [];
+  selected.forEach(row => {
+    if (!row.phone) return;
+    const vars = {};
+    bcColumnHeaders.forEach(h => vars[h] = row[h] || '');
+    messages.push(renderBCTemplateJS(template, vars));
+    phonesFinal.push(row.phone);
+  });
+
+  const btn = document.getElementById('bc-send-btn');
+  const progress = document.getElementById('bc-progress');
+  btn.disabled = true;
+  btn.classList.add('opacity-50');
+  progress.classList.remove('hidden');
+
+  try {
+    await api('POST', '/api/broadcast/send', {
+      message: template,
+      phones: phonesFinal,
+      messages: messages,
+      delay_ms: delayMs
+    });
+  } catch(e) {
+    await uiAlert('Gagal mengirim: ' + e.message);
+    btn.disabled = false;
+    btn.classList.remove('opacity-50');
+    progress.classList.add('hidden');
+  }
+}
 
 async function disconnectWA() {
   if (!await uiConfirm('Putuskan sesi WhatsApp? QR code perlu discan ulang setelah disconnect.', 'Disconnect WhatsApp', true)) return;
@@ -2698,30 +2954,6 @@ async function disconnectWA() {
     loadWAStatus();
   } catch(e) {
     await uiAlert('Gagal disconnect: ' + e.message);
-  }
-}
-
-async function sendBroadcast() {
-  const message = document.getElementById('bc-message').value.trim();
-  if (!message) { await uiAlert('Pesan tidak boleh kosong'); return; }
-  const phones = document.getElementById('bc-phones').value.trim().split('\n').filter(p => p.trim());
-  const period = document.getElementById('bc-send-filter').value;
-  const delayMs = parseInt(document.getElementById('bc-delay').value) || 0;
-  const body = { message, period, delay_ms: delayMs };
-  if (phones.length > 0) body.phones = phones;
-  if (!await uiConfirm('Kirim broadcast ke ' + (phones.length > 0 ? phones.length + ' nomor' : 'semua kontak periode ' + period) + '?', 'Konfirmasi Broadcast', true)) return;
-  const btn = document.getElementById('bc-send-btn');
-  const progress = document.getElementById('bc-progress');
-  btn.disabled = true;
-  btn.classList.add('opacity-50');
-  progress.classList.remove('hidden');
-  try {
-    await api('POST', '/api/broadcast/send', body);
-  } catch(e) {
-    await uiAlert('Gagal mengirim: ' + e.message);
-    btn.disabled = false;
-    btn.classList.remove('opacity-50');
-    progress.classList.add('hidden');
   }
 }
 
