@@ -696,9 +696,10 @@ async function deleteArtikel(id) {
 
 // ── TENTANG PERIODE ──────────────────────────────────────────────────────────
 async function loadTentang() {
+  initQuill('editor-sejarah');
   initQuill('editor-visi');
   initQuill('editor-misi');
-  ['editor-visi', 'editor-misi'].forEach((id) => {
+  ['editor-sejarah', 'editor-visi', 'editor-misi'].forEach((id) => {
     const q = quills[id];
     if (q && !q.__previewBound) {
       q.on('text-change', () => renderTentangPreview());
@@ -711,6 +712,7 @@ async function loadTentang() {
   try {
     const pa = await api('GET', `/api/cms/period-about?period=${PERIOD}`);
     state.periodAbout = pa || {};
+    quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
     document.getElementById('tentang-tagline-title').value = pa.tagline_title || '';
@@ -737,6 +739,7 @@ document.getElementById('formTentang')?.addEventListener('submit', async e => {
   try {
     await api('PUT', '/api/cms/period-about', {
       period_label: PERIOD,
+      sejarah: quillGetHTML('editor-sejarah'),
       tagline_title: document.getElementById('tentang-tagline-title').value,
       tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
       tagline_description: document.getElementById('tentang-tagline-desc').value,
@@ -750,6 +753,7 @@ document.getElementById('formTentang')?.addEventListener('submit', async e => {
     state.periodAbout = {
       ...(state.periodAbout || {}),
       period_label: PERIOD,
+      sejarah: quillGetHTML('editor-sejarah'),
       tagline_title: document.getElementById('tentang-tagline-title').value,
       tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
       tagline_description: document.getElementById('tentang-tagline-desc').value,
@@ -970,7 +974,6 @@ function renderDeptCard(d, depth) {
 
 async function loadKementerian() {
   const el = document.getElementById('list-departemen');
-  if (!el) return;
   try {
     const [depts, members] = await Promise.all([
       api('GET', `/api/cms/departments?period=${PERIOD}`),
@@ -1297,7 +1300,6 @@ function collectAnggotaActivation() {
 
 async function loadAnggota() {
   const el = document.getElementById('list-anggota');
-  if (!el) return;
   try {
     const items = await api('GET', `/api/cms/members?period=${PERIOD}`);
     memberCache = items || [];
@@ -1493,7 +1495,6 @@ async function loadPeriode() {
         <div class="flex gap-2 flex-shrink-0 items-center">
           <button onclick="editPeriode('${p.label}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100">Edit</button>
           ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button>` : ''}
-          ${!p.is_active ? `<button onclick="deletePeriode('${p.label}')" class="text-red-600 bg-red-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-100">Hapus</button>` : ''}
         </div>
       </div>`).join('');
     // also populate akun period selector
@@ -1534,14 +1535,6 @@ async function activatePeriode(label) {
   if (!await uiConfirm(`Jadikan periode "${label}" sebagai aktif?`, 'Konfirmasi Aktivasi')) return;
   try {
     await api('PUT', `/api/cms/periods/${label}/activate`);
-    loadPeriode();
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
-}
-
-async function deletePeriode(label) {
-  if (!await uiConfirm(`Hapus periode "${label}"? Periode hanya bisa dihapus jika tidak memiliki data (anggota, pengumuman, dll).`, 'Konfirmasi Hapus')) return;
-  try {
-    await api('DELETE', `/api/cms/periods/${label}`);
     loadPeriode();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
@@ -1690,7 +1683,6 @@ async function loadGlobal() {
     document.getElementById('sm-youtube').value = sm.youtube || '';
     document.getElementById('sm-linkedin').value = sm.linkedin || '';
     document.getElementById('sm-tiktok').value = sm.tiktok || '';
-    document.getElementById('sm-email').value = sm.email || '';
     renderGlobalPreview();
   } catch(e) {
     state.globalSetting = {};
@@ -1765,8 +1757,7 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
         facebook: document.getElementById('sm-facebook').value,
         youtube: document.getElementById('sm-youtube').value,
         linkedin: document.getElementById('sm-linkedin').value,
-        tiktok: document.getElementById('sm-tiktok').value,
-        email: document.getElementById('sm-email').value
+        tiktok: document.getElementById('sm-tiktok').value
       }
     });
     state.globalSetting = {
@@ -1777,8 +1768,7 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
         facebook: document.getElementById('sm-facebook').value,
         youtube: document.getElementById('sm-youtube').value,
         linkedin: document.getElementById('sm-linkedin').value,
-        tiktok: document.getElementById('sm-tiktok').value,
-        email: document.getElementById('sm-email').value
+        tiktok: document.getElementById('sm-tiktok').value
       }
     };
     renderGlobalPreview();
@@ -2062,8 +2052,7 @@ function renderGlobalPreview() {
     facebook: (document.getElementById('sm-facebook')?.value || '').trim(),
     youtube: (document.getElementById('sm-youtube')?.value || '').trim(),
     linkedin: (document.getElementById('sm-linkedin')?.value || '').trim(),
-    tiktok: (document.getElementById('sm-tiktok')?.value || '').trim(),
-    email: (document.getElementById('sm-email')?.value || '').trim()
+    tiktok: (document.getElementById('sm-tiktok')?.value || '').trim()
   };
   const socialCount = Object.values(social).filter(Boolean).length;
   wrap.innerHTML = `
@@ -2175,7 +2164,7 @@ document.addEventListener('input', (e) => {
     return;
   }
 
-  if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok', 'sm-email'].includes(t.id)) {
+  if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok'].includes(t.id)) {
     renderGlobalPreview();
   }
 });
@@ -2608,37 +2597,165 @@ document.getElementById('formStatistik')?.addEventListener('submit', async e => 
 
 
 
-// ── BROADCAST ──────────────────────────────────────────────────────────────
+// ── BROADCAST WIZARD ─────────────────────────────────────────────────────
 let bcWs = null;
 let qrRefreshTimer = null;
-
-// Global broadcast contact state
+let bcCurrentStep = 1;
+let bcSessionID = null;
+let bcPreviewDebounce = null;
 let bcContactRows = [];
-let bcColumnHeaders = ['full_name', 'phone', 'department', 'position', 'program_studi', 'angkatan'];
-let bcColumnLabels = ['Nama', 'No. HP', 'Kementerian', 'Jabatan', 'Program Studi', 'Angkatan'];
+let bcColumnHeaders = [];
+let bcColumnLabels = [];
+let bcUndoStack = [];
+let bcRedoStack = [];
+let bcSelRange = null;
+let bcSelAnchor = null;
+let bcSelecting = false;
 
 function initBroadcast() {
   loadWAStatus();
-  loadBCHistory();
   connectBCWebSocket();
   populatePeriodFilter();
-  loadBCContacts();
+  loadBCSession().then(function() {
+    loadBCContacts();
+  });
+  loadBCHistory();
+  bcGoToStep(1);
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); bcUndo(); }
+    else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); bcRedo(); }
+    else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && bcSelRange) { e.preventDefault(); bcCopySelection(); }
+  });
 }
 
-function showBCSub(name) {
-  document.querySelectorAll('.bc-sub-content').forEach(el => el.classList.add('hidden'));
-  document.querySelectorAll('.bc-sub-tab').forEach(el => { el.className = el.className.replace('bg-blue-600 text-white', 'bg-slate-200 text-slate-700'); });
-  document.getElementById('bc-sub-' + name)?.classList.remove('hidden');
-  const tab = document.getElementById('bc-tab-' + name);
-  if (tab) { tab.className = tab.className.replace('bg-slate-200 text-slate-700', 'bg-blue-600 text-white'); }
+// ── Step Navigation ──────────────────────────────────────────────────────
+
+function bcGoToStep(step) {
+  if (step > bcCurrentStep) {
+    if (!validateBCStep(bcCurrentStep)) return;
+    saveBCSession();
+  } else if (step < bcCurrentStep) {
+    saveBCSession();
+  }
+  bcCurrentStep = step;
+  document.querySelectorAll('.bc-step-panel').forEach(function(el) { el.classList.add('hidden'); });
+  var panel = document.getElementById('bc-step-' + step);
+  if (panel) panel.classList.remove('hidden');
+  updateStepIndicators(step);
+  if (step === 2) {
+    renderBCVarChips();
+    renderBCPreviewRowSelector();
+    startLivePreview();
+  }
+  if (step === 3) {
+    updateBCSendSummary();
+  }
 }
+
+function updateStepIndicators(currentStep) {
+  for (var i = 1; i <= 3; i++) {
+    var ind = document.getElementById('step-ind-' + i);
+    if (!ind) continue;
+    var numEl = ind.querySelector('.step-num');
+    if (i < currentStep) {
+      ind.className = 'bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500 text-white text-xs sm:text-sm font-medium';
+      if (numEl) { numEl.className = 'step-num w-5 h-5 rounded-full bg-white text-green-500 text-xs flex items-center justify-center font-bold'; numEl.textContent = '\u2713'; }
+    } else if (i === currentStep) {
+      ind.className = 'bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-medium';
+      if (numEl) { numEl.className = 'step-num w-5 h-5 rounded-full bg-white text-blue-600 text-xs flex items-center justify-center font-bold'; numEl.textContent = i; }
+    } else {
+      ind.className = 'bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 text-slate-500 text-xs sm:text-sm font-medium';
+      if (numEl) { numEl.className = 'step-num w-5 h-5 rounded-full bg-slate-300 text-slate-500 text-xs flex items-center justify-center font-bold'; numEl.textContent = i; }
+    }
+  }
+}
+
+function validateBCStep(step) {
+  if (step === 1) {
+    var selected = bcContactRows.filter(function(r) { return r._selected; });
+    if (selected.length === 0) {
+      uiAlert('Pilih minimal 1 kontak (centang baris).');
+      return false;
+    }
+    return true;
+  }
+  if (step === 2) {
+    var tmpl = document.getElementById('bc-template');
+    if (!tmpl || !tmpl.value.trim()) {
+      uiAlert('Template pesan tidak boleh kosong.');
+      return false;
+    }
+    return true;
+  }
+  return true;
+}
+
+function updateBCSendSummary() {
+  var selected = bcContactRows.filter(function(r) { return r._selected; });
+  var el = document.getElementById('bc-selected-count');
+  if (el) el.textContent = selected.length;
+}
+
+// ── Session Persistence ──────────────────────────────────────────────────
+
+async function loadBCSession() {
+  try {
+    var data = await api('GET', '/api/broadcast/session');
+    if (data && data.session && data.session.id) {
+      bcSessionID = data.session.id;
+      if (data.session.columns && data.session.columns.length > 0) {
+        bcColumnHeaders = data.session.columns || [];
+        bcColumnLabels = data.session.labels || data.session.columns || [];
+        bcContactRows = (data.session.rows || []).map(function(r) {
+          var row = {};
+          for (var k in r) { if (r.hasOwnProperty(k)) row[k] = r[k]; }
+          row._selected = false;
+          return row;
+        });
+      }
+      if (data.session.template) {
+        var tmpl = document.getElementById('bc-template');
+        if (tmpl) tmpl.value = data.session.template;
+      }
+      if (data.session.delay_ms) {
+        var delayEl = document.getElementById('bc-delay');
+        if (delayEl) delayEl.value = Math.round(data.session.delay_ms / 1000);
+      }
+    }
+  } catch(e) { /* start fresh */ }
+}
+
+async function saveBCSession() {
+  try {
+    var rows = bcContactRows.map(function(r) {
+      var clean = {};
+      for (var k in r) { if (r.hasOwnProperty(k) && k !== '_selected') clean[k] = r[k]; }
+      return clean;
+    });
+    var tmpl = document.getElementById('bc-template');
+    var delayEl = document.getElementById('bc-delay');
+    var body = {
+      columns: bcColumnHeaders,
+      labels: bcColumnLabels,
+      rows: rows,
+      template: tmpl ? tmpl.value : '',
+      delay_ms: delayEl ? (parseInt(delayEl.value) || 3) * 1000 : 3000,
+      period: window.PERIOD || ''
+    };
+    if (bcSessionID) body.session_id = bcSessionID;
+    var data = await api('PUT', '/api/broadcast/session', body);
+    if (data && data.session_id) bcSessionID = data.session_id;
+  } catch(e) { /* non-critical */ }
+}
+
+// ── WhatsApp Connection ──────────────────────────────────────────────────
 
 async function loadWAStatus() {
   try {
-    const data = await api('GET', '/api/broadcast/status');
-    const dot = document.getElementById('wa-status-dot');
-    const txt = document.getElementById('wa-status-text');
-    const qrContainer = document.getElementById('wa-qr-container');
+    var data = await api('GET', '/api/broadcast/status');
+    var dot = document.getElementById('wa-status-dot');
+    var txt = document.getElementById('wa-status-text');
+    var qrContainer = document.getElementById('wa-qr-container');
     if (data.connected) {
       dot.className = 'w-3 h-3 rounded-full bg-green-500';
       txt.textContent = 'WhatsApp terhubung';
@@ -2652,94 +2769,252 @@ async function loadWAStatus() {
       if (!qrRefreshTimer) qrRefreshTimer = setInterval(loadWAQR, 15000);
     }
   } catch(e) {
-    document.getElementById('wa-status-dot').className = 'w-3 h-3 rounded-full bg-slate-400';
-    document.getElementById('wa-status-text').textContent = 'Service tidak tersedia';
+    var d = document.getElementById('wa-status-dot');
+    var t = document.getElementById('wa-status-text');
+    if (d) d.className = 'w-3 h-3 rounded-full bg-slate-400';
+    if (t) t.textContent = 'Service tidak tersedia';
   }
 }
 
 async function loadWAQR() {
   try {
-    const resp = await fetch('/api/broadcast/qr');
-    if (resp.ok && resp.headers.get('content-type')?.startsWith('image/')) {
-      const blob = await resp.blob();
-      document.getElementById('wa-qr-img').src = URL.createObjectURL(blob);
-      document.getElementById('wa-qr-container')?.classList.remove('hidden');
+    var resp = await fetch('/api/broadcast/qr');
+    if (resp.ok && resp.headers.get('content-type') && resp.headers.get('content-type').startsWith('image/')) {
+      var blob = await resp.blob();
+      var img = document.getElementById('wa-qr-img');
+      if (img) img.src = URL.createObjectURL(blob);
+      var c = document.getElementById('wa-qr-container');
+      if (c) c.classList.remove('hidden');
     }
   } catch(e) {}
 }
 
+async function disconnectWA() {
+  if (!await uiConfirm('Disconnect WhatsApp?')) return;
+  await api('POST', '/api/broadcast/disconnect');
+  loadWAStatus();
+}
+
+// ── Period Filter ─────────────────────────────────────────────────────────
+
 function populatePeriodFilter() {
-  const sel = document.getElementById('bc-contact-filter');
+  var sel = document.getElementById('bc-contact-filter');
   if (!sel) return;
-  const current = window.PERIOD || '';
-  // Fetch periods from API
-  api('GET', '/api/periods').then(periods => {
+  var current = window.PERIOD || '';
+  api('GET', '/api/periods').then(function(periods) {
     if (!periods || !Array.isArray(periods)) return;
     sel.innerHTML = '<option value="ALL">Semua Periode</option>';
-    periods.forEach(p => {
-      const opt = document.createElement('option');
+    periods.forEach(function(p) {
+      var opt = document.createElement('option');
       opt.value = p.label || p.Label;
       opt.textContent = p.display_name || p.DisplayName || p.label || p.Label;
       if ((p.label || p.Label) === current) opt.selected = true;
       sel.appendChild(opt);
     });
-  }).catch(() => {});
+  }).catch(function() {});
 }
+
+// ── Contact Management ───────────────────────────────────────────────────
 
 async function loadBCContacts() {
   try {
-    let period = document.getElementById('bc-contact-filter')?.value || window.PERIOD || '';
-    const contacts = await api('GET', '/api/broadcast/anggota-contacts?period=' + encodeURIComponent(period));
+    var filterEl = document.getElementById('bc-contact-filter');
+    var period = filterEl ? filterEl.value : (window.PERIOD || 'ALL');
+    var contacts = await api('GET', '/api/broadcast/anggota-contacts?period=' + encodeURIComponent(period));
     if (!contacts || !Array.isArray(contacts)) {
-      bcContactRows = [];
+      if (bcContactRows.length === 0) { bcColumnHeaders = []; bcColumnLabels = []; }
       renderBCContactsTable();
       return;
     }
-    // Map API response to our row format
-    bcContactRows = contacts.map(c => ({
-      full_name: c.full_name || c.FullName || '',
-      nickname: c.nickname || c.Nickname || '',
-      phone: c.phone || c.Phone || '',
-      department: c.department || c.Department || '',
-      position: c.position || c.Position || '',
-      program_studi: c.program_studi || c.ProgramStudi || '',
-      fakultas: c.fakultas || c.Fakultas || '',
-      angkatan: c.angkatan || c.Angkatan || '',
-      _selected: false
-    }));
+    // Save existing selection state by phone
+    var existingSel = {};
+    bcContactRows.forEach(function(r) { if (r._selected && r.phone) existingSel[r.phone] = true; });
+    bcContactRows = [];
+    bcColumnHeaders = [];
+    bcColumnLabels = [];
+    if (contacts.length > 0) {
+      var colMap = {
+        'full_name': 'Nama', 'nickname': 'Nickname', 'phone': 'No. HP',
+        'department': 'Kementerian', 'position': 'Jabatan',
+        'program_studi': 'Program Studi', 'fakultas': 'Fakultas', 'angkatan': 'Angkatan'
+      };
+      for (var key in contacts[0]) {
+        if (!contacts[0].hasOwnProperty(key)) continue;
+        bcColumnHeaders.push(key);
+        bcColumnLabels.push(colMap[key] || key);
+      }
+    }
+    contacts.forEach(function(c) {
+      var row = {};
+      bcColumnHeaders.forEach(function(h) {
+        var val = c[h] !== undefined ? c[h] : '';
+        if (!val) {
+          // try snake_case variant
+          var snake = h.replace(/([A-Z])/g, function(m) { return '_' + m.toLowerCase(); });
+          val = c[snake] !== undefined ? c[snake] : '';
+        }
+        row[h] = val;
+      });
+      row._selected = !!existingSel[row.phone];
+      bcContactRows.push(row);
+    });
     renderBCContactsTable();
   } catch(e) {
-    bcContactRows = [];
     renderBCContactsTable();
   }
 }
 
-function renderBCContactsTable() {
-  const tbody = document.getElementById('bc-contacts-tbody');
-  const countEl = document.getElementById('bc-contact-count');
-  if (!tbody) return;
+// ── Undo / Redo ──────────────────────────────────────────────────
+function bcSnapshot() {
+  return {
+    rows: bcContactRows.map(function(r) { var o = {}; for (var k in r) o[k] = r[k]; return o; }),
+    headers: bcColumnHeaders.slice(),
+    labels: bcColumnLabels.slice()
+  };
+}
+function bcRestore(snap) {
+  bcContactRows = snap.rows;
+  bcColumnHeaders = snap.headers;
+  bcColumnLabels = snap.labels;
+  renderBCContactsTable();
+  saveBCSession();
+}
+function bcPushUndo() {
+  bcUndoStack.push(bcSnapshot());
+  bcRedoStack = [];
+}
+function bcUndo() {
+  if (bcUndoStack.length === 0) return;
+  bcRedoStack.push(bcSnapshot());
+  bcRestore(bcUndoStack.pop());
+}
+function bcRedo() {
+  if (bcRedoStack.length === 0) return;
+  bcUndoStack.push(bcSnapshot());
+  bcRestore(bcRedoStack.pop());
+}
 
-  // Update selected count
-  const selectedCount = bcContactRows.filter(r => r._selected).length;
-  const selCountEl = document.getElementById('bc-selected-count');
+// ── Cell Selection ──────────────────────────────────────────────────────
+function bcNormRange(r) {
+  var r1 = Math.min(r.startRow, r.endRow), r2 = Math.max(r.startRow, r.endRow);
+  var c1 = Math.min(r.startCol, r.endCol), c2 = Math.max(r.startCol, r.endCol);
+  return {r1:r1, c1:c1, r2:r2, c2:c2};
+}
+function bcIsCellSelected(ri, ci) {
+  if (!bcSelRange) return false;
+  var n = bcNormRange(bcSelRange);
+  return ri >= n.r1 && ri <= n.r2 && ci >= n.c1 && ci <= n.c2;
+}
+function bcSetSelection(sr, sc, er, ec) {
+  bcSelRange = {startRow:sr, startCol:sc, endRow:er, endCol:ec};
+  bcUpdateCellStyles();
+}
+function bcClearSelection() {
+  bcSelRange = null;
+  bcSelAnchor = null;
+  bcUpdateCellStyles();
+}
+function bcUpdateCellStyles() {
+  var tds = document.querySelectorAll('#bc-contacts-table td[data-row]');
+  tds.forEach(function(td) {
+    var ri = parseInt(td.getAttribute('data-row'));
+    var col = td.getAttribute('data-col');
+    var ci = bcColumnHeaders.indexOf(col);
+    if (bcIsCellSelected(ri, ci)) td.classList.add('bg-blue-200');
+    else td.classList.remove('bg-blue-200');
+  });
+}
+var bcMouseDownPos = null;
+function bcCellMouseDown(e, cell) {
+  if (bcSelRange) { bcSelRange = null; bcSelAnchor = null; bcUpdateCellStyles(); }
+  if (!cell.hasAttribute('data-row')) return;
+  var ri = parseInt(cell.getAttribute('data-row'));
+  var col = cell.getAttribute('data-col');
+  var ci = bcColumnHeaders.indexOf(col);
+  if (ci < 0) return;
+  if (e.shiftKey && bcSelAnchor) {
+    bcSetSelection(bcSelAnchor.row, bcSelAnchor.col, ri, ci);
+  } else {
+    bcMouseDownPos = {x: e.clientX, y: e.clientY, ri: ri, ci: ci};
+  }
+}
+function bcCellMouseMove(e, cell) {
+  if (!bcMouseDownPos || !(e.buttons & 1)) return;
+  var dx = e.clientX - bcMouseDownPos.x, dy = e.clientY - bcMouseDownPos.y;
+  if (!bcSelecting && (dx*dx + dy*dy) < 25) return;
+  if (!bcSelecting) {
+    bcSelecting = true;
+    bcSelAnchor = {row: bcMouseDownPos.ri, col: bcMouseDownPos.ci};
+    document.addEventListener('mouseup', bcCellMouseUp);
+    document.addEventListener('selectstart', bcPreventSelect);
+  }
+  var ri = parseInt(cell.getAttribute('data-row'));
+  var col = cell.getAttribute('data-col');
+  var ci = bcColumnHeaders.indexOf(col);
+  if (ci < 0) return;
+  bcSetSelection(bcSelAnchor.row, bcSelAnchor.col, ri, ci);
+}
+function bcCellMouseUp() {
+  bcMouseDownPos = null;
+  bcSelecting = false;
+  bcSelAnchor = null;
+  bcUpdateCellStyles();
+  document.removeEventListener('mouseup', bcCellMouseUp);
+  document.removeEventListener('selectstart', bcPreventSelect);
+}
+function bcPreventSelect(e) { e.preventDefault(); }
+function bcCopySelection() {
+  if (!bcSelRange) return;
+  var n = bcNormRange(bcSelRange);
+  var lines = [];
+  for (var ri = n.r1; ri <= n.r2; ri++) {
+    if (ri >= bcContactRows.length) break;
+    var vals = [];
+    for (var ci = n.c1; ci <= n.c2; ci++) {
+      if (ci >= bcColumnHeaders.length) break;
+      vals.push(bcContactRows[ri][bcColumnHeaders[ci]] || '');
+    }
+    lines.push(vals.join('\t'));
+  }
+  navigator.clipboard.writeText(lines.join('\n')).catch(function(){});
+}
+
+// ── Delete Column ────────────────────────────────────────────────────────
+function deleteBCColumn(colIdx) {
+  if (colIdx < 0 || colIdx >= bcColumnHeaders.length) return;
+  var key = bcColumnHeaders[colIdx];
+  var label = bcColumnLabels[colIdx] || key;
+  if (!confirm('Hapus kolom "' + label + '"?')) return;
+  bcPushUndo();
+  bcColumnHeaders.splice(colIdx, 1);
+  bcColumnLabels.splice(colIdx, 1);
+  bcContactRows.forEach(function(r) { delete r[key]; });
+  bcClearSelection();
+  renderBCContactsTable();
+  saveBCSession();
+}
+
+function renderBCContactsTable() {
+  var tbody = document.getElementById('bc-contacts-tbody');
+  var countEl = document.getElementById('bc-contact-count');
+  if (!tbody) return;
+  var selectedCount = bcContactRows.filter(function(r) { return r._selected; }).length;
+  var selCountEl = document.getElementById('bc-selected-count');
   if (selCountEl) selCountEl.textContent = selectedCount;
   if (countEl) countEl.textContent = bcContactRows.length + ' kontak' + (selectedCount > 0 ? ' (' + selectedCount + ' dipilih)' : '');
 
-  // Update variable list
-  updateBCVarList();
-
-  // Update preview row selector
-  updateBCPreviewRows();
-
-  if (bcContactRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-slate-400 py-8 text-sm">Tidak ada kontak dengan nomor HP. Tambahkan nomor HP pada data anggota atau tambah baris manual.</td></tr>';
+  if (bcContactRows.length === 0 || bcColumnHeaders.length === 0) {
+    var colspan = Math.max(bcColumnHeaders.length + 2, 3);
+    tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="text-center text-slate-400 py-8 text-sm">Tidak ada kontak. Tambahkan baris manual atau paste CSV.</td></tr>';
+    renderBCHeaders();
     return;
   }
 
-  tbody.innerHTML = bcContactRows.map((row, ri) => {
-    const cells = bcColumnHeaders.map((col, ci) => {
-      const val = row[col] || '';
-      return '<td class="px-2 py-1 border-r border-slate-100 last:border-r-0" contenteditable="true" data-row="' + ri + '" data-col="' + ci + '" onblur="onBCCellEdit(this, ' + ri + ', \'' + col + '\')" onkeydown="onBCellKey(event, this)">' + escHtml(val) + '</td>';
+  tbody.innerHTML = bcContactRows.map(function(row, ri) {
+    var cells = bcColumnHeaders.map(function(col, ci) {
+      var val = row[col] || '';
+      var selCls = bcIsCellSelected(ri, ci) ? ' bg-blue-200' : '';
+      return '<td class="px-2 py-1 border-r border-slate-100 last:border-r-0' + selCls + '" contenteditable="true" data-row="' + ri + '" data-col="' + escHtml(col) + '" onmousedown="bcCellMouseDown(event,this)" onmousemove="bcCellMouseMove(event,this)" onblur="onBCCellEdit(this,' + ri + ',\'' + escHtml(col) + '\')" onkeydown="onBCellKey(event,this)" onpaste="onBCCellPaste(event,this)">' + escHtml(val) + '</td>';
     }).join('');
     return '<tr class="border-t border-slate-100 hover:bg-blue-50/50">' +
       '<td class="px-2 py-1 text-center w-8"><input type="checkbox" ' + (row._selected ? 'checked' : '') + ' onchange="bcContactRows[' + ri + ']._selected=this.checked;renderBCContactsTable()" class="rounded"></td>' +
@@ -2747,300 +3022,430 @@ function renderBCContactsTable() {
       '<td class="px-2 py-1 text-center w-10"><button onclick="deleteBCRow(' + ri + ')" class="text-red-400 hover:text-red-600 text-xs p-1" title="Hapus">&times;</button></td>' +
       '</tr>';
   }).join('');
-
-  // Update thead
   renderBCHeaders();
+
 }
 
 function renderBCHeaders() {
-  const thead = document.querySelector('#bc-contacts-table thead tr');
+  var thead = document.querySelector('#bc-contacts-table thead tr');
   if (!thead) return;
-  let html = '<th class="px-3 py-2 w-8 text-center"><input type="checkbox" onchange="toggleAllBCRows(this.checked)" class="rounded" title="Pilih semua"></th>';
-  bcColumnHeaders.forEach((col, ci) => {
-    const label = bcColumnLabels[ci] || col;
-    html += '<th class="px-3 py-2 min-w-[120px] cursor-pointer hover:text-blue-600 select-none" ondblclick="renameBCColumn(' + ci + ')" title="Double-click untuk rename variabel">' + escHtml(label) + '</th>';
+  var html = '<th class="px-3 py-2 w-8 text-center"><input type="checkbox" onchange="toggleAllBCRows(this.checked)" class="rounded" title="Pilih semua"></th>';
+  bcColumnHeaders.forEach(function(col, ci) {
+    var label = bcColumnLabels[ci] || col;
+    html += '<th class="px-3 py-2 min-w-[120px] cursor-pointer hover:text-blue-600 select-none whitespace-nowrap group" ondblclick="renameBCColumn(' + ci + ')" title="Double-click untuk rename variabel">' + escHtml(label) + '<button onclick="event.stopPropagation();deleteBCColumn(' + ci + ')" class="ml-1 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 text-xs transition" title="Hapus kolom">&times;</button></th>';
   });
   html += '<th class="px-3 py-2 w-10"></th>';
   thead.innerHTML = html;
 }
 
 function onBCCellEdit(el, rowIdx, colKey) {
-  if (rowIdx >= 0 && rowIdx < bcContactRows.length) {
-    bcContactRows[rowIdx][colKey] = el.textContent.trim();
+  bcPushUndo();
+  if (bcContactRows[rowIdx]) {
+    bcContactRows[rowIdx][colKey] = el.textContent;
   }
 }
 
 function onBCellKey(event, el) {
   if (event.key === 'Enter') { event.preventDefault(); el.blur(); }
-  if (event.key === 'Tab') { event.preventDefault(); el.blur(); }
 }
 
 function toggleAllBCRows(checked) {
-  bcContactRows.forEach(r => r._selected = checked);
+  bcContactRows.forEach(function(r) { r._selected = checked; });
   renderBCContactsTable();
 }
 
 function addBCRow() {
-  const newRow = {};
-  bcColumnHeaders.forEach(h => newRow[h] = '');
-  newRow._selected = false;
-  bcContactRows.push(newRow);
+  bcPushUndo();
+  var row = { _selected: true };
+  bcColumnHeaders.forEach(function(h) { row[h] = ''; });
+  bcContactRows.push(row);
+  renderBCContactsTable();
+}
+
+function addBCColumn() {
+  bcPushUndo();
+  var name = prompt('Nama kolom baru:');
+  if (!name || !name.trim()) return;
+  var key = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
+  if (!key) { key = 'col_' + bcColumnHeaders.length; }
+  if (bcColumnHeaders.indexOf(key) >= 0) {
+    uiAlert('Kolom "' + key + '" sudah ada.');
+    return;
+  }
+  bcColumnHeaders.push(key);
+  bcColumnLabels.push(name.trim());
+  bcContactRows.forEach(function(row) { row[key] = ''; });
   renderBCContactsTable();
 }
 
 function deleteBCRow(idx) {
+  bcPushUndo();
   bcContactRows.splice(idx, 1);
   renderBCContactsTable();
 }
 
 async function renameBCColumn(colIdx) {
-  const col = bcColumnHeaders[colIdx];
-  const currentLabel = bcColumnLabels[colIdx] || col;
-  const newLabel = prompt('Nama variabel untuk kolom "' + currentLabel + '":', col);
-  if (newLabel === null || !newLabel.trim()) return;
-  const newKey = newLabel.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
-  // Update key in all rows
-  bcContactRows.forEach(row => {
-    row[newKey] = row[col] || '';
-    delete row[col];
-  });
-  bcColumnHeaders[colIdx] = newKey;
+  bcPushUndo();
+  var key = bcColumnHeaders[colIdx];
+  var currentLabel = bcColumnLabels[colIdx] || key;
+  var newLabel = prompt('Rename kolom "' + currentLabel + '":', currentLabel);
+  if (newLabel === null || !newLabel.trim() || newLabel.trim() === currentLabel) return;
   bcColumnLabels[colIdx] = newLabel.trim();
-  renderBCContactsTable();
-}
-
-function importBCFromCSV() {
-  const csv = prompt('Paste data CSV/tab-separated.\nBaris pertama = header kolom.\nData dipisahkan tab atau koma.');
-  if (!csv || !csv.trim()) return;
-
-  const lines = csv.trim().split('\n').filter(l => l.trim());
-  if (lines.length < 2) { uiAlert('Minimal 2 baris (header + data)'); return; }
-
-  // Detect separator
-  const sep = lines[0].includes('\t') ? '\t' : ',';
-  const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'));
-  const labels = lines[0].split(sep).map(h => h.trim());
-
-  // Merge new columns
-  headers.forEach((h, i) => {
-    if (!bcColumnHeaders.includes(h)) {
-      bcColumnHeaders.push(h);
-      bcColumnLabels.push(labels[i] || h);
-    }
-  });
-
-  // Add rows
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(sep).map(c => c.trim());
-    const row = { _selected: false };
-    bcColumnHeaders.forEach(h => row[h] = '');
-    headers.forEach((h, ci) => { row[h] = cols[ci] || ''; });
-    if (Object.values(row).some(v => typeof v === 'string' && v)) {
-      bcContactRows.push(row);
-    }
+  var newKey = newLabel.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
+  if (newKey && newKey !== key && bcColumnHeaders.indexOf(newKey) < 0) {
+    bcContactRows.forEach(function(row) {
+      if (row.hasOwnProperty(key)) { row[newKey] = row[key]; delete row[key]; }
+    });
+    bcColumnHeaders[colIdx] = newKey;
   }
   renderBCContactsTable();
 }
 
-function updateBCVarList() {
-  const el = document.getElementById('bc-var-list');
-  if (!el) return;
+function onBCCellPaste(e, cell) {
+  bcPushUndo();
+  var text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text) return;
+  e.preventDefault();
+  e.stopPropagation();
+  var startRow = parseInt(cell.getAttribute('data-row'));
+  var startColIdx = bcColumnHeaders.indexOf(cell.getAttribute('data-col'));
+  if (startColIdx < 0) return;
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+  var origRow = startRow, origCol = startColIdx;
+  if (bcSelRange) { var n = bcNormRange(bcSelRange); origRow = n.r1; origCol = n.c1; }
+  for (var i = 0; i < lines.length; i++) {
+    var ri = origRow + i;
+    if (ri >= bcContactRows.length) break;
+    var vals = lines[i].split('\t');
+    for (var vi = 0; vi < vals.length; vi++) {
+      var ci = origCol + vi;
+      if (ci >= bcColumnHeaders.length) break;
+      bcContactRows[ri][bcColumnHeaders[ci]] = vals[vi];
+    }
+  }
+  renderBCContactsTable();
+  saveBCSession();
+}
+
+function handleBCPaste(e) {
+  var text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text) return;
+
+  // Always find the nearest cell from the event target
+  var cell = e.target;
+  if (!cell || !cell.hasAttribute || !cell.hasAttribute('data-row')) {
+    cell = document.activeElement;
+  }
+  if (!cell || !cell.hasAttribute || !cell.hasAttribute('data-row')) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  var startRow = parseInt(cell.getAttribute('data-row'));
+  var startColIdx = bcColumnHeaders.indexOf(cell.getAttribute('data-col'));
+  if (startColIdx < 0) return;
+
+  // Parse: tab = column separator, newline = row separator
+  var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+
+  var origRow = startRow, origCol = startColIdx;
+  if (bcSelRange) { var n = bcNormRange(bcSelRange); origRow = n.r1; origCol = n.c1; }
+  for (var i = 0; i < lines.length; i++) {
+    var ri = origRow + i;
+    if (ri >= bcContactRows.length) break;
+    var vals = lines[i].split('\t');
+    for (var vi = 0; vi < vals.length; vi++) {
+      var ci = origCol + vi;
+      if (ci >= bcColumnHeaders.length) break;
+      bcContactRows[ri][bcColumnHeaders[ci]] = vals[vi];
+    }
+  }
+  renderBCContactsTable();
+  saveBCSession();
+}
+
+function parseCSVLine(line, sep) {
+  var result = [];
+  var current = '';
+  var inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (inQuotes) {
+      if (c === '"' && line[i + 1] === '"') { current += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { current += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === sep) { result.push(current); current = ''; }
+      else { current += c; }
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+// ── Variable Chips ───────────────────────────────────────────────────────
+
+function renderBCVarChips() {
+  var container = document.getElementById('bc-var-chips');
+  if (!container) return;
   if (bcColumnHeaders.length === 0) {
-    el.innerHTML = '<p class="text-slate-400 italic">Muat kontak dulu...</p>';
+    container.innerHTML = '<span class="text-xs text-slate-400 italic">Tidak ada variabel. Muat kontak di Langkah 1.</span>';
     return;
   }
-  el.innerHTML = bcColumnHeaders.map((h, i) => {
-    const label = bcColumnLabels[i] || h;
-    return '<div class="py-0.5 cursor-pointer hover:text-blue-600" onclick="insertBCVar(\'' + escHtml(h) + '\')" title="Klik untuk insert">{{' + escHtml(h) + '}}</div><div class="text-slate-400 text-[10px]">' + escHtml(label) + '</div>';
-  }).join('<hr class="border-slate-100 my-0.5">');
+  container.innerHTML = bcColumnHeaders.map(function(h, i) {
+    var label = bcColumnLabels[i] || h;
+    return '<button type="button" onclick="insertBCVar(\'' + escHtml(h) + '\')" class="bc-var-chip">{{' + escHtml(h) + '}} <span class="text-blue-400 font-normal">' + escHtml(label) + '</span></button>';
+  }).join('');
 }
 
 function insertBCVar(varName) {
-  const ta = document.getElementById('bc-template');
-  if (ta) {
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const text = ta.value;
-    ta.value = text.substring(0, start) + '{{' + varName + '}}' + text.substring(end);
-    ta.focus();
-    ta.selectionStart = ta.selectionEnd = start + varName.length + 4;
-  }
+  var textarea = document.getElementById('bc-template');
+  if (!textarea) return;
+  var start = textarea.selectionStart;
+  var end = textarea.selectionEnd;
+  var text = textarea.value;
+  var insert = '{{' + varName + '}}';
+  textarea.value = text.substring(0, start) + insert + text.substring(end);
+  textarea.selectionStart = textarea.selectionEnd = start + insert.length;
+  textarea.focus();
+  debouncedPreview();
 }
 
-function updateBCPreviewRows() {
-  const sel = document.getElementById('bc-preview-row');
+// ── Live Preview (debounced 500ms) ───────────────────────────────────────
+
+function renderBCPreviewRowSelector() {
+  var sel = document.getElementById('bc-preview-row');
   if (!sel) return;
-  sel.innerHTML = '';
-  bcContactRows.forEach((row, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = (row.full_name || row.phone || 'Baris ' + (i + 1));
-    sel.appendChild(opt);
-  });
+  var selected = [];
+  bcContactRows.forEach(function(r, i) { if (r._selected) selected.push(i); });
+  sel.innerHTML = selected.map(function(ri) {
+    var name = bcContactRows[ri].full_name || bcContactRows[ri].phone || ('Baris ' + (ri + 1));
+    return '<option value="' + ri + '">' + escHtml(name) + '</option>';
+  }).join('');
+}
+
+function startLivePreview() {
+  var textarea = document.getElementById('bc-template');
+  if (!textarea) return;
+  textarea.removeEventListener('input', onBCTemplateInput);
+  textarea.addEventListener('input', onBCTemplateInput);
+  debouncedPreview();
+}
+
+function onBCTemplateInput() {
+  debouncedPreview();
+}
+
+function debouncedPreview() {
+  if (bcPreviewDebounce) clearTimeout(bcPreviewDebounce);
+  bcPreviewDebounce = setTimeout(updateLivePreview, 500);
+}
+
+function updateLivePreview() {
+  var template = document.getElementById('bc-template') ? document.getElementById('bc-template').value : '';
+  var rowIdx = parseInt(document.getElementById('bc-preview-row') ? document.getElementById('bc-preview-row').value : '-1');
+  var box = document.getElementById('bc-preview-box');
+  if (!box) return;
+  if (!template || isNaN(rowIdx) || !bcContactRows[rowIdx]) {
+    box.innerHTML = '<span class="text-slate-400 italic">Pilih kontak dan ketik template untuk melihat preview.</span>';
+    return;
+  }
+  var vars = {};
+  bcColumnHeaders.forEach(function(h) { vars[h] = bcContactRows[rowIdx][h] || ''; });
+  var rendered = renderBCTemplateJS(template, vars);
+  box.textContent = rendered;
 }
 
 function renderBCTemplateJS(template, vars) {
-  // Handle {{if col == "val"}}...{{else}}...{{endif}}
-  const re = /\{\{if\s+(\w+)\s*==\s*"([^"]*?)"\}\}(.*?)\{\{else\}\}(.*?)\{\{endif\}\}/gs;
-  template = template.replace(re, (match, col, compareVal, trueBody, falseBody) => {
-    const actual = vars[col] || '';
-    return actual === compareVal ? trueBody : falseBody;
+  template = template.replace(/\{\{if\s+(\w+)\s*==\s*"([^"]*?)"\}\}(.*?)\{\{else\}\}(.*?)\{\{endif\}\}/gs, function(match, colName, compareVal, trueBody, falseBody) {
+    return (vars[colName] || '') === compareVal ? trueBody : falseBody;
   });
-  // Replace {{var}}
-  Object.keys(vars).forEach(k => {
-    template = template.replaceAll('{{' + k + '}}', vars[k] || '');
-  });
+  for (var k in vars) {
+    if (vars.hasOwnProperty(k)) {
+      template = template.replace(new RegExp('\\{\\{' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}\\}', 'g'), vars[k]);
+    }
+  }
   return template;
 }
 
-function previewBCTemplate() {
-  const template = document.getElementById('bc-template')?.value;
-  const rowIdx = parseInt(document.getElementById('bc-preview-row')?.value);
-  const box = document.getElementById('bc-preview-box');
-  if (!template || isNaN(rowIdx) || !bcContactRows[rowIdx]) {
-    if (box) box.classList.add('hidden');
-    return;
-  }
-  const vars = {};
-  bcColumnHeaders.forEach(h => vars[h] = bcContactRows[rowIdx][h] || '');
-  const rendered = renderBCTemplateJS(template, vars);
-  if (box) {
-    box.textContent = rendered;
-    box.classList.remove('hidden');
-  }
-}
+// ── Send ─────────────────────────────────────────────────────────────────
 
 async function sendBCTest() {
-  const template = document.getElementById('bc-template')?.value?.trim();
-  const phone = document.getElementById('bc-test-phone')?.value?.trim();
-  if (!template) { await uiAlert('Template pesan kosong'); return; }
-  if (!phone) { await uiAlert('Nomor tujuan test kosong'); return; }
-  if (!await uiConfirm('Kirim test ke ' + phone + '?', 'Test Broadcast', true)) return;
+  var phoneEl = document.getElementById('bc-test-phone');
+  if (!phoneEl || !phoneEl.value.trim()) { uiAlert('Masukkan nomor tujuan test.'); return; }
+  var templateEl = document.getElementById('bc-template');
+  if (!templateEl || !templateEl.value.trim()) { uiAlert('Template pesan kosong.'); return; }
+  var testVars = {};
+  bcColumnHeaders.forEach(function(h) { testVars[h] = '[' + (bcColumnLabels[bcColumnHeaders.indexOf(h)] || h) + ']'; });
+  var msg = renderBCTemplateJS(templateEl.value, testVars);
   try {
-    const msg = renderBCTemplateJS(template, { full_name: 'Test', phone: phone });
-    await api('POST', '/api/broadcast/send', { message: msg, phones: [phone], delay_ms: 0 });
-    await uiAlert('Test terkirim!');
+    await api('POST', '/api/broadcast/send', { message: msg, phones: [phoneEl.value.trim()], messages: [msg], delay_ms: 0 });
+    uiAlert('Test terkirim ke ' + phoneEl.value.trim());
   } catch(e) {
-    await uiAlert('Gagal: ' + e.message);
+    uiAlert('Gagal kirim test: ' + e.message);
   }
 }
 
 async function sendBroadcast() {
-  const template = document.getElementById('bc-template')?.value?.trim();
-  if (!template) { await uiAlert('Template pesan kosong'); return; }
-  const selected = bcContactRows.filter(r => r._selected);
-  if (selected.length === 0) { await uiAlert('Pilih minimal 1 kontak (centang baris)'); return; }
+  var selected = bcContactRows.filter(function(r) { return r._selected; });
+  if (selected.length === 0) { uiAlert('Pilih minimal 1 kontak.'); return; }
+  var templateEl = document.getElementById('bc-template');
+  if (!templateEl || !templateEl.value.trim()) { uiAlert('Template pesan kosong.'); return; }
+  if (!await uiConfirm('Kirim broadcast ke ' + selected.length + ' kontak?')) return;
 
-  const phones = selected.map(r => r.phone).filter(p => p);
-  if (phones.length === 0) { await uiAlert('Tidak ada nomor HP pada kontak terpilih'); return; }
+  var phoneKeys = ['phone', 'no_hp', 'no__hp', 'nomor_hp', 'nomor', 'no hp'];
+  var phoneKey = null;
+  for (var i = 0; i < phoneKeys.length; i++) {
+    if (bcColumnHeaders.indexOf(phoneKeys[i]) >= 0) { phoneKey = phoneKeys[i]; break; }
+  }
+  if (!phoneKey) { uiAlert('Kolom nomor HP tidak ditemukan. Pastikan ada kolom "phone" atau "no_hp".'); return; }
 
-  const delayMs = (parseInt(document.getElementById('bc-delay')?.value) || 3) * 1000;
-
-  if (!await uiConfirm('Kirim broadcast ke ' + phones.length + ' kontak dengan delay ' + (delayMs / 1000) + ' detik?', 'Konfirmasi Broadcast', true)) return;
-
-  // Render each message per row
-  const phonesFinal = [];
-  const messages = [];
-  selected.forEach(row => {
-    if (!row.phone) return;
-    const vars = {};
-    bcColumnHeaders.forEach(h => vars[h] = row[h] || '');
-    messages.push(renderBCTemplateJS(template, vars));
-    phonesFinal.push(row.phone);
+  var phones = [];
+  var messages = [];
+  selected.forEach(function(row) {
+    var ph = (row[phoneKey] || '').replace(/\D/g, '');
+    if (ph.length < 8) return;
+    phones.push(ph);
+    var vars = {};
+    bcColumnHeaders.forEach(function(h) { vars[h] = row[h] || ''; });
+    messages.push(renderBCTemplateJS(templateEl.value, vars));
   });
 
-  const btn = document.getElementById('bc-send-btn');
-  const progress = document.getElementById('bc-progress');
-  btn.disabled = true;
-  btn.classList.add('opacity-50');
-  progress.classList.remove('hidden');
+  if (phones.length === 0) { uiAlert('Tidak ada kontak dengan nomor HP valid.'); return; }
+
+  var delayEl = document.getElementById('bc-delay');
+  var delayMs = delayEl ? (parseInt(delayEl.value) || 3) * 1000 : 3000;
+
+  var btn = document.getElementById('bc-send-btn');
+  if (btn) { btn.disabled = true; btn.classList.add('opacity-50'); }
+
+  var progressEl = document.getElementById('bc-progress');
+  if (progressEl) progressEl.classList.remove('hidden');
 
   try {
     await api('POST', '/api/broadcast/send', {
-      message: template,
-      phones: phonesFinal,
+      message: templateEl.value,
+      phones: phones,
       messages: messages,
       delay_ms: delayMs
     });
   } catch(e) {
-    await uiAlert('Gagal mengirim: ' + e.message);
-    btn.disabled = false;
-    btn.classList.remove('opacity-50');
-    progress.classList.add('hidden');
+    uiAlert('Gagal memulai broadcast: ' + e.message);
+    if (btn) { btn.disabled = false; btn.classList.remove('opacity-50'); }
+    if (progressEl) progressEl.classList.add('hidden');
   }
 }
 
-async function disconnectWA() {
-  if (!await uiConfirm('Putuskan sesi WhatsApp? QR code perlu discan ulang setelah disconnect.', 'Disconnect WhatsApp', true)) return;
-  try {
-    await api('POST', '/api/broadcast/disconnect');
-    await uiAlert('Sesi WhatsApp berhasil diputus');
-    loadWAStatus();
-  } catch(e) {
-    await uiAlert('Gagal disconnect: ' + e.message);
-  }
-}
+// ── History ──────────────────────────────────────────────────────────────
 
 async function loadBCHistory() {
+  var list = document.getElementById('bc-history-list');
+  if (!list) return;
   try {
-    const logs = await api('GET', '/api/broadcast/logs');
-    const el = document.getElementById('bc-history-list');
-    if (!logs || logs.length === 0) {
-      el.innerHTML = '<p class=text-sm text-slate-400>Belum ada riwayat broadcast.</p>';
+    var logs = await api('GET', '/api/broadcast/logs');
+    if (!logs || !Array.isArray(logs) || logs.length === 0) {
+      list.innerHTML = '<p class="text-sm text-slate-400 italic">Belum ada riwayat broadcast.</p>';
       return;
     }
-    el.innerHTML = '<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm"><thead><tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase"><th class="px-3 py-2">Waktu</th><th class="px-3 py-2">Pesan</th><th class="px-3 py-2">Status</th><th class="px-3 py-2">Dikirim</th><th class="px-3 py-2">Gagal</th><th class="px-3 py-2 w-20"></th></tr></thead><tbody>' + logs.map(l => {
-      const statusBadge = l.status === 'done' ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Selesai</span>'
-        : l.status === 'failed' ? '<span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">Gagal</span>'
-        : l.status === 'partial' ? '<span class="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full">Sebagian</span>'
-        : '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">Mengirim</span>';
-      const date = new Date(l.started_at).toLocaleString('id-ID', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      return '<tr class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer" onclick="showBCDetail(\'' + l.id + '\')"><td class="px-3 py-2 text-xs">' + date + '</td><td class="px-3 py-2 max-w-[200px] truncate">' + escHtml(l.message.substring(0, 80)) + '</td><td class="px-3 py-2">' + statusBadge + '</td><td class="px-3 py-2">' + (l.sent_count || 0) + '</td><td class="px-3 py-2">' + (l.failed_count || 0) + '</td><td class="px-3 py-2 text-xs text-blue-600">Detail</td></tr>';
-    }).join('') + '</tbody></table></div>';
+    list.innerHTML = '<div class="space-y-2">' + logs.slice(0, 20).map(function(log) {
+      var statusBadge = '';
+      if (log.status === 'done') statusBadge = '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Selesai</span>';
+      else if (log.status === 'failed') statusBadge = '<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Gagal</span>';
+      else if (log.status === 'partial') statusBadge = '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Sebagian</span>';
+      else if (log.status === 'sending') statusBadge = '<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Mengirim</span>';
+      else statusBadge = '<span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">' + escHtml(log.status || '') + '</span>';
+      var date = log.started_at ? new Date(log.started_at).toLocaleString('id-ID') : '';
+      var msg = (log.message || '').substring(0, 80);
+      return '<div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50" onclick="showBCDetail(\'' + log.id + '\')">' +
+        statusBadge +
+        '<span class="text-xs text-slate-400 hidden sm:inline">' + date + '</span>' +
+        '<span class="text-sm text-slate-700 flex-1 truncate">' + escHtml(msg) + '</span>' +
+        '<span class="text-xs text-slate-400">' + (log.sent_count || 0) + '/' + (log.total_receivers || 0) + '</span>' +
+        '</div>';
+    }).join('') + '</div>';
   } catch(e) {
-    document.getElementById('bc-history-list').innerHTML = errHtml(e);
+    list.innerHTML = '<p class="text-sm text-red-500">Gagal memuat riwayat.</p>';
   }
 }
 
 async function showBCDetail(id) {
+  var detailEl = document.getElementById('bc-history-detail');
+  if (!detailEl) return;
+  detailEl.classList.remove('hidden');
   try {
-    const data = await api('GET', '/api/broadcast/logs/' + id);
-    const el = document.getElementById('bc-history-detail');
-    el.classList.remove('hidden');
-    const l = data.log;
-    const r = data.recipients || [];
-    el.innerHTML = '<div class="border border-slate-200 rounded-xl p-4 bg-white"><div class="flex items-center justify-between mb-3"><h4 class="font-bold text-sm">Detail Broadcast</h4><button onclick="document.getElementById(\'bc-history-detail\').classList.add(\'hidden\')" class="text-slate-400 hover:text-slate-600">Tutup</button></div><div class="text-sm text-slate-600 mb-3">' + escHtml(l.message) + '</div><p class="text-xs text-slate-400 mb-3">Oleh: ' + escHtml(l.sent_by || '') + ' | Total: ' + (l.total_receivers || 0) + ' | Dikirim: ' + (l.sent_count || 0) + ' | Gagal: ' + (l.failed_count || 0) + '</p>' + (r.length > 0 ? '<div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="bg-slate-50 text-left text-slate-500"><th class="px-2 py-1">Nomor</th><th class="px-2 py-1">Status</th><th class="px-2 py-1">Error</th></tr></thead><tbody>' + r.map(rc => '<tr class="border-t border-slate-100"><td class="px-2 py-1 font-mono">' + escHtml(rc.phone) + '</td><td class="px-2 py-1">' + (rc.status === 'sent' ? '<span class="text-green-600">Terkirim</span>' : '<span class="text-red-600">Gagal</span>') + '</td><td class="px-2 py-1 text-red-500">' + escHtml(rc.error || '-') + '</td></tr>').join('') + '</tbody></table></div>' : '<p class="text-xs text-slate-400">Tidak ada detail penerima.</p>') + '</div>';
+    var data = await api('GET', '/api/broadcast/logs/' + id);
+    if (!data || !data.log) { detailEl.innerHTML = '<p class="text-sm text-slate-400">Detail tidak ditemukan.</p>'; return; }
+    var log = data.log;
+    var recipients = data.recipients || [];
+    var statusText = log.status === 'done' ? 'Selesai' : log.status === 'failed' ? 'Gagal' : (log.status || '');
+    var html = '<div class="border border-slate-200 rounded-lg p-4 bg-white">' +
+      '<div class="flex items-center justify-between mb-3">' +
+      '<h4 class="text-sm font-bold text-slate-700">Detail Broadcast</h4>' +
+      '<button onclick="document.getElementById(\'bc-history-detail\').classList.add(\'hidden\')" class="text-xs text-slate-400 hover:text-slate-600">&times; Tutup</button>' +
+      '</div>' +
+      '<div class="text-sm text-slate-600 space-y-1 mb-3">' +
+      '<p><strong>Status:</strong> ' + escHtml(statusText) + '</p>' +
+      '<p><strong>Terkirim:</strong> ' + (log.sent_count || 0) + ' / ' + (log.total_receivers || 0) + '</p>' +
+      (log.completed_at ? '<p><strong>Selesai:</strong> ' + new Date(log.completed_at).toLocaleString('id-ID') + '</p>' : '') +
+      '</div>' +
+      '<div class="border-t border-slate-200 pt-3">' +
+      '<p class="text-xs font-medium text-slate-500 mb-2">Pesan:</p>' +
+      '<div class="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap max-h-32 overflow-y-auto">' + escHtml(log.message || '') + '</div>' +
+      '</div>';
+    if (recipients.length > 0) {
+      html += '<div class="border-t border-slate-200 pt-3 mt-3">' +
+        '<p class="text-xs font-medium text-slate-500 mb-2">Penerima (' + recipients.length + '):</p>' +
+        '<div class="max-h-40 overflow-y-auto space-y-1">' +
+        recipients.map(function(r) {
+          var icon = r.status === 'sent' ? '<span class="text-green-500">&#10003;</span>' : '<span class="text-red-500">&#10007;</span>';
+          return '<div class="text-xs flex items-center gap-2">' + icon + ' <span class="text-slate-600">' + escHtml(r.phone || '') + '</span>' + (r.error ? '<span class="text-red-400">' + escHtml(r.error) + '</span>' : '') + '</div>';
+        }).join('') +
+        '</div></div>';
+    }
+    html += '</div>';
+    detailEl.innerHTML = html;
   } catch(e) {
-    await uiAlert('Gagal memuat detail: ' + e.message);
+    detailEl.innerHTML = '<p class="text-sm text-red-500">Gagal memuat detail.</p>';
   }
 }
 
+// ── WebSocket ────────────────────────────────────────────────────────────
+
 function connectBCWebSocket() {
+  if (bcWs) return;
   try {
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    bcWs = new WebSocket(protocol + '//' + location.host + '/api/broadcast/ws');
-    bcWs.onmessage = (evt) => {
+    var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    bcWs = new WebSocket(proto + '//' + location.host + '/api/broadcast/ws');
+    bcWs.onmessage = function(evt) {
       try { handleBCEvent(JSON.parse(evt.data)); } catch(e) {}
     };
-    bcWs.onclose = () => { setTimeout(connectBCWebSocket, 10000); };
-    bcWs.onerror = () => { bcWs?.close(); };
+    bcWs.onclose = function() {
+      bcWs = null;
+      setTimeout(connectBCWebSocket, 5000);
+    };
+    bcWs.onerror = function() { if (bcWs) bcWs.close(); };
   } catch(e) {}
 }
 
 function handleBCEvent(data) {
+  if (!data || !data.type) return;
   if (data.type === 'broadcast_progress') {
-    const bar = document.getElementById('bc-progress-bar');
-    const text = document.getElementById('bc-progress-text');
-    if (bar) bar.style.width = (data.percentage || 0).toFixed(0) + '%';
-    if (text) text.textContent = (data.sent || 0) + '/' + (data.total || 0) + ' dikirim, ' + (data.failed || 0) + ' gagal';
+    var bar = document.getElementById('bc-progress-bar');
+    var text = document.getElementById('bc-progress-text');
+    var progressEl = document.getElementById('bc-progress');
+    if (progressEl) progressEl.classList.remove('hidden');
+    if (bar) bar.style.width = (data.percentage || 0) + '%';
+    if (text) text.textContent = (data.sent || 0) + '/' + (data.total || 0);
   }
   if (data.type === 'broadcast_completed') {
-    document.getElementById('bc-progress')?.classList.add('hidden');
-    const btn = document.getElementById('bc-send-btn');
+    var btn = document.getElementById('bc-send-btn');
     if (btn) { btn.disabled = false; btn.classList.remove('opacity-50'); }
     loadBCHistory();
     loadWAStatus();
-    const msg = data.status === 'done' ? 'Broadcast selesai! ' + (data.sent || 0) + ' pesan terkirim.'
+    var msg = data.status === 'done' ? 'Broadcast selesai! ' + (data.sent || 0) + ' pesan terkirim.'
       : data.status === 'failed' ? 'Broadcast gagal. ' + (data.failed || 0) + ' dari ' + (data.total || 0) + ' gagal.'
       : 'Broadcast sebagian: ' + (data.sent || 0) + ' terkirim, ' + (data.failed || 0) + ' gagal.';
     uiAlert(msg, 'Hasil Broadcast');

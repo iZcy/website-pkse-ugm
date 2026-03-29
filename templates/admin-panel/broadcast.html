@@ -11,13 +11,14 @@
 .sidebar-item{transition:background .15s,color .15s}.sidebar-item.active{background:#1e40af;color:#fff}.sidebar-item:not(.active):hover{background:#1e3a8a;color:#fff}
 .ql-container{font-size:14px;border-radius:0 0 8px 8px}.ql-toolbar{border-radius:8px 8px 0 0;background:#f8fafc}
 .img-picker{border:2px dashed #cbd5e1;border-radius:8px}.img-picker.dragover{border-color:#3b82f6;background:#eff6ff}.img-picker-preview{width:100%;max-height:180px;object-fit:contain;border-radius:6px;background:#f8fafc}
+.bc-var-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:500;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;cursor:pointer;transition:all .15s;white-space:nowrap}.bc-var-chip:hover{background:#dbeafe;border-color:#93c5fd}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 <body class="bg-slate-100 h-screen flex flex-col overflow-hidden">
 <header class="bg-blue-900 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0 sticky top-0 z-50">
 <div class="flex items-center gap-3">{{if and .GlobalSetting .GlobalSetting.LogoURL}}
-<img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-auto object-contain" onerror="this.style.display='none'">{{end}}
+<img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-auto object-contain" onerror="this.style.display=none">{{end}}
 <span class="font-bold text-lg">{{if .GlobalSetting}}{{.GlobalSetting.OrgName}}{{else}}PKSE UGM{{end}} &mdash; Admin</span></div>
 <div class="flex items-center gap-4">
 <span class="text-blue-200 text-sm hidden sm:block"><span class="mr-1">&#128100;</span>{{.Username}} <span class="ml-2 bg-blue-700 text-xs px-2 py-0.5 rounded-full">{{.Role}}</span></span>
@@ -72,41 +73,51 @@
     </div>
   </section>
 
-  <!-- Sub-tabs -->
-  <div class="flex gap-2 border-b border-slate-200 pb-2">
-    <button onclick="showBCSub('contacts')" class="bc-sub-tab text-sm px-3 py-1.5 rounded-t-lg bg-blue-600 text-white" id="bc-tab-contacts">Kontak</button>
-    <button onclick="showBCSub('compose')" class="bc-sub-tab text-sm px-3 py-1.5 rounded-t-lg bg-slate-200 text-slate-700" id="bc-tab-compose">Pesan & Kirim</button>
-    <button onclick="showBCSub('history')" class="bc-sub-tab text-sm px-3 py-1.5 rounded-t-lg bg-slate-200 text-slate-700" id="bc-tab-history">Riwayat</button>
+  <!-- Step Indicator -->
+  <div class="flex items-center gap-1 sm:gap-2">
+    <button id="step-ind-1" onclick="bcGoToStep(1)" class="bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-medium">
+      <span class="step-num w-5 h-5 rounded-full bg-white text-blue-600 text-xs flex items-center justify-center font-bold">1</span>
+      <span class="hidden sm:inline">Kontak</span>
+    </button>
+    <button id="step-ind-2" onclick="bcGoToStep(2)" class="bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 text-slate-500 text-xs sm:text-sm font-medium">
+      <span class="step-num w-5 h-5 rounded-full bg-slate-300 text-slate-500 text-xs flex items-center justify-center font-bold">2</span>
+      <span class="hidden sm:inline">Pesan</span>
+    </button>
+    <button id="step-ind-3" onclick="bcGoToStep(3)" class="bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200 text-slate-500 text-xs sm:text-sm font-medium">
+      <span class="step-num w-5 h-5 rounded-full bg-slate-300 text-slate-500 text-xs flex items-center justify-center font-bold">3</span>
+      <span class="hidden sm:inline">Kirim</span>
+    </button>
   </div>
 
-  <!-- Contacts Tab -->
-  <div id="bc-sub-contacts" class="bc-sub-content">
-    <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+  <!-- Step 1: Contacts Table -->
+  <div id="bc-step-1" class="bc-step-panel">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
       <select id="bc-contact-filter" onchange="loadBCContacts()" class="text-sm border border-slate-300 rounded-lg px-2 py-1">
         <option value="ALL">Semua Periode</option>
       </select>
-      <button onclick="addBCRow()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-        Tambah Baris
-      </button>
-      <button onclick="importBCFromCSV()" class="bg-slate-600 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-        Paste CSV
-      </button>
-      <span id="bc-contact-count" class="text-xs text-slate-400 ml-auto"></span>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="addBCRow()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Baris
+        </button>
+        <button onclick="addBCColumn()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Tambah Kolom
+        </button>
+        <button onclick="bcUndo()" class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-2 py-1.5 rounded-lg transition" title="Undo (Ctrl+Z)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a5 5 0 015 5v2M3 10l5-5M3 10l5 5"/></svg>
+        </button>
+        <button onclick="bcRedo()" class="bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs px-2 py-1.5 rounded-lg transition" title="Redo (Ctrl+Y)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a5 5 0 00-5 5v2M21 10l-5-5M21 10l-5 5"/></svg>
+        </button>
+      </div>
+      <span id="bc-contact-count" class="text-xs text-slate-400 sm:ml-auto"></span>
     </div>
     <div id="bc-contacts-table-wrap" class="overflow-x-auto bg-white rounded-lg border border-slate-200">
       <table id="bc-contacts-table" class="w-full text-sm">
         <thead>
           <tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase">
-            <th class="px-3 py-2 w-8"></th>
-            <th class="px-3 py-2 min-w-[150px] cursor-pointer hover:text-brand-600" ondblclick="renameColumn(0)" title="Double-click untuk edit nama variabel">Nama</th>
-            <th class="px-3 py-2 min-w-[120px] cursor-pointer hover:text-brand-600" ondblclick="renameColumn(1)" title="Double-click untuk edit nama variabel">No. HP</th>
-            <th class="px-3 py-2 min-w-[150px] cursor-pointer hover:text-brand-600" ondblclick="renameColumn(2)" title="Double-click untuk edit nama variabel">Kementerian</th>
-            <th class="px-3 py-2 min-w-[120px]">Jabatan</th>
-            <th class="px-3 py-2 min-w-[140px]">Program Studi</th>
-            <th class="px-3 py-2 min-w-[80px]">Angkatan</th>
-            <th class="px-3 py-2 w-10"></th>
+            <th class="px-3 py-2 w-8 text-center"><input type="checkbox" onchange="toggleAllBCRows(this.checked)" class="rounded" title="Pilih semua"></th>
           </tr>
         </thead>
         <tbody id="bc-contacts-tbody">
@@ -115,59 +126,77 @@
       </table>
     </div>
     <p class="text-xs text-slate-400 mt-2">Tip: Double-click column header untuk rename variabel. Klik sel untuk edit. Centang baris untuk pilih penerima broadcast.</p>
+    <div class="flex items-center justify-end mt-4 pt-3 border-t border-slate-200">
+      <button onclick="bcGoToStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg transition font-medium flex items-center gap-2">
+        Selanjutnya
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
   </div>
 
-  <!-- Compose Tab -->
-  <div id="bc-sub-compose" class="bc-sub-content hidden">
+  <!-- Step 2: Compose Template + Live Preview -->
+  <div id="bc-step-2" class="bc-step-panel hidden">
     <section class="border border-slate-200 rounded-xl p-5 bg-slate-50/40">
       <h3 class="text-sm font-bold text-slate-700 mb-3">Template Pesan</h3>
-      <div class="flex gap-4">
-        <div class="flex-1">
-          <label class="text-xs text-slate-500 block mb-1">Template (gunakan variabel dari kolom kontak)</label>
-          <textarea id="bc-template" rows="8" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 focus:outline-none font-mono" placeholder="Halo [nama], dari angkatan [angkatan]. Gunakan variabel dari kolom kontak."></textarea>
-        </div>
-        <div class="w-48 flex-shrink-0">
-          <label class="text-xs text-slate-500 block mb-1">Variabel tersedia</label>
-          <div id="bc-var-list" class="text-xs text-slate-500 bg-white border border-slate-200 rounded-lg p-2 max-h-48 overflow-y-auto font-mono">
-            <p class="text-slate-400 italic">Muat kontak dulu...</p>
-          </div>
+      <textarea id="bc-template" rows="8" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Tulis template pesan di sini..."></textarea>
+
+      <!-- Variable chips: full-width row -->
+      <div class="mt-3">
+        <label class="text-xs text-slate-500 block mb-1.5">Variabel tersedia <span class="text-slate-400">(klik untuk insert):</span></label>
+        <div id="bc-var-chips" class="flex flex-wrap gap-1.5">
+          <span class="text-xs text-slate-400 italic">Muat kontak di Langkah 1 terlebih dahulu.</span>
         </div>
       </div>
 
-      <!-- Preview -->
-      <div class="mt-3 border-t border-slate-200 pt-3">
+      <!-- Live Preview -->
+      <div class="mt-4 border-t border-slate-200 pt-3">
         <div class="flex items-center gap-3 mb-2">
-          <button onclick="previewBCTemplate()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1.5 rounded-lg transition">Preview (baris terpilih)</button>
+          <label class="text-xs font-medium text-slate-600">Preview:</label>
           <select id="bc-preview-row" class="text-xs border border-slate-300 rounded-lg px-2 py-1"></select>
         </div>
-        <div id="bc-preview-box" class="hidden bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-700 whitespace-pre-wrap max-h-48 overflow-y-auto"></div>
+        <div id="bc-preview-box" class="bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-700 whitespace-pre-wrap min-h-[60px] max-h-48 overflow-y-auto">
+          <span class="text-slate-400 italic">Mulai mengetik template untuk melihat preview...</span>
+        </div>
       </div>
 
       <!-- Test Broadcast -->
       <div class="mt-3 border-t border-slate-200 pt-3">
-        <h4 class="text-xs font-bold text-slate-600 mb-2">Test Broadcast</h4>
         <div class="flex gap-2 items-end">
           <div class="flex-1">
-            <label class="text-xs text-slate-500 block mb-1">Nomor tujuan test</label>
+            <label class="text-xs text-slate-500 block mb-1">Test ke nomor:</label>
             <input type="text" id="bc-test-phone" placeholder="08xxxxxxxxxx" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 focus:outline-none">
           </div>
-          <button onclick="sendBCTest()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-2 rounded-lg transition">Kirim Test</button>
+          <button onclick="sendBCTest()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">Kirim Test</button>
         </div>
       </div>
+    </section>
+    <div class="flex items-center justify-between mt-4">
+      <button onclick="bcGoToStep(1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm px-5 py-2 rounded-lg transition font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Kembali
+      </button>
+      <button onclick="bcGoToStep(3)" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg transition font-medium flex items-center gap-2">
+        Selanjutnya
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
 
-      <!-- Send -->
-      <div class="mt-3 border-t border-slate-200 pt-3">
-        <div class="flex items-center gap-3 mb-2">
+  <!-- Step 3: Configure & Send -->
+  <div id="bc-step-3" class="bc-step-panel hidden">
+    <section class="border border-slate-200 rounded-xl p-5 bg-slate-50/40">
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div>
             <label class="text-xs text-slate-500 block mb-1">Delay antar pesan (detik)</label>
             <input type="number" id="bc-delay" min="0" max="60" value="3" class="w-32 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 focus:outline-none">
           </div>
           <div>
             <label class="text-xs text-slate-500 block mb-1">Penerima terpilih</label>
-            <span id="bc-selected-count" class="text-sm font-bold text-brand-600">0</span>
+            <span id="bc-selected-count" class="text-sm font-bold text-blue-600">0</span>
           </div>
         </div>
-        <div id="bc-progress" class="hidden mb-3">
+        <div id="bc-progress" class="hidden">
           <div class="flex justify-between text-xs text-slate-600 mb-1">
             <span>Mengirim...</span>
             <span id="bc-progress-text">0/0</span>
@@ -182,22 +211,32 @@
         </button>
       </div>
     </section>
+    <div class="flex items-center justify-start mt-4">
+      <button onclick="bcGoToStep(2)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm px-5 py-2 rounded-lg transition font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Kembali
+      </button>
+    </div>
   </div>
 
-  <!-- History Tab -->
-  <div id="bc-sub-history" class="bc-sub-content hidden">
-    <h3 class="text-sm font-bold text-slate-700 mb-3">Riwayat Broadcast</h3>
+  <!-- History (always visible below wizard) -->
+  <div class="border-t border-slate-300 pt-6">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-bold text-slate-700">Riwayat Broadcast</h3>
+      <button onclick="loadBCHistory()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg transition">Refresh</button>
+    </div>
     <div id="bc-history-list"></div>
     <div id="bc-history-detail" class="hidden mt-4"></div>
   </div>
 
 </div>
 </main></div>
+
 <div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
 
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v=1774794277"></script>
+<script src="/static/admin-common.js?v=1774808944"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() { initBroadcast(); });
+document.addEventListener("DOMContentLoaded", function() { initBroadcast(); });
 </script>
 </body></html>

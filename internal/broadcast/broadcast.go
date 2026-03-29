@@ -587,6 +587,9 @@ func AnggotaContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	period := r.URL.Query().Get("period")
+	if period == "ALL" {
+		period = ""
+	}
 	members, err := db.GetMembers(period)
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
@@ -702,6 +705,9 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	period := r.URL.Query().Get("period")
+	if period == "ALL" {
+		period = ""
+	}
 	filter := bson.M{"phone": bson.M{"$ne": ""}}
 	if period != "" && period != "ALL" {
 		filter["period_label"] = period
@@ -731,4 +737,134 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	writeJSON(w, 200, result)
+}
+
+
+// ── Session Handlers ───────────────────────────────────────────────────────
+
+func SessionHandler(w http.ResponseWriter, r *http.Request) {
+	username, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		session, err := db.GetLatestDraftSession(username)
+		if err != nil || session == nil {
+			writeJSON(w, 200, map[string]any{
+				"session": map[string]any{
+					"id":       "",
+					"columns":  []string{},
+					"labels":   []string{},
+					"rows":     []map[string]string{},
+					"template": "",
+					"delay_ms": 3000,
+					"status":   "draft",
+				},
+			})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"session": session})
+	case http.MethodPut:
+		var body struct {
+			SessionID string              `json:"session_id"`
+			Columns   []string            `json:"columns"`
+			Labels    []string            `json:"labels"`
+			Rows      []map[string]string `json:"rows"`
+			Template  string              `json:"template"`
+			DelayMs   int                 `json:"delay_ms"`
+			Period    string              `json:"period"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		var sessionID primitive.ObjectID
+		var err error
+		if body.SessionID != "" {
+			sessionID, err = primitive.ObjectIDFromHex(body.SessionID)
+			if err != nil {
+				writeJSON(w, 400, map[string]string{"error": "invalid session_id"})
+				return
+			}
+			err = db.UpdateBroadcastSession(body.SessionID, map[string]any{
+				"columns":  body.Columns,
+				"labels":   body.Labels,
+				"rows":     body.Rows,
+				"template": body.Template,
+				"delay_ms": body.DelayMs,
+				"period":   body.Period,
+			})
+			if err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+		} else {
+			s := db.BroadcastSession{
+				UserID:   username,
+				Username: username,
+				Period:   body.Period,
+				Status:   "draft",
+				Columns:  body.Columns,
+				Labels:   body.Labels,
+				Rows:     body.Rows,
+				Template: body.Template,
+				DelayMs:  body.DelayMs,
+			}
+			if s.DelayMs == 0 {
+				s.DelayMs = 3000
+			}
+			sessionID, err = db.CreateBroadcastSession(s)
+			if err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+		}
+		writeJSON(w, 200, map[string]any{"session_id": sessionID.Hex()})
+	default:
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+	}
+}
+
+func SessionByIDHandler(w http.ResponseWriter, r *http.Request) {
+	username, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	id := strings.TrimPrefix(r.URL.Path, "/api/broadcast/session/")
+	id = strings.Trim(id, "/")
+	if id == "" {
+		writeJSON(w, 400, map[string]string{"error": "id required"})
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		session, err := db.GetBroadcastSession(id)
+		if err != nil || session == nil {
+			writeJSON(w, 404, map[string]string{"error": "not found"})
+			return
+		}
+		if session.UserID != username {
+			writeJSON(w, 403, map[string]string{"error": "forbidden"})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"session": session})
+	case http.MethodDelete:
+		session, err := db.GetBroadcastSession(id)
+		if err != nil || session == nil {
+			writeJSON(w, 404, map[string]string{"error": "not found"})
+			return
+		}
+		if session.UserID != username {
+			writeJSON(w, 403, map[string]string{"error": "forbidden"})
+			return
+		}
+		if err := db.DeleteBroadcastSession(id); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]string{"status": "deleted"})
+	default:
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+	}
 }
