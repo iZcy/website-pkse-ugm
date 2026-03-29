@@ -11,8 +11,9 @@
   <div class="absolute inset-0 bg-gradient-to-b from-brand-900/60 to-brand-950"></div>
   <div class="relative z-10 max-w-7xl mx-auto px-6">
     <p class="text-sm uppercase tracking-wider text-brand-200 mb-3">Tentang Organisasi</p>
-    <h1 class="text-4xl md:text-6xl font-black mb-4">{{if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{else}}PKSE UGM{{end}}</h1>
-    <div class="text-brand-100 max-w-3xl leading-relaxed prose prose-invert">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{safeHTML .GlobalSetting.AboutHTML}}{{else}}<p>Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada. Berdiri sejak 2006, PKSE UGM hadir sebagai wadah pengembangan diri, kolaborasi, dan kontribusi sosial bagi para beswan (penerima beasiswa KSE). Melalui berbagai program kerja yang mencakup pendidikan, pengembangan soft skill, serta kepedulian sosial, PKSE UGM berkomitmen mencetak pemimpin muda yang berkarakter empati, kompeten, dan berdedikasi tinggi.</p>{{end}}</div>
+    <h1 class="text-4xl md:text-6xl font-black mb-4">{{if and .PeriodAbout .PeriodAbout.TaglineTitle}}{{.PeriodAbout.TaglineTitle}}{{else if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{else}}PKSE UGM{{end}}</h1>
+    {{if and .PeriodAbout .PeriodAbout.TaglineSubtitle}}<h2 class="text-2xl md:text-3xl font-bold text-accent-200 mb-4">{{.PeriodAbout.TaglineSubtitle}}</h2>{{end}}
+    <div class="text-brand-100 max-w-3xl leading-relaxed prose prose-invert">{{if and .PeriodAbout .PeriodAbout.Sejarah}}{{safeHTML .PeriodAbout.Sejarah}}{{else if and .GlobalSetting .GlobalSetting.AboutHTML}}{{safeHTML .GlobalSetting.AboutHTML}}{{else}}<p>Paguyuban Karya Salemba Empat UGM merupakan organisasi kelembagaan mahasiswa penerima Beasiswa Karya Salemba Empat di Universitas Gadjah Mada. Berdiri sejak 2006, PKSE UGM hadir sebagai wadah pengembangan diri, kolaborasi, dan kontribusi sosial bagi para beswan (penerima beasiswa KSE). Melalui berbagai program kerja yang mencakup pendidikan, pengembangan soft skill, serta kepedulian sosial, PKSE UGM berkomitmen mencetak pemimpin muda yang berkarakter empati, kompeten, dan berdedikasi tinggi.</p>{{end}}</div>
   </div>
 </section>
 
