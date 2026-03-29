@@ -65,6 +65,7 @@ type SocialMedia struct {
 	YouTube   string `bson:"youtube"   json:"youtube"`
 	TikTok    string `bson:"tiktok"    json:"tiktok"`
 	LinkedIn  string `bson:"linkedin"  json:"linkedin"`
+	Email     string `bson:"email"     json:"email"`
 }
 
 type GlobalSetting struct {

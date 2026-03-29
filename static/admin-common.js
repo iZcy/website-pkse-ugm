@@ -1679,6 +1679,7 @@ async function loadGlobal() {
     document.getElementById('sm-youtube').value = sm.youtube || '';
     document.getElementById('sm-linkedin').value = sm.linkedin || '';
     document.getElementById('sm-tiktok').value = sm.tiktok || '';
+    document.getElementById('sm-email').value = sm.email || '';
     renderGlobalPreview();
   } catch(e) {
     state.globalSetting = {};
@@ -1753,7 +1754,8 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
         facebook: document.getElementById('sm-facebook').value,
         youtube: document.getElementById('sm-youtube').value,
         linkedin: document.getElementById('sm-linkedin').value,
-        tiktok: document.getElementById('sm-tiktok').value
+        tiktok: document.getElementById('sm-tiktok').value,
+        email: document.getElementById('sm-email').value
       }
     });
     state.globalSetting = {
@@ -1764,7 +1766,8 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
         facebook: document.getElementById('sm-facebook').value,
         youtube: document.getElementById('sm-youtube').value,
         linkedin: document.getElementById('sm-linkedin').value,
-        tiktok: document.getElementById('sm-tiktok').value
+        tiktok: document.getElementById('sm-tiktok').value,
+        email: document.getElementById('sm-email').value
       }
     };
     renderGlobalPreview();
@@ -2048,7 +2051,8 @@ function renderGlobalPreview() {
     facebook: (document.getElementById('sm-facebook')?.value || '').trim(),
     youtube: (document.getElementById('sm-youtube')?.value || '').trim(),
     linkedin: (document.getElementById('sm-linkedin')?.value || '').trim(),
-    tiktok: (document.getElementById('sm-tiktok')?.value || '').trim()
+    tiktok: (document.getElementById('sm-tiktok')?.value || '').trim(),
+    email: (document.getElementById('sm-email')?.value || '').trim()
   };
   const socialCount = Object.values(social).filter(Boolean).length;
   wrap.innerHTML = `
@@ -2160,7 +2164,7 @@ document.addEventListener('input', (e) => {
     return;
   }
 
-  if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok'].includes(t.id)) {
+  if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok', 'sm-email'].includes(t.id)) {
     renderGlobalPreview();
   }
 });

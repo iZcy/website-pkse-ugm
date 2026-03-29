@@ -195,6 +195,13 @@
               </label>
               <input type="url" id="sm-tiktok" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://tiktok.com/@...">
             </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Email
+              </label>
+              <input type="email" id="sm-email" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contact@example.com">
+            </div>
           <div class="flex items-center gap-4">
               <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Media Sosial</button>
               <div id="socmed-msg" class="text-sm text-green-600 hidden">Tersimpan!</div>
@@ -246,17 +253,17 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
       footer_copy_text: cur.footer_copy_text || '', about_html: cur.about_html || '',
       social_media: { instagram: document.getElementById('sm-instagram').value, twitter: document.getElementById('sm-twitter').value,
         facebook: document.getElementById('sm-facebook').value, youtube: document.getElementById('sm-youtube').value,
-        linkedin: document.getElementById('sm-linkedin').value, tiktok: document.getElementById('sm-tiktok').value }
+        linkedin: document.getElementById('sm-linkedin').value, tiktok: document.getElementById('sm-tiktok').value, email: document.getElementById('sm-email').value }
     });
     state.globalSetting = { ...cur, social_media: { instagram: document.getElementById('sm-instagram').value, twitter: document.getElementById('sm-twitter').value,
         facebook: document.getElementById('sm-facebook').value, youtube: document.getElementById('sm-youtube').value,
-        linkedin: document.getElementById('sm-linkedin').value, tiktok: document.getElementById('sm-tiktok').value } };
+        linkedin: document.getElementById('sm-linkedin').value, tiktok: document.getElementById('sm-tiktok').value, email: document.getElementById('sm-email').value } };
     renderGlobalPreview(); msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
 document.addEventListener('input', function(e) {
   const t = e.target; if (!t) return;
-  if (['global-orgname','global-header-title','global-header-subtitle','global-hero-badge','global-hero-title-main','global-hero-title-accent','global-footer-title','global-footer-copy','global-footer-text','sm-instagram','sm-twitter','sm-facebook','sm-youtube','sm-linkedin','sm-tiktok'].includes(t.id)) { renderGlobalPreview(); }
+  if (['global-orgname','global-header-title','global-header-subtitle','global-hero-badge','global-hero-title-main','global-hero-title-accent','global-footer-title','global-footer-copy','global-footer-text','sm-instagram','sm-twitter','sm-facebook','sm-youtube','sm-linkedin','sm-tiktok','sm-email'].includes(t.id)) { renderGlobalPreview(); }
 });
 </script>
 </body></html>
