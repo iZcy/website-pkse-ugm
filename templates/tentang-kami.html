@@ -7,17 +7,24 @@
 <body class="bg-gray-50 text-gray-900 antialiased">
 {{template "navbar" .}}
 
-<section class="pt-32 pb-16 bg-brand-950 text-white relative overflow-hidden">
+<section class="pt-32 pb-10 bg-brand-950 text-white relative overflow-hidden">
   <div class="absolute inset-0 bg-gradient-to-b from-brand-900/60 to-brand-950"></div>
-  <div class="relative z-10 max-w-7xl mx-auto px-6">
-    <p class="text-sm uppercase tracking-wider text-brand-200 mb-3">Tentang Organisasi</p>
-    <h1 class="text-4xl md:text-6xl font-black mb-4">{{if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{end}}</h1>
-    {{if and .GlobalSetting .GlobalSetting.HeaderSubtitle}}<h2 class="text-2xl md:text-3xl font-bold text-accent-200 mb-4">{{.GlobalSetting.HeaderSubtitle}}</h2>{{end}}
-    <div class="text-brand-100 max-w-5xl leading-relaxed prose prose-invert prose-lg">{{if and .GlobalSetting .GlobalSetting.AboutHTML}}{{safeHTML .GlobalSetting.AboutHTML}}{{end}}</div>
+  <div class="relative z-10 max-w-7xl mx-auto px-6 text-center">
+    <p class="text-xs uppercase tracking-widest text-brand-300 mb-3">Tentang Organisasi</p>
+    <h1 class="text-4xl md:text-6xl font-black mb-2">{{if and .GlobalSetting .GlobalSetting.HeaderTitle}}{{.GlobalSetting.HeaderTitle}}{{end}}</h1>
+    {{if and .GlobalSetting .GlobalSetting.HeaderSubtitle}}<p class="text-xl md:text-2xl text-accent-200 font-medium">{{.GlobalSetting.HeaderSubtitle}}</p>{{end}}
   </div>
 </section>
 
+{{if and .GlobalSetting .GlobalSetting.AboutHTML}}
 <section class="py-16 bg-white border-b border-gray-100">
+  <div class="max-w-4xl mx-auto px-6">
+    <div class="prose prose-lg text-gray-600 leading-relaxed text-justify max-w-none">{{safeHTML .GlobalSetting.AboutHTML}}</div>
+  </div>
+</section>
+{{end}}
+
+<section class="py-16 bg-gray-50">
   <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-1 bg-brand-900 text-white rounded-3xl p-8">
       <p class="text-accent-300 text-xs uppercase tracking-widest mb-2">Tagline Periode</p>
@@ -27,11 +34,11 @@
     </div>
 
     <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
+      <div class="bg-white border border-gray-100 rounded-3xl p-8">
         <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Visi</p>
         <div class="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none">{{if and .PeriodAbout .PeriodAbout.Visi}}{{safeHTML .PeriodAbout.Visi}}{{end}}</div>
       </div>
-      <div class="bg-gray-50 border border-gray-100 rounded-3xl p-8">
+      <div class="bg-white border border-gray-100 rounded-3xl p-8">
         <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Misi</p>
         <div class="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none">{{if and .PeriodAbout .PeriodAbout.Misi}}{{safeHTML .PeriodAbout.Misi}}{{end}}</div>
       </div>
@@ -39,7 +46,7 @@
   </div>
 </section>
 
-<section class="py-16">
+<section class="py-16 bg-white">
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-8">
       <p class="text-xs uppercase tracking-wider text-brand-600 font-bold mb-2">Struktur</p>
@@ -49,7 +56,7 @@
     {{if .DepartmentGroups}}
     <div class="space-y-6">
       {{range .DepartmentGroups}}
-      <article class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+      <article class="bg-gray-50 rounded-3xl p-6 border border-gray-100">
         <div class="flex items-center gap-4 mb-4">
           <div class="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center overflow-hidden text-brand-600">
             {{if .Department.IconURL}}
@@ -67,7 +74,7 @@
         {{if .Members}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {{range .Members}}
-          <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+          <div class="rounded-xl border border-gray-100 bg-white p-4">
             <p class="font-semibold text-gray-900">{{.FullName}}</p>
             <p class="text-xs text-brand-600 font-semibold uppercase tracking-wide">{{if .Position}}{{.Position}}{{else}}Anggota{{end}}</p>
           </div>
@@ -80,7 +87,7 @@
         {{if .Children}}
         <div class="mt-4 space-y-3 pl-4 border-l-2 border-brand-200">
           {{range .Children}}
-          <div class="bg-gray-50 rounded-xl p-4">
+          <div class="bg-white rounded-xl p-4">
             <div class="flex items-center gap-3 mb-3">
               {{if .Department.IconURL}}
               <img src="{{.Department.IconURL}}" alt="" class="w-8 h-8 object-contain">
@@ -91,7 +98,7 @@
             {{if .Members}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               {{range .Members}}
-              <div class="rounded-lg border border-gray-100 bg-white p-3">
+              <div class="rounded-lg border border-gray-100 bg-gray-50 p-3">
                 <p class="font-semibold text-gray-900 text-sm">{{.FullName}}</p>
                 <p class="text-xs text-brand-600 font-semibold uppercase tracking-wide">{{if .Position}}{{.Position}}{{else}}Anggota{{end}}</p>
               </div>
@@ -106,7 +113,7 @@
       {{end}}
     </div>
     {{else}}
-    <div class="bg-white rounded-3xl border border-gray-100 p-10 text-center text-gray-400">Struktur kementerian belum tersedia.</div>
+    <div class="bg-gray-50 rounded-3xl border border-gray-100 p-10 text-center text-gray-400">Struktur kementerian belum tersedia.</div>
     {{end}}
   </div>
 </section>
