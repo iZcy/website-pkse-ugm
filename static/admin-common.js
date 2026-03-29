@@ -169,8 +169,14 @@ function initQuill(id, toolbar) {
   if (quills[id]) return quills[id];
   quills[id] = new Quill('#' + id, {
     theme: 'snow',
-    modules: { toolbar: toolbar || toolbarOptions }
+    modules: {
+      toolbar: toolbar || toolbarOptions,
+      imageDrop: false,
+      clipboard: { matchVisual: false }
+    }
   });
+  // Disable Quill's built-in image handler that shows "please enter a URL" prompt
+  quills[id].getModule('toolbar').addHandler('image', function() {});
   return quills[id];
 }
 function quillGetHTML(id) {
