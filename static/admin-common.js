@@ -970,6 +970,7 @@ function renderDeptCard(d, depth) {
 
 async function loadKementerian() {
   const el = document.getElementById('list-departemen');
+  if (!el) return;
   try {
     const [depts, members] = await Promise.all([
       api('GET', `/api/cms/departments?period=${PERIOD}`),
