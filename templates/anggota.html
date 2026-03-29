@@ -52,6 +52,7 @@
         data-angkatan="{{.Angkatan}}"
         data-department="{{.Department}}"
         data-position="{{.Position}}"
+        data-phone="{{.Phone}}"
         data-track-records='{{range $k,$v := .ActivePeriods}}{{$k}}|{{$v}}|{{if $.ActivePositions}}{{index $.ActivePositions $k}}{{end}};;{{end}}'>
         <div class="p-5">
           <div class="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm mb-3">
@@ -99,6 +100,7 @@
         <div>
           <h3 id="memberModalName" class="text-2xl font-black text-gray-900"></h3>
           <p id="memberModalMeta" class="text-sm text-gray-500"></p>
+          <p id="memberModalPhone" class="text-sm text-gray-400"></p>
         </div>
       </div>
       <div>

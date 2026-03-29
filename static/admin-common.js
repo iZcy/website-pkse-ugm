@@ -1304,6 +1304,7 @@ async function loadAnggota() {
         <th class="px-4 py-3 bg-slate-50 font-semibold">Nama</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Profil</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Status Aktif</th>
+        <th class="px-4 py-3 bg-slate-50 font-semibold">No. HP</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Penempatan</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
@@ -1325,6 +1326,9 @@ async function loadAnggota() {
           </td>
           <td class="px-4 py-3 text-slate-600 border-t border-slate-100">
             ${m.active_periods && m.active_periods[PERIOD] ? `<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aktif (${escHtml(m.active_periods[PERIOD])})</span>` : '<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Tidak aktif</span>'}
+          </td>
+          <td class="px-4 py-3 text-slate-600 border-t border-slate-100 text-xs font-mono">
+            ${m.phone ? escHtml(m.phone) : '<span class=\"text-slate-300\">-</span>'}
           </td>
           <td class="px-4 py-3 text-slate-600 border-t border-slate-100">
             ${m.department ? `<div class="text-sm">${escHtml(m.department)}</div>` : '<div class="text-xs text-amber-600">Belum ditempatkan</div>'}
@@ -1356,6 +1360,7 @@ async function openAnggotaModal() {
   document.getElementById('anggota-program-studi').value = '';
   document.getElementById('anggota-fakultas').value = '';
   document.getElementById('anggota-angkatan').value = '';
+  document.getElementById('anggota-phone').value = '';
   document.getElementById('modalAnggotaTitle').textContent = 'Tambah Anggota';
   renderAnggotaActivationEditor({});
   createImagePicker('picker-anggota-photo');
@@ -1373,6 +1378,7 @@ async function editAnggota(m) {
   document.getElementById('anggota-program-studi').value = m.program_studi || '';
   document.getElementById('anggota-fakultas').value = m.fakultas || '';
   document.getElementById('anggota-angkatan').value = m.angkatan || '';
+  document.getElementById('anggota-phone').value = m.phone || '';
   document.getElementById('modalAnggotaTitle').textContent = 'Edit Anggota';
   renderAnggotaActivationEditor(m.active_periods || {});
   createImagePicker('picker-anggota-photo', { initialUrl: m.photo_url || '' });
@@ -1389,6 +1395,7 @@ async function submitAnggota() {
     program_studi: document.getElementById('anggota-program-studi').value,
     fakultas: document.getElementById('anggota-fakultas').value,
     angkatan: document.getElementById('anggota-angkatan').value,
+    phone: document.getElementById('anggota-phone').value,
     active_periods: activation.periods,
     photo_url: pickerGetUrl('picker-anggota-photo'),
     cover_url: pickerGetUrl('picker-anggota-cover'),
