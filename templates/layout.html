@@ -56,6 +56,10 @@
   .prose-invert :where(ul, ol) > :where(li)::marker { color: rgba(255,255,255,0.5); }
   .prose max-w-none { max-width: none; }
   .text-justify { text-align: justify; }
+  .prose :where(.ql-align-center) { text-align: center; }
+  .prose :where(.ql-align-right) { text-align: right; }
+  .prose :where(.ql-align-justify) { text-align: justify; }
+  .prose :where(.ql-align-center > *) { margin-left: auto; margin-right: auto; }
 </style>
 {{end}}
 
