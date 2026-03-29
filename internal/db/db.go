@@ -386,7 +386,7 @@ func GetDepartments(periodLabel string) ([]Department, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	filter := bson.M{}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		filter["period_label"] = periodLabel
 	}
 	opts := options.Find().SetSort(bson.D{{Key: "sort_order", Value: 1}})
@@ -434,7 +434,7 @@ func GetMembers(periodLabel string) ([]Member, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	filter := bson.M{}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		filter = bson.M{"$or": []bson.M{
 			{"period_label": periodLabel},
 			{"$expr": bson.M{"$ne": bson.A{
@@ -508,7 +508,7 @@ func GetAnnouncements(limit int, publishedOnly bool, periodLabel string) ([]Anno
 	if publishedOnly {
 		filter["published"] = true
 	}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		filter["period_label"] = periodLabel
 	}
 	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
@@ -580,7 +580,7 @@ func GetArticles(publishedOnly bool, periodLabel string) ([]Article, error) {
 	if publishedOnly {
 		filter["published"] = true
 	}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		filter["period_label"] = periodLabel
 	}
 	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
@@ -696,7 +696,7 @@ type StatData struct {
 func GetPrograms(periodLabel string) ([]Program, error) {
 	col := database.Collection("programs")
 	filter := bson.M{}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		filter["period_label"] = periodLabel
 	}
 	opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
@@ -750,7 +750,7 @@ func DeleteProgram(id string) error {
 func GetFAQs(periodLabel string) ([]FAQ, error) {
 	col := database.Collection("faqs")
 	filter := bson.M{}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		if periodLabel == "GLOBAL" {
 			filter["$or"] = []bson.M{
 				{"period_label": "GLOBAL"},
@@ -811,7 +811,7 @@ func DeleteFAQ(id string) error {
 func GetStats(periodLabel string) ([]StatData, error) {
 	col := database.Collection("stats")
 	filter := bson.M{}
-	if periodLabel != "" {
+	if periodLabel != "" && periodLabel != "ALL" {
 		filter["period_label"] = periodLabel
 	}
 	opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
@@ -1158,3 +1158,84 @@ func GetMembersFiltered(filter bson.M) ([]Member, error) {
 	}
 	return res, nil
 }
+
+// ── Broadcast Session ──────────────────────────────────────────────────────
+
+type BroadcastSession struct {
+	ID        primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	UserID    string               `bson:"user_id"    json:"user_id"`
+	Username  string               `bson:"username"   json:"username"`
+	Period    string               `bson:"period"     json:"period"`
+	Status    string               `bson:"status"     json:"status"`
+	Columns   []string             `bson:"columns"    json:"columns"`
+	Labels    []string             `bson:"labels"     json:"labels"`
+	Rows      []map[string]string  `bson:"rows"       json:"rows"`
+	Template  string               `bson:"template"   json:"template"`
+	DelayMs   int                  `bson:"delay_ms"   json:"delay_ms"`
+	CreatedAt time.Time            `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time            `bson:"updated_at" json:"updated_at"`
+}
+
+func CreateBroadcastSession(s BroadcastSession) (primitive.ObjectID, error) {
+	now := time.Now()
+	s.CreatedAt = now
+	s.UpdatedAt = now
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res, err := col("broadcast_sessions").InsertOne(ctx, s)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+	return res.InsertedID.(primitive.ObjectID), nil
+}
+
+func GetBroadcastSession(id string) (*BroadcastSession, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	var s BroadcastSession
+	err = col("broadcast_sessions").FindOne(ctx, bson.M{"_id": oid}).Decode(&s)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
+func GetLatestDraftSession(userID string) (*BroadcastSession, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	opts := options.FindOne().SetSort(bson.D{{Key: "created_at", Value: -1}})
+	var s BroadcastSession
+	err := col("broadcast_sessions").FindOne(ctx, bson.M{"user_id": userID, "status": "draft"}, opts).Decode(&s)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
+func UpdateBroadcastSession(id string, fields map[string]any) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	fields["updated_at"] = time.Now()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = col("broadcast_sessions").UpdateByID(ctx, oid, bson.M{"$set": fields})
+	return err
+}
+
+func DeleteBroadcastSession(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = col("broadcast_sessions").DeleteOne(ctx, bson.M{"_id": oid})
+	return err
+}
+

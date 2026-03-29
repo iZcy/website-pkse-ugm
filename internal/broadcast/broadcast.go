@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson"
@@ -65,16 +66,16 @@ func proxyToWA(method, path string, body io.Reader) (*http.Response, error) {
 // ── WebSocket hub ────────────────────────────────────────────────────────────
 
 type hub struct {
-	clients   map[*websocket.Conn]bool
-	broadcast chan []byte
-	register  chan *websocket.Conn
+	clients    map[*websocket.Conn]bool
+	broadcast  chan []byte
+	register   chan *websocket.Conn
 	unregister chan *websocket.Conn
 }
 
 var wsHub = &hub{
-	clients:   make(map[*websocket.Conn]bool),
-	broadcast: make(chan []byte, 100),
-	register:  make(chan *websocket.Conn),
+	clients:    make(map[*websocket.Conn]bool),
+	broadcast:  make(chan []byte, 100),
+	register:   make(chan *websocket.Conn),
 	unregister: make(chan *websocket.Conn),
 }
 
@@ -159,93 +160,6 @@ func QR(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Contacts(w http.ResponseWriter, r *http.Request) {
-	if !requireSuperAdmin(w, r) {
-		return
-	}
-
-	switch r.Method {
-	case http.MethodGet:
-		period := r.URL.Query().Get("period")
-		contacts, err := db.GetBroadcastContacts(period)
-		if err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		writeJSON(w, 200, contacts)
-
-	case http.MethodPost:
-		var c db.BroadcastContact
-		if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
-			writeJSON(w, 400, map[string]string{"error": err.Error()})
-			return
-		}
-		if c.Phone == "" {
-			writeJSON(w, 400, map[string]string{"error": "phone is required"})
-			return
-		}
-		if err := db.CreateBroadcastContact(c); err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		writeJSON(w, 200, map[string]string{"status": "ok"})
-
-	case http.MethodDelete:
-		id := strings.TrimPrefix(r.URL.Path, "/api/broadcast/contacts/")
-		id = strings.Trim(id, "/")
-		if id == "" {
-			writeJSON(w, 400, map[string]string{"error": "id required"})
-			return
-		}
-		if err := db.DeleteBroadcastContact(id); err != nil {
-			writeJSON(w, 500, map[string]string{"error": err.Error()})
-			return
-		}
-		writeJSON(w, 200, map[string]string{"status": "ok"})
-
-	default:
-		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
-	}
-}
-
-func ImportContacts(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
-		return
-	}
-	if !requireSuperAdmin(w, r) {
-		return
-	}
-
-	var body struct {
-		Contacts []db.BroadcastContact `json:"contacts"`
-		Period   string                `json:"period"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		writeJSON(w, 400, map[string]string{"error": err.Error()})
-		return
-	}
-
-	if len(body.Contacts) == 0 {
-		writeJSON(w, 400, map[string]string{"error": "contacts array is empty"})
-		return
-	}
-
-	// Apply period to all contacts if specified
-	for i := range body.Contacts {
-		if body.Period != "" && body.Contacts[i].Period == "" {
-			body.Contacts[i].Period = body.Period
-		}
-	}
-
-	if err := db.BulkCreateBroadcastContacts(body.Contacts); err != nil {
-		writeJSON(w, 500, map[string]string{"error": err.Error()})
-		return
-	}
-
-	writeJSON(w, 200, map[string]any{"status": "ok", "count": len(body.Contacts)})
-}
-
 func Send(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
@@ -258,32 +172,77 @@ func Send(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body struct {
-		Message string   `json:"message"`
-		Period  string   `json:"period"`
-		Group   string   `json:"group"`
-		Phones  []string `json:"phones"`
+		Message  string              `json:"message"`
+		Period   string              `json:"period"`
+		Group    string              `json:"group"`
+		Phones   []string            `json:"phones"`
+		Messages []string            `json:"messages,omitempty"`
+		DelayMs  int                 `json:"delay_ms"`
+		RowVars  []map[string]string `json:"row_vars,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		writeJSON(w, 400, map[string]string{"error": err.Error()})
 		return
 	}
 
+	// Only superadmin can send broadcasts
+	if role != "superadmin" {
+		writeJSON(w, 403, map[string]string{"error": "only superadmin can send broadcasts"})
+		return
+	}
+
+	// Per-contact personalized messages (messages array matches phones array)
+	usePerContact := len(body.Phones) > 0 && len(body.Messages) == len(body.Phones)
+
+	var blogID primitive.ObjectID
+	var err error
+
+	if usePerContact {
+		if len(body.Phones) == 0 {
+			writeJSON(w, 400, map[string]string{"error": "no contacts found"})
+			return
+		}
+
+		blog := db.BroadcastLog{
+			Message:        body.Message,
+			TotalReceivers: len(body.Phones),
+			SentBy:         username,
+		}
+		blogID, err = db.CreateBroadcastLog(blog)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+
+		broadcastProgress(map[string]any{
+			"type":  "broadcast_started",
+			"id":    blogID.Hex(),
+			"total": len(body.Phones),
+		})
+
+		go sendPerContact(blogID, body.Phones, body.Messages, body.DelayMs)
+
+		writeJSON(w, 200, map[string]any{
+			"status": "sending",
+			"log_id": blogID.Hex(),
+			"total":  len(body.Phones),
+		})
+		return
+	}
+
+	// Original bulk send path
 	if body.Message == "" {
 		writeJSON(w, 400, map[string]string{"error": "message is required"})
 		return
 	}
 
-	// Resolve contacts
 	var contacts []db.BroadcastContact
-	var err error
 
 	if len(body.Phones) > 0 {
-		// Direct phone numbers
 		for _, p := range body.Phones {
 			contacts = append(contacts, db.BroadcastContact{Phone: p, Name: p})
 		}
 	} else {
-		// Load from DB based on period/group
 		if body.Period == "" {
 			body.Period = "ALL"
 		}
@@ -299,13 +258,6 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Only superadmin can send broadcasts
-	if role != "superadmin" {
-		writeJSON(w, 403, map[string]string{"error": "only superadmin can send broadcasts"})
-		return
-	}
-
-	// Create broadcast log
 	numbers := make([]string, len(contacts))
 	for i, c := range contacts {
 		numbers[i] = c.Phone
@@ -316,27 +268,30 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		TotalReceivers: len(contacts),
 		SentBy:         username,
 	}
-	blogID, err := db.CreateBroadcastLog(blog)
+	blogID, err = db.CreateBroadcastLog(blog)
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
 
-	// Send via WA service
+	delayMs := 0
+	if body.DelayMs > 0 {
+		delayMs = body.DelayMs
+	}
 	sendBody, _ := json.Marshal(map[string]any{
-		"numbers": numbers,
-		"message": body.Message,
+		"numbers":  numbers,
+		"message":  body.Message,
+		"delay_ms": delayMs,
 	})
 
 	broadcastProgress(map[string]any{
-		"type": "broadcast_started",
-		"id":   blogID.Hex(),
+		"type":  "broadcast_started",
+		"id":    blogID.Hex(),
 		"total": len(contacts),
 	})
 
 	resp, err := proxyToWA(http.MethodPost, "/send-bulk", strings.NewReader(string(sendBody)))
 	if err != nil {
-		// Update log as failed
 		now := time.Now()
 		db.UpdateBroadcastLog(blogID, map[string]any{
 			"status":       "failed",
@@ -363,14 +318,95 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Poll for job completion in background
 	go pollJobCompletion(blogID, jobResp.JobID, contacts)
 
 	writeJSON(w, 200, map[string]any{
-		"status":   "sending",
-		"log_id":   blogID.Hex(),
-		"job_id":   jobResp.JobID,
-		"total":    len(contacts),
+		"status": "sending",
+		"log_id": blogID.Hex(),
+		"job_id": jobResp.JobID,
+		"total":  len(contacts),
+	})
+}
+
+func sendPerContact(blogID primitive.ObjectID, phones []string, messages []string, delayMs int) {
+	sentCount := 0
+	failedCount := 0
+	now := time.Now()
+	var recipientLogs []db.BroadcastRecipientLog
+
+	for i, phone := range phones {
+		msg := messages[i]
+		singleBody, _ := json.Marshal(map[string]any{
+			"number":  phone,
+			"message": msg,
+		})
+		resp, err := proxyToWA(http.MethodPost, "/send", strings.NewReader(string(singleBody)))
+		status := "sent"
+		errMsg := ""
+		if err != nil {
+			status = "failed"
+			errMsg = err.Error()
+		} else {
+			resp.Body.Close()
+			if resp.StatusCode != 200 {
+				status = "failed"
+				errMsg = "wa-service error: " + resp.Status
+			}
+		}
+
+		if status == "sent" {
+			sentCount++
+		} else {
+			failedCount++
+		}
+		recipientLogs = append(recipientLogs, db.BroadcastRecipientLog{
+			LogID:  blogID,
+			Phone:  phone,
+			Status: status,
+			Error:  errMsg,
+			SentAt: &now,
+		})
+
+		broadcastProgress(map[string]any{
+			"type":       "broadcast_progress",
+			"id":         blogID.Hex(),
+			"sent":       sentCount,
+			"failed":     failedCount,
+			"total":      len(phones),
+			"percentage": float64(sentCount+failedCount) / float64(len(phones)) * 100,
+		})
+
+		if i < len(phones)-1 && delayMs > 0 {
+			time.Sleep(time.Duration(delayMs) * time.Millisecond)
+		}
+	}
+
+	completedAt := time.Now()
+	finalStatus := "done"
+	if failedCount == len(phones) {
+		finalStatus = "failed"
+	} else if failedCount > 0 {
+		finalStatus = "partial"
+	}
+
+	db.UpdateBroadcastLog(blogID, map[string]any{
+		"status":       finalStatus,
+		"sent_count":   sentCount,
+		"failed_count": failedCount,
+		"completed_at": &completedAt,
+	})
+
+	if len(recipientLogs) > 0 {
+		db.CreateRecipientLogs(recipientLogs)
+	}
+
+	broadcastProgress(map[string]any{
+		"type":   "broadcast_completed",
+		"id":     blogID.Hex(),
+		"status": finalStatus,
+		"sent":   sentCount,
+		"failed": failedCount,
+		"total":  len(phones),
 	})
 }
 
@@ -408,16 +444,15 @@ func pollJobCompletion(blogID primitive.ObjectID, jobID string, contacts []db.Br
 		}
 
 		broadcastProgress(map[string]any{
-			"type":         "broadcast_progress",
-			"id":           blogID.Hex(),
-			"sent":         sentCount,
-			"failed":       failedCount,
-			"total":        len(contacts),
-			"percentage":   float64(sentCount+failedCount) / float64(len(contacts)) * 100,
+			"type":       "broadcast_progress",
+			"id":         blogID.Hex(),
+			"sent":       sentCount,
+			"failed":     failedCount,
+			"total":      len(contacts),
+			"percentage": float64(sentCount+failedCount) / float64(len(contacts)) * 100,
 		})
 
 		if job.Status == "done" {
-			// Build recipient logs
 			now := time.Now()
 			for _, r := range job.Results {
 				status := "sent"
@@ -437,7 +472,6 @@ func pollJobCompletion(blogID primitive.ObjectID, jobID string, contacts []db.Br
 		}
 	}
 
-	// Update broadcast log
 	now := time.Now()
 	status := "done"
 	if failedCount == len(contacts) {
@@ -447,13 +481,12 @@ func pollJobCompletion(blogID primitive.ObjectID, jobID string, contacts []db.Br
 	}
 
 	db.UpdateBroadcastLog(blogID, map[string]any{
-		"status":        status,
-		"sent_count":    sentCount,
-		"failed_count":  failedCount,
-		"completed_at":  &now,
+		"status":       status,
+		"sent_count":   sentCount,
+		"failed_count": failedCount,
+		"completed_at": &now,
 	})
 
-	// Save recipient logs
 	if len(recipientLogs) > 0 {
 		db.CreateRecipientLogs(recipientLogs)
 	}
@@ -469,7 +502,6 @@ func pollJobCompletion(blogID primitive.ObjectID, jobID string, contacts []db.Br
 }
 
 func findContactID(contacts []db.BroadcastContact, phone string) primitive.ObjectID {
-	// Normalize phone for comparison
 	normalized := normalizePhoneLocal(phone)
 	for _, c := range contacts {
 		if normalizePhoneLocal(c.Phone) == normalized {
@@ -545,6 +577,96 @@ func LogDetail(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func AnggotaContacts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		return
+	}
+	_, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	period := r.URL.Query().Get("period")
+	if period == "ALL" {
+		period = ""
+	}
+	members, err := db.GetMembers(period)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": err.Error()})
+		return
+	}
+	type contactRow struct {
+		FullName     string `json:"full_name"`
+		Nickname     string `json:"nickname"`
+		Phone        string `json:"phone"`
+		Department   string `json:"department"`
+		Position     string `json:"position"`
+		ProgramStudi string `json:"program_studi"`
+		Fakultas     string `json:"fakultas"`
+		Angkatan     string `json:"angkatan"`
+	}
+	rows := make([]contactRow, 0)
+	for _, m := range members {
+		if m.Phone == "" {
+			continue
+		}
+		rows = append(rows, contactRow{
+			FullName:     m.FullName,
+			Nickname:     m.Nickname,
+			Phone:        m.Phone,
+			Department:   m.Department,
+			Position:     m.Position,
+			ProgramStudi: m.ProgramStudi,
+			Fakultas:     m.Fakultas,
+			Angkatan:     m.Angkatan,
+		})
+	}
+	writeJSON(w, 200, rows)
+}
+
+// renderBCMessage replaces {{var}} and {{if var == "val"}}...{{else}}...{{endif}}
+func renderBCMessage(tmpl string, vars map[string]string) string {
+	re := regexp.MustCompile(`\{\{if\s+(\w+)\s*==\s*"([^"]*?)"\}\}(.*?)\{\{else\}\}(.*?)\{\{endif\}\}`)
+	tmpl = re.ReplaceAllStringFunc(tmpl, func(match string) string {
+		sub := re.FindStringSubmatch(match)
+		if len(sub) < 5 {
+			return match
+		}
+		colName := sub[1]
+		compareVal := sub[2]
+		trueBody := sub[3]
+		falseBody := sub[4]
+		actual := vars[colName]
+		if actual == compareVal {
+			return trueBody
+		}
+		return falseBody
+	})
+	for k, v := range vars {
+		tmpl = strings.ReplaceAll(tmpl, "{{"+k+"}}", v)
+	}
+	return tmpl
+}
+
+func Disconnect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		return
+	}
+	if !requireSuperAdmin(w, r) {
+		return
+	}
+	resp, err := proxyToWA(http.MethodPost, "/logout", nil)
+	if err != nil {
+		writeJSON(w, 502, map[string]string{"error": "wa-service unreachable"})
+		return
+	}
+	defer resp.Body.Close()
+	var result map[string]any
+	json.NewDecoder(resp.Body).Decode(&result)
+	writeJSON(w, resp.StatusCode, result)
+}
+
 func WebSocket(w http.ResponseWriter, r *http.Request) {
 	_, _, ok := requireAny(w, r)
 	if !ok {
@@ -559,7 +681,6 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 
 	wsHub.register <- conn
 
-	// Send current status
 	go func() {
 		defer func() {
 			conn.Close()
@@ -570,12 +691,9 @@ func WebSocket(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				break
 			}
-			// Client messages ignored - this is a one-way broadcast channel
 		}
 	}()
 }
-
-
 
 func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -587,6 +705,9 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	period := r.URL.Query().Get("period")
+	if period == "ALL" {
+		period = ""
+	}
 	filter := bson.M{"phone": bson.M{"$ne": ""}}
 	if period != "" && period != "ALL" {
 		filter["period_label"] = period
@@ -616,4 +737,134 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	writeJSON(w, 200, result)
+}
+
+
+// ── Session Handlers ───────────────────────────────────────────────────────
+
+func SessionHandler(w http.ResponseWriter, r *http.Request) {
+	username, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		session, err := db.GetLatestDraftSession(username)
+		if err != nil || session == nil {
+			writeJSON(w, 200, map[string]any{
+				"session": map[string]any{
+					"id":       "",
+					"columns":  []string{},
+					"labels":   []string{},
+					"rows":     []map[string]string{},
+					"template": "",
+					"delay_ms": 3000,
+					"status":   "draft",
+				},
+			})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"session": session})
+	case http.MethodPut:
+		var body struct {
+			SessionID string              `json:"session_id"`
+			Columns   []string            `json:"columns"`
+			Labels    []string            `json:"labels"`
+			Rows      []map[string]string `json:"rows"`
+			Template  string              `json:"template"`
+			DelayMs   int                 `json:"delay_ms"`
+			Period    string              `json:"period"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			writeJSON(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		var sessionID primitive.ObjectID
+		var err error
+		if body.SessionID != "" {
+			sessionID, err = primitive.ObjectIDFromHex(body.SessionID)
+			if err != nil {
+				writeJSON(w, 400, map[string]string{"error": "invalid session_id"})
+				return
+			}
+			err = db.UpdateBroadcastSession(body.SessionID, map[string]any{
+				"columns":  body.Columns,
+				"labels":   body.Labels,
+				"rows":     body.Rows,
+				"template": body.Template,
+				"delay_ms": body.DelayMs,
+				"period":   body.Period,
+			})
+			if err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+		} else {
+			s := db.BroadcastSession{
+				UserID:   username,
+				Username: username,
+				Period:   body.Period,
+				Status:   "draft",
+				Columns:  body.Columns,
+				Labels:   body.Labels,
+				Rows:     body.Rows,
+				Template: body.Template,
+				DelayMs:  body.DelayMs,
+			}
+			if s.DelayMs == 0 {
+				s.DelayMs = 3000
+			}
+			sessionID, err = db.CreateBroadcastSession(s)
+			if err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+		}
+		writeJSON(w, 200, map[string]any{"session_id": sessionID.Hex()})
+	default:
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+	}
+}
+
+func SessionByIDHandler(w http.ResponseWriter, r *http.Request) {
+	username, _, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+	id := strings.TrimPrefix(r.URL.Path, "/api/broadcast/session/")
+	id = strings.Trim(id, "/")
+	if id == "" {
+		writeJSON(w, 400, map[string]string{"error": "id required"})
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		session, err := db.GetBroadcastSession(id)
+		if err != nil || session == nil {
+			writeJSON(w, 404, map[string]string{"error": "not found"})
+			return
+		}
+		if session.UserID != username {
+			writeJSON(w, 403, map[string]string{"error": "forbidden"})
+			return
+		}
+		writeJSON(w, 200, map[string]any{"session": session})
+	case http.MethodDelete:
+		session, err := db.GetBroadcastSession(id)
+		if err != nil || session == nil {
+			writeJSON(w, 404, map[string]string{"error": "not found"})
+			return
+		}
+		if session.UserID != username {
+			writeJSON(w, 403, map[string]string{"error": "forbidden"})
+			return
+		}
+		if err := db.DeleteBroadcastSession(id); err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, map[string]string{"status": "deleted"})
+	default:
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+	}
 }
