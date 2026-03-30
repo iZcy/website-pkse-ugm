@@ -3553,6 +3553,27 @@ function renderBCTemplateJS(template, vars) {
         var b = tmpl.substring(afterStart, endPos);
         result = evalCond(col, op, val) ? b : '';
       }
+      // If result is empty, clean up surrounding blank lines to avoid excess whitespace
+      if (!result) {
+        var blockEnd = endPos + 9;
+        var prevNL = tmpl.lastIndexOf('\n', startIdx - 1);
+        var nextNL = tmpl.indexOf('\n', blockEnd);
+        if (prevNL !== -1 && nextNL !== -1) {
+          var before = tmpl.substring(prevNL + 1, startIdx);
+          var after = tmpl.substring(blockEnd, nextNL);
+          if (before.trim() === '' && after.trim() === '') {
+            tmpl = tmpl.substring(0, prevNL) + tmpl.substring(nextNL + 1);
+            continue;
+          }
+        }
+        if (prevNL !== -1 && tmpl.substring(prevNL + 1, startIdx).trim() === '') {
+          var afterEnd = tmpl.indexOf('\n', blockEnd);
+          if (afterEnd !== -1 && tmpl.substring(blockEnd, afterEnd).trim() === '') {
+            tmpl = tmpl.substring(0, prevNL) + tmpl.substring(afterEnd + 1);
+            continue;
+          }
+        }
+      }
       tmpl = tmpl.substring(0, startIdx) + result + tmpl.substring(endPos + 9);
     }
     return tmpl;
@@ -3600,6 +3621,10 @@ function renderBCTemplateJS(template, vars) {
   template = processFilters(template);
   template = processConditionals(template);
   template = processVars(template);
+  // Collapse 3+ consecutive newlines into 2 (max 1 blank line between paragraphs)
+  template = template.replace(/\n{3,}/g, '\n\n');
+  // Strip whitespace from otherwise-blank lines
+  template = template.replace(/^[ \t]+$/gm, '');
   return template;
 }
 
