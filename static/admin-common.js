@@ -2685,102 +2685,148 @@ function bcToggleHelp() {
     var hc = document.getElementById('bc-help-content');
     if (hc && !hc.dataset.loaded) {
       hc.dataset.loaded = '1';
-      var L = String.fromCharCode(123,123);
-      var R = String.fromCharCode(125,125);
+      var L = String.fromCharCode(123,123), R = String.fromCharCode(125,125);
       var ex = function(t) { return '<span class="text-blue-600">' + t + '</span>'; };
-      var cm = function(t) { return '<code class="bg-slate-200 text-slate-800 px-1 rounded">' + t + '</code>'; };
+      var cm = function(t) { return '<code class="bg-slate-200 text-slate-800 px-1 rounded text-xs">' + t + '</code>'; };
+      var res = function(t) { return '<span class="text-green-600 font-semibold">' + t + '</span>'; };
+      // Get first contact's data for live examples
+      var sample = {};
+      if (bcContactRows.length > 0) {
+        bcColumnHeaders.forEach(function(h) { sample[h] = bcContactRows[0][h] || ''; });
+      }
+      var colInfo = bcColumnHeaders.map(function(h, i) {
+        var label = bcColumnLabels[i] || h;
+        var val = sample[h] || '(kosong)';
+        return '<tr><td class="pr-3 py-0.5 font-mono text-blue-600 whitespace-nowrap">' + ex(L + h + R) + '</td><td class="pr-3 py-0.5 text-slate-400 text-xs">' + escHtml(label) + '</td><td class="py-0.5 text-slate-700 text-xs truncate max-w-[180px]" title="' + escHtml(val) + '">' + escHtml(val) + '</td></tr>';
+      }).join('');
+      var sWrap = function(label, template, output) {
+        return '<div class="mb-3"><div class="text-[10px] text-slate-400 mb-0.5">' + label + '</div>'
+          + '<div class="bg-slate-800 text-slate-200 rounded p-2 font-mono text-[11px] whitespace-pre-wrap leading-relaxed">' + template + '</div>'
+          + '<div class="mt-0.5 flex items-start gap-1"><span class="text-slate-400 text-[10px]">&#8594;</span><div class="bg-green-50 border border-green-200 rounded p-1.5 font-mono text-[11px] text-green-800 whitespace-pre-wrap flex-1">' + (output || res('(kosong)')) + '</div></div></div>';
+      };
+      var s = sample;
+      var evalEx = function(tmpl) {
+        try { return renderBCTemplateJS(tmpl, JSON.parse(JSON.stringify(sample))); } catch(e) { return '(error)'; }
+      };
       hc.innerHTML =
-        // ── Variabel ──
-        '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'var' + R + '</span> Variabel</h4>'
-        + '<p class="text-slate-600 mb-2">Sisipkan nilai kolom kontak.</p>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700">Halo ' + ex(L + 'nickname' + R) + ', dari ' + ex(L + 'department' + R) + '!</div></div>'
-        // ── Filter ──
-        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'var|filter' + R + '</span> Filter</h4>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2 font-mono text-xs text-slate-700">'
-        + '<p>' + ex(L + 'nickname|uppercase' + R) + ' <span class="text-slate-400">→ huruf kapital semua</span></p>'
-        + '<p>' + ex(L + 'nickname|lowercase' + R) + ' <span class="text-slate-400">→ huruf kecil semua</span></p>'
-        + '<p>' + ex(L + 'nickname|capitalize' + R) + ' <span class="text-slate-400">→ Yitzhak (kapital huruf pertama)</span></p>'
-        + '<p>' + ex(L + 'department|titlecase' + R) + ' <span class="text-slate-400">→ Title Case Setiap Kata</span></p>'
-        + '<p>' + ex(L + 'position|default:"Anggota"' + R) + ' <span class="text-slate-400">→ fallback jika kosong</span></p>'
-        + '<p>' + ex(L + 'full_name|trim' + R) + ' <span class="text-slate-400">→ hapus spasi berlebih</span></p>'
-        + '<p>' + ex(L + 'phone|length' + R) + ' <span class="text-slate-400">→ jumlah karakter</span></p>'
-        + '<p>' + ex(L + 'fakultas|slice:"0,6"' + R) + ' <span class="text-slate-400">→ potong teks (mulai,akhir)</span></p>'
-        + '<p>' + ex(L + 'full_name|replace:" ,"' + R) + ' <span class="text-slate-400">→ ganti teks (cari,ganti)</span></p>'
-        + '<p>' + ex(L + 'emoji|repeat:3' + R) + ' <span class="text-slate-400">→ ulang 3x (baris baru)</span></p>'
+        '<div class="flex gap-3" style="min-height:400px">'
+        // LEFT COLUMN — Syntax Reference
+        + '<div class="flex-1 min-w-0 space-y-4 text-xs">'
+        // Variables
+        + '<div>'
+        + '<h4 class="font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">'
+        + '<span class="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-mono">' + L + 'var' + R + '</span> Variabel</h4>'
+        + '<p class="text-slate-500 mb-1">Sisipkan nilai kolom kontak.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded p-2 font-mono text-[11px]">Halo ' + ex(L + 'nickname' + R) + '!</div></div>'
+        // Filters
+        + '<div>'
+        + '<h4 class="font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">'
+        + '<span class="bg-purple-100 text-purple-700 text-[10px] px-1.5 py-0.5 rounded font-mono">' + L + 'var|filter' + R + '</span> Filter</h4>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded p-2 font-mono text-[11px] space-y-0.5">'
+        + '<p>' + ex(L + 'var|uppercase' + R) + ' <span class="text-slate-400">kapital semua</span></p>'
+        + '<p>' + ex(L + 'var|lowercase' + R) + ' <span class="text-slate-400">kecil semua</span></p>'
+        + '<p>' + ex(L + 'var|capitalize' + R) + ' <span class="text-slate-400">kapital pertama</span></p>'
+        + '<p>' + ex(L + 'var|titlecase' + R) + ' <span class="text-slate-400">Title Case</span></p>'
+        + '<p>' + ex(L + 'var|trim' + R) + ' <span class="text-slate-400">hapus spasi</span></p>'
+        + '<p>' + ex(L + 'var|length' + R) + ' <span class="text-slate-400">jumlah karakter</span></p>'
+        + '<p>' + ex(L + 'var|default:"fb"' + R) + ' <span class="text-slate-400">fallback</span></p>'
+        + '<p>' + ex(L + 'var|slice:"0,6"' + R) + ' <span class="text-slate-400">potong teks</span></p>'
+        + '<p>' + ex(L + 'var|replace:"a,b"' + R) + ' <span class="text-slate-400">ganti teks</span></p>'
+        + '<p>' + ex(L + 'var|repeat:3' + R) + ' <span class="text-slate-400">ulang Nx</span></p>'
         + '</div></div>'
-        // ── Set Variable ──
-        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-teal-100 text-teal-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'set' + R + '</span> Set Variabel Baru</h4>'
-        + '<p class="text-slate-600 mb-2">Definisikan variabel sementara dalam template.</p>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
-        + ex(L + 'set salam="Halo"' + R) + '\n'
-        + ex(L + 'salam' + R) + ' ' + ex(L + 'full_name' + R) + '!'
+        // Set & Math
+        + '<div>'
+        + '<h4 class="font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">'
+        + '<span class="bg-teal-100 text-teal-700 text-[10px] px-1.5 py-0.5 rounded font-mono">' + L + 'set' + R + '</span> '
+        + '<span class="bg-orange-100 text-orange-700 text-[10px] px-1.5 py-0.5 rounded font-mono">' + L + 'var+N' + R + '</span> Set & Math</h4>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded p-2 font-mono text-[11px] space-y-0.5">'
+        + '<p>' + ex(L + 'set x="Halo"' + R) + ' <span class="text-slate-400">definisi variabel</span></p>'
+        + '<p>' + ex(L + 'angkatan + 1' + R) + ' <span class="text-slate-400">tambah</span></p>'
+        + '<p>' + ex(L + 'angkatan - 4' + R) + ' <span class="text-slate-400">kurang</span></p>'
         + '</div></div>'
-        // ── Math ──
-        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'var + N' + R + '</span> Matematika</h4>'
-        + '<p class="text-slate-600 mb-2">Operasi angka sederhana pada variabel.</p>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2 font-mono text-xs text-slate-700">'
-        + '<p>' + ex(L + 'angkatan + 1' + R) + ' <span class="text-slate-400">→ 2023</span></p>'
-        + '<p>' + ex(L + 'angkatan - 4' + R) + ' <span class="text-slate-400">→ 2018</span></p>'
+        // Conditionals
+        + '<div>'
+        + '<h4 class="font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">'
+        + '<span class="bg-amber-100 text-amber-700 text-[10px] px-1.5 py-0.5 rounded font-mono">' + L + 'if' + R + '</span> Kondisional</h4>'
+        + '<p class="text-slate-500 mb-1">Bersarang (nested) didukung. ' + cm(L + 'else' + R) + ' opsional.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded p-2 font-mono text-[11px] whitespace-pre-wrap leading-relaxed">'
+        + ex(L + 'if angkatan == "2022"' + R) + '\n  Freshman!\n' + ex(L + 'else' + R) + '\n  Senior!\n' + ex(L + 'endif' + R)
+        + '</div>'
+        + '<div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-slate-500">'
+        + '<div><b class="text-slate-600">Perbandingan:</b></div><div>' + cm('==') + ' ' + cm('!=') + ' ' + cm('>') + ' ' + cm('>=') + ' ' + cm('<') + ' ' + cm('<=') + '</div>'
+        + '<div><b class="text-slate-600">Teks:</b></div><div>' + cm('contains') + ' ' + cm('!contains') + ' ' + cm('startswith') + ' ' + cm('!startswith') + ' ' + cm('endswith') + ' ' + cm('!endswith') + '</div>'
+        + '<div><b class="text-slate-600">Regex:</b></div><div>' + cm('matches') + ' ' + cm('!matches') + '</div>'
+        + '<div><b class="text-slate-600">Keberadaan:</b></div><div>' + cm('empty') + ' ' + cm('notempty') + '</div>'
         + '</div></div>'
-        // ── Kondisional ──
-        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'if' + R + '</span> Kondisional</h4>'
-        + '<p class="text-slate-600 mb-2">Tampilkan teks berdasarkan kondisi. ' + cm(L + 'else' + R) + ' opsional.</p>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
-        + '<p class="text-slate-400 mb-1">// Persamaan</p>'
-        + ex(L + 'if angkatan == "2022"' + R) + '\nFresher!\n' + ex(L + 'else' + R) + '\nSenior!\n' + ex(L + 'endif' + R) + '\n\n'
-        + '<p class="text-slate-400 mb-1 mt-2">// Ketidaksamaan</p>'
-        + ex(L + 'if department != "Internal"' + R) + '\nDept lain\n' + ex(L + 'endif' + R) + '\n\n'
-        + '<p class="text-slate-400 mb-1 mt-2">// Mengandung teks</p>'
-        + ex(L + 'if program_studi contains "Informasi"' + R) + '\nTI squad!\n' + ex(L + 'endif' + R) + '\n\n'
-        + '<p class="text-slate-400 mb-1 mt-2">// Awalan / Akhiran</p>'
-        + ex(L + 'if nickname startswith "A"' + R) + '\nNama muawal A!\n' + ex(L + 'endif' + R) + '\n'
-        + ex(L + 'if fakultas endswith "Teknik"' + R) + '\nTeknik!\n' + ex(L + 'endif' + R) + '\n\n'
-        + '<p class="text-slate-400 mb-1 mt-2">// Regex</p>'
-        + ex(L + 'if phone matches "^0817"' + R) + '\nNomor 0817 detected!\n' + ex(L + 'endif' + R) + '\n\n'
-        + '<p class="text-slate-400 mb-1 mt-2">// Kosong / Tidak kosong</p>'
-        + ex(L + 'if position empty' + R) + '\nBelum ada jabatan\n' + ex(L + 'else' + R) + '\nJabatan: ' + ex(L + 'position' + R) + '\n' + ex(L + 'endif' + R) + '\n\n'
-        + '<p class="text-slate-400 mb-1 mt-2">// Perbandingan angka</p>'
-        + ex(L + 'if angkatan >= "2023"' + R) + '\nAngkatan baru!\n' + ex(L + 'endif' + R)
-        + '</div></div>'
-        // ── Contoh Lengkap ──
-        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-mono">Contoh</span> Template Lanjutan</h4>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
-        + ex(L + 'set salam="Selamat pagi"' + R) + '\n'
-        + ex(L + 'salam' + R) + ', ' + ex(L + 'full_name|titlecase' + R) + '!\n'
-        + ex(L + 'if position notempty' + R) + '\n'
-        + 'Sebagai ' + ex(L + 'position' + R) + ' di ' + ex(L + 'department|default:"PKSE UGM"' + R) + '\n'
-        + ex(L + 'else' + R) + '\n'
-        + 'Anggota ' + ex(L + 'department|default:"PKSE UGM"' + R) + '\n'
-        + ex(L + 'endif' + R) + '\n'
-        + ex(L + 'if fakultas contains "Teknik"' + R) + '\n'
-        + 'Fakultas: ' + ex(L + 'fakultas' + R) + '\n'
-        + ex(L + 'if program_studi startswith "Tek"' + R) + '\n'
-        + ex(L + 'program_studi' + R) + ' (' + ex(L + 'angkatan + 4' + R) + ')\n'
-        + ex(L + 'endif' + R) + '\n'
-        + ex(L + 'endif' + R)
-        + '</div></div>'
-        // ── Tips ──
-        + '<div><h4 class="font-bold text-slate-700 mb-2">Referensi Operator</h4>'
-        + '<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-slate-600">'
-        + '<div><b>Perbandingan:</b></div><div>' + cm('==') + ' ' + cm('!=') + ' ' + cm('>') + ' ' + cm('>=') + ' ' + cm('<') + ' ' + cm('<=') + '</div>'
-        + '<div><b>Teks:</b></div><div>' + cm('contains') + ' ' + cm('!contains') + ' ' + cm('startswith') + ' ' + cm('endswith') + '</div>'
-        + '<div><b>Regex:</b></div><div>' + cm('matches') + ' ' + cm('!matches') + '</div>'
-        + '<div><b>Keberadaan:</b></div><div>' + cm('empty') + ' ' + cm('notempty') + '</div>'
-        + '<div><b>Filter:</b></div><div>' + cm('|uppercase') + ' ' + cm('|lowercase') + ' ' + cm('|capitalize') + ' ' + cm('|titlecase') + ' ' + cm('|trim') + ' ' + cm('|length') + ' ' + cm('|default:"..."') + ' ' + cm('|slice:"0,6"') + ' ' + cm('|replace:"a,b"') + ' ' + cm('|repeat:3') + '</div>'
-        + '<div><b>Math:</b></div><div>' + cm(L + 'var + N' + R) + ' ' + cm(L + 'var - N' + R) + '</div>'
-        + '<div><b>Lainnya:</b></div><div>' + cm(L + 'set var="val"' + R) + '</div>'
-        + '</div></div>';
+        + '</div>'
+        // RIGHT COLUMN — Live Examples with current data
+        + '<div class="flex-1 min-w-0 space-y-3 text-xs">'
+        + '<div class="bg-blue-50 border border-blue-200 rounded-lg p-2">'
+        + '<h4 class="font-bold text-blue-800 mb-1 text-[10px]">Kolom Tersedia (kontak pertama)</h4>'
+        + '<table class="w-full text-[11px]">' + colInfo + '</table></div>'
+        // Live examples
+        + sWrap('Variabel dasar', ex(L + 'full_name|titlecase' + R) + ' (' + ex(L + 'nickname' + R) + ')', evalEx('{{full_name|titlecase}} ({{nickname}})'))
+        + sWrap('Filter default', ex(L + 'position|default:"Anggota"' + R), evalEx('{{position|default:"Anggota"}}'))
+        + sWrap('Math', 'Gen ' + ex(L + 'angkatan + 4' + R), evalEx('Gen {{angkatan + 4}}'))
+        + sWrap('Kondisional == (true)', ex(L + 'if angkatan == "2022"' + R) + '\\nAngkatan 2022!' + ex(L + 'else' + R) + '\\nLain' + ex(L + 'endif' + R), evalEx('{{if angkatan == "2022"}}Angkatan 2022!{{else}}Lain{{endif}}'))
+        + sWrap('Kondisional empty', ex(L + 'if position empty' + R) + '\\nNo jabatan' + ex(L + 'endif' + R), evalEx('{{if position empty}}No jabatan{{endif}}'))
+        + sWrap('Kondisional contains', ex(L + 'if fakultas contains "Tek"' + R) + '\\nFak. Teknik' + ex(L + 'else' + R) + '\\nLain' + ex(L + 'endif' + R), evalEx('{{if fakultas contains "Tek"}}Fak. Teknik{{else}}Lain{{endif}}'))
+        + sWrap('Nested kondisional', ex(L + 'if angkatan == "2022"' + R) + '\\n' + ex(L + 'if fakultas contains "Tek"' + R) + '\\nTI 22' + ex(L + 'else' + R) + '\\nNon-Tek 22' + ex(L + 'endif' + R) + '\\n' + ex(L + 'else' + R) + '\\nNon-2022' + ex(L + 'endif' + R), evalEx('{{if angkatan == "2022"}}{{if fakultas contains "Tek"}}TI 22{{else}}Non-Tek 22{{endif}}{{else}}Non-2022{{endif}}'))
+        + sWrap('Regex matches', ex(L + 'if phone matches "^0817"' + R) + '\\nPrefix 0817!' + ex(L + 'else' + R) + '\\nLain' + ex(L + 'endif' + R), evalEx('{{if phone matches "^0817"}}Prefix 0817!{{else}}Lain{{endif}}'))
+        + sWrap('Template lengkap', ex(L + 'set salam="Halo"' + R) + '\\n' + ex(L + 'salam' + R) + ', ' + ex(L + 'full_name|titlecase' + R) + '!\\n' + ex(L + 'if position notempty' + R) + '\\n' + ex(L + 'position' + R) + ' di ' + ex(L + 'department' + R) + '\\n' + ex(L + 'else' + R) + '\\nAnggota ' + ex(L + 'department' + R) + '\\n' + ex(L + 'endif' + R),
+          evalEx('{{set salam="Halo"}}\n{{salam}}, {{full_name|titlecase}}!\n{{if position notempty}}{{position}} di {{department}}\n{{else}}Anggota {{department}}\n{{endif}}'))
+        + '</div>'
+        + '</div>';
     }
   } else {
     modal.classList.add('hidden');
   }
 }
+
+function bcCopyLLMContext() {
+  if (!bcColumnHeaders || !bcColumnHeaders.length) { uiAlert('Belum ada data kontak.'); return; }
+  var sample = {};
+  if (bcContactRows.length > 0) {
+    bcColumnHeaders.forEach(function(h) { sample[h] = bcContactRows[0][h] || ''; });
+  }
+  var cols = bcColumnHeaders.map(function(h, i) {
+    return '  - ' + h + ' (label: "' + (bcColumnLabels[i] || h) + '") = ' + (sample[h] || '(kosong)');
+  }).join('\n');
+  var ctx = '# Template Broadcast PKSE UGM\n\n'
+    + '## Data Columns (from first contact)\n' + cols + '\n\n'
+    + '## Template Syntax Rules\n'
+    + '- Variable: {{column_name}}\n'
+    + '- Filters: {{col|uppercase}}, {{col|lowercase}}, {{col|capitalize}}, {{col|titlecase}}, {{col|trim}}, {{col|length}}, {{col|default:"fallback"}}, {{col|slice:"start,end"}}, {{col|replace:"find,replace"}}, {{col|repeat:N}}\n'
+    + '- Math: {{col + N}}, {{col - N}}\n'
+    + '- Set variable: {{set var="value"}} then use {{var}}\n'
+    + '- Conditionals (support nesting):\n'
+    + '  {{if col == "val"}}...{{else}}...{{endif}}\n'
+    + '  {{if col != "val"}}...{{endif}}\n'
+    + '  {{if col contains "val"}}...{{endif}}\n'
+    + '  {{if col startswith "val"}}...{{endif}}\n'
+    + '  {{if col endswith "val"}}...{{endif}}\n'
+    + '  {{if col matches "regex"}}...{{endif}}\n'
+    + '  {{if col empty}}...{{endif}}\n'
+    + '  {{if col notempty}}...{{endif}}\n'
+    + '  {{if col > "val"}}...{{endif}}\n'
+    + '  {{if col >= "val"}}...{{endif}}\n'
+    + '  {{if col < "val"}}...{{endif}}\n'
+    + '  {{if col <= "val"}}...{{endif}}\n\n'
+    + '## Task\n'
+    + 'Using the data columns above, generate a WhatsApp broadcast message template using the syntax rules.\n'
+    + 'Use conditionals to handle different cases (e.g., empty fields, different departments, etc.).\n'
+    + 'Only output the template text, nothing else.\n';
+  navigator.clipboard.writeText(ctx).then(function() {
+    uiAlert('Context berhasil disalin ke clipboard!');
+  }).catch(function() {
+    // Fallback
+    var ta = document.createElement('textarea');
+    ta.value = ctx; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    uiAlert('Context berhasil disalin ke clipboard!');
+  });
+}
+
 
 function bcLockBroadcast() {
   bcBroadcasting = true;
@@ -3474,13 +3520,40 @@ function renderBCTemplateJS(template, vars) {
     }
   }
   function processConditionals(tmpl) {
-    var condReWithElse = /\{\{if\s+(\w+)\s*(==|!=|contains|!contains|startswith|!startswith|endswith|!endswith|matches|!matches|empty|notempty|>|>=|<|<=)(?:"([^"]*?)")?\s*\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{endif\}\}/g;
-    var condReNoElse = /\{\{if\s+(\w+)\s*(==|!=|contains|!contains|startswith|!startswith|endswith|!endswith|matches|!matches|empty|notempty|>|>=|<|<=)(?:"([^"]*?)")?\s*\}\}([\s\S]*?)\{\{endif\}\}/g;
-    var prev = '';
-    while (tmpl !== prev && iter++ < MAX_ITER) {
-      prev = tmpl;
-      tmpl = tmpl.replace(condReWithElse, function(m, col, op, val, t, f) { return evalCond(col, op, val) ? t : f; });
-      tmpl = tmpl.replace(condReNoElse, function(m, col, op, val, body) { return evalCond(col, op, val) ? body : ''; });
+    var quotedOps = '==|!=|contains|!contains|startswith|!startswith|endswith|!endswith|matches|!matches|>|>=|<|<=';
+    var unquotedOps = 'empty|notempty';
+    var reQ = new RegExp('\\{\\{if\\s+(\\w+)\\s*(' + quotedOps + ')\\s*"([^"]*?)"\\s*\\}\\}');
+    var reU = new RegExp('\\{\\{if\\s+(\\w+)\\s*(' + unquotedOps + ')\\s*\\}\\}');
+    while (iter++ < MAX_ITER) {
+      var mQ = tmpl.match(reQ);
+      var mU = tmpl.match(reU);
+      var match = null, col, op, val;
+      if (mQ && mQ.index !== undefined) { match = mQ; col = match[1]; op = match[2]; val = match[3]; }
+      else if (mU && mU.index !== undefined) { match = mU; col = match[1]; op = match[2]; val = null; }
+      if (!match) break;
+      var startIdx = match.index;
+      var afterStart = startIdx + match[0].length;
+      var depth = 1, elsePos = -1, endPos = -1, searchFrom = afterStart;
+      while (depth > 0 && searchFrom < tmpl.length) {
+        var nI = tmpl.indexOf('{{if', searchFrom), nE = tmpl.indexOf('{{else}}', searchFrom), nD = tmpl.indexOf('{{endif}}', searchFrom);
+        if (nD === -1) break;
+        var nearest = nD;
+        if (nE !== -1 && nE < nearest) nearest = nE;
+        if (nI !== -1 && nI < nearest) { depth++; searchFrom = nI + 4; continue; }
+        if (nearest === nD) { depth--; if (depth === 0) endPos = nD; searchFrom = nD + 9; continue; }
+        if (depth === 1) elsePos = nearest;
+        searchFrom = nearest + 8;
+      }
+      if (endPos === -1) break;
+      var result;
+      if (elsePos !== -1) {
+        var t = tmpl.substring(afterStart, elsePos), f = tmpl.substring(elsePos + 8, endPos);
+        result = evalCond(col, op, val) ? t : f;
+      } else {
+        var b = tmpl.substring(afterStart, endPos);
+        result = evalCond(col, op, val) ? b : '';
+      }
+      tmpl = tmpl.substring(0, startIdx) + result + tmpl.substring(endPos + 9);
     }
     return tmpl;
   }
