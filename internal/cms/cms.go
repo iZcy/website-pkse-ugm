@@ -264,7 +264,18 @@ func Members(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		writeJSON(w, 200, members)
+		search := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("search")))
+		if search != "" {
+			filtered := make([]db.Member, 0)
+			for _, m := range members {
+				if strings.Contains(strings.ToLower(m.FullName), search) || strings.Contains(strings.ToLower(m.Nickname), search) || strings.Contains(strings.ToLower(m.ProgramStudi), search) {
+					filtered = append(filtered, m)
+				}
+			}
+			members = filtered
+		}
+		page, perPage, _ := pagParams(r)
+		writeJSON(w, 200, paginated(members, page, perPage))
 
 	case http.MethodPost:
 		var m db.Member
@@ -358,7 +369,18 @@ func Announcements(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		writeJSON(w, 200, items)
+		search := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("search")))
+		if search != "" {
+			filtered := make([]db.Announcement, 0)
+			for _, a := range items {
+				if strings.Contains(strings.ToLower(a.Title), search) || strings.Contains(strings.ToLower(a.Content), search) {
+					filtered = append(filtered, a)
+				}
+			}
+			items = filtered
+		}
+		page, perPage, _ := pagParams(r)
+		writeJSON(w, 200, paginated(items, page, perPage))
 
 	case http.MethodPost:
 		var a db.Announcement
@@ -426,7 +448,18 @@ func Articles(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		writeJSON(w, 200, articles)
+		search := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("search")))
+		if search != "" {
+			filtered := make([]db.Article, 0)
+			for _, a := range articles {
+				if strings.Contains(strings.ToLower(a.Title), search) || strings.Contains(strings.ToLower(a.Content), search) {
+					filtered = append(filtered, a)
+				}
+			}
+			articles = filtered
+		}
+		page, perPage, _ := pagParams(r)
+		writeJSON(w, 200, paginated(articles, page, perPage))
 
 	case http.MethodPost:
 		var a db.Article
