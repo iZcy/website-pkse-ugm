@@ -751,9 +751,9 @@ async function loadTentang() {
     quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
-    document.getElementById('tentang-tagline-title')?.value = pa.tagline_title || '';
-    document.getElementById('tentang-tagline-subtitle')?.value = pa.tagline_subtitle || '';
-    document.getElementById('tentang-tagline-desc')?.value = pa.tagline_description || '';
+    var _el; if ((_el = document.getElementById('tentang-tagline-title'))) _el.value = pa.tagline_title || '';
+    if ((_el = document.getElementById('tentang-tagline-subtitle'))) _el.value = pa.tagline_subtitle || '';
+    if ((_el = document.getElementById('tentang-tagline-desc'))) _el.value = pa.tagline_description || '';
     if (pa.cover_image_url) pickerSetUrl('picker-cover', pa.cover_image_url);
     else pickerClear('picker-cover');
     if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
