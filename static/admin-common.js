@@ -1627,7 +1627,7 @@ function loadAkun(page, search) {
   api('GET', '/api/cms/accounts?page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var items = data.items || [];
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
-    el.innerHTML = '<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
+    el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
         <th class="px-4 py-3 bg-slate-50 font-semibold">Username</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Role</th>
