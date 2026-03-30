@@ -571,6 +571,7 @@ function loadPengumuman(page, search) {
   page = page || (state._pengumumanPage || 1); search = search !== undefined ? search : (state._pengumumanSearch || '');
   state._pengumumanPage = page; state._pengumumanSearch = search;
   const el = document.getElementById('list-pengumuman');
+  if (!el) return;
   api('GET', `/api/cms/announcements?period=${PERIOD}&page=` + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var items = data.items || [];
     state.pengumuman = items;
@@ -653,6 +654,7 @@ function loadArtikel(page, search) {
   page = page || (state._artikelPage || 1); search = search !== undefined ? search : (state._artikelSearch || '');
   state._artikelPage = page; state._artikelSearch = search;
   const el = document.getElementById('list-artikel');
+  if (!el) return;
   api('GET', `/api/cms/articles?period=${PERIOD}&page=` + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var items = data.items || [];
     state.artikel = items;
@@ -1024,6 +1026,7 @@ function renderDeptCard(d, depth) {
 
 async function loadKementerian() {
   const el = document.getElementById('list-departemen');
+  if (!el) return;
   try {
     const [depts, members] = await Promise.all([
       api('GET', `/api/cms/departments?period=${PERIOD}`),
@@ -1352,6 +1355,7 @@ function loadAnggota(page, search) {
   page = page || (state._anggotaPage || 1); search = search !== undefined ? search : (state._anggotaSearch || '');
   state._anggotaPage = page; state._anggotaSearch = search;
   const el = document.getElementById('list-anggota');
+  if (!el) return;
   api('GET', `/api/cms/members?period=${PERIOD}&page=` + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var items = data.items || [];
     memberCache = items;
@@ -1533,6 +1537,7 @@ document.addEventListener('input', e => {
 
 async function loadPeriode() {
   const el = document.getElementById('list-periode');
+  if (!el) return;
   try {
     const items = await api('GET', '/api/cms/periods');
     state.periods = items || [];
@@ -1549,7 +1554,7 @@ async function loadPeriode() {
         
         <div class="flex gap-2 flex-shrink-0 items-center">
           <button onclick="editPeriode('${p.label}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100">Edit</button>
-          ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button>` : ''}
+          ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button><button onclick="deletePeriode('${p.label}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg font-medium transition">Hapus</button>` : ''}
         </div>
       </div>`).join('');
     // also populate akun period selector
@@ -1594,6 +1599,14 @@ async function activatePeriode(label) {
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
 
+async function deletePeriode(label) {
+  if (!await uiConfirm(`Hapus periode "${label}"? Periode yang memiliki data tidak dapat dihapus.`, 'Konfirmasi Hapus', true)) return;
+  try {
+    await api('DELETE', `/api/cms/periods/${label}`);
+    loadPeriode();
+  } catch(ex) { uiAlert('Error: ' + ex.message); }
+}
+
 
 document.getElementById('formPeriode')?.addEventListener('submit', async e => {
   e.preventDefault();
@@ -1624,6 +1637,7 @@ function loadAkun(page, search) {
   page = page || (state._akunPage || 1); search = search !== undefined ? search : (state._akunSearch || '');
   state._akunPage = page; state._akunSearch = search;
   const el = document.getElementById('list-akun');
+  if (!el) return;
   api('GET', '/api/cms/accounts?page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var items = data.items || [];
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
@@ -1687,23 +1701,6 @@ async function deleteAkun(id) {
   await api('DELETE', `/api/cms/accounts/${id}`);
   loadAkun(1);
 }
-
-document.getElementById('formAkun')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const id = document.getElementById('akun-id').value;
-  const body = {
-    username: document.getElementById('akun-username').value,
-    password: document.getElementById('akun-password').value,
-    role: document.getElementById('akun-role').value,
-    assigned_period: document.getElementById('akun-assigned-period').value
-  };
-  try {
-    if (id) await api('PUT', `/api/cms/accounts/${id}`, body);
-    else await api('POST', '/api/cms/accounts', body);
-    closeModal('modalAkun');
-    loadAkun(1);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
-});
 
 function toggleAssignedPeriod() {
   const role = document.getElementById('akun-role').value;
@@ -2636,46 +2633,6 @@ function editStat(id) {
   renderStatPreview(s.chart_type || 'bar', s.value || '');
   openModal('modalStatistik');
 }
-document.getElementById('formStatistik')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const periodLabel = document.getElementById('stat-period').value || currentPeriod();
-  const chartType = document.getElementById('stat-chart-type').value;
-  let normalizedValue = document.getElementById('stat-value').value;
-  if (periodLabel !== '_TEMPLATE_') {
-    try {
-      normalizedValue = collectStatInputValue(chartType);
-    } catch (ex) {
-      uiAlert(ex.message || String(ex));
-      return;
-    }
-  }
-  if (periodLabel !== '_TEMPLATE_' && !String(normalizedValue || '').trim()) {
-    uiAlert('Value statistik periode wajib diisi.');
-    return;
-  }
-  document.getElementById('stat-value').value = normalizedValue;
-  const data = {
-    id: document.getElementById('stat-id').value,
-    template_id: document.getElementById('stat-template-id').value,
-    period_label: periodLabel,
-    label: document.getElementById('stat-label').value,
-    value: normalizedValue,
-    desc: document.getElementById('stat-desc').value,
-    chart_type: chartType,
-    fillable: document.getElementById('stat-fillable').checked,
-    visible: document.getElementById('stat-visible').checked,
-    order: 0
-  };
-  try {
-     await api(data.id ? 'PUT' : 'POST', '/api/cms/stats', data);
-     closeModal('modalStatistik');
-     if(periodLabel === '_TEMPLATE_') {
-        loadGlobalStatsTab();
-     } else {
-        loadStatistik();
-     }
-  } catch(ex) { uiAlert(ex); }
-});
 
 
 
