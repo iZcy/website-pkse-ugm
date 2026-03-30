@@ -132,6 +132,7 @@ async function pickerUpload(id, file) {
   }
 }
 function pickerSetUrl(id, url) {
+  if (!imagePickers[id]) return;
   imagePickers[id].url = url;
   const img = document.getElementById(id + '-preview-img');
   const wrap = document.getElementById(id + '-preview-wrap');
@@ -145,6 +146,7 @@ function pickerSetUrl(id, url) {
   if (id === 'picker-cover' || id === 'picker-struktur' || id === 'picker-logo-kabinet') renderTentangPreview();
 }
 function pickerClear(id) {
+  if (!imagePickers[id]) return;
   imagePickers[id].url = '';
   const img = document.getElementById(id + '-preview-img');
   const wrap = document.getElementById(id + '-preview-wrap');
@@ -749,9 +751,9 @@ async function loadTentang() {
     quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
-    document.getElementById('tentang-tagline-title').value = pa.tagline_title || '';
-    document.getElementById('tentang-tagline-subtitle').value = pa.tagline_subtitle || '';
-    document.getElementById('tentang-tagline-desc').value = pa.tagline_description || '';
+    document.getElementById('tentang-tagline-title')?.value = pa.tagline_title || '';
+    document.getElementById('tentang-tagline-subtitle')?.value = pa.tagline_subtitle || '';
+    document.getElementById('tentang-tagline-desc')?.value = pa.tagline_description || '';
     if (pa.cover_image_url) pickerSetUrl('picker-cover', pa.cover_image_url);
     else pickerClear('picker-cover');
     if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
