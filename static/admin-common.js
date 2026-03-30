@@ -507,8 +507,9 @@ document.addEventListener('click', e => {
       state.periodGallery.splice(idx, 1);
       renderTentangGalleryEditor(state.periodGallery);
       // Auto-save gallery after removal
-      const cur = await api('GET', `/api/cms/period-about?period=${PERIOD}`).catch(() => ({ period_label: PERIOD }));
-      await api('PUT', '/api/cms/period-about', { ...cur, period_label: PERIOD, gallery: state.periodGallery }).catch(() => {});
+      api('GET', `/api/cms/period-about?period=${PERIOD}`).catch(() => ({ period_label: PERIOD })).then(cur => {
+        return api('PUT', '/api/cms/period-about', { ...cur, period_label: PERIOD, gallery: state.periodGallery });
+      }).catch(() => {});
     }
     return;
   }
