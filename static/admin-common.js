@@ -314,24 +314,6 @@ async function clearShortlinks() {
   }
 }
 
-document.getElementById('formShortlink')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const longURL = (document.getElementById('shortlink-long-url')?.value || '').trim();
-  const code = (document.getElementById('shortlink-code')?.value || '').trim();
-  const label = (document.getElementById('shortlink-label')?.value || '').trim();
-  if (!longURL) {
-    uiAlert('URL tujuan wajib diisi.');
-    return;
-  }
-  try {
-    const shortURL = await createShortlink(longURL, label, code);
-    uiAlert('Short link berhasil dibuat:<br><a class="text-blue-600 underline break-all" href="' + escHtml(shortURL) + '" target="_blank" rel="noopener noreferrer">' + escHtml(shortURL) + '</a>', 'Sukses');
-    document.getElementById('formShortlink').reset();
-  } catch (ex) {
-    uiAlert(ex);
-  }
-});
-
 // ── Modal helpers ────────────────────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -785,42 +767,6 @@ async function loadTentang() {
   }
 }
 
-document.getElementById('formTentang')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const msg = document.getElementById('tentang-msg');
-  try {
-    await api('PUT', '/api/cms/period-about', {
-      period_label: PERIOD,
-      sejarah: quillGetHTML('editor-sejarah'),
-      tagline_title: document.getElementById('tentang-tagline-title').value,
-      tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
-      tagline_description: document.getElementById('tentang-tagline-desc').value,
-      visi: quillGetHTML('editor-visi'),
-      misi: quillGetHTML('editor-misi'),
-      cover_image_url: pickerGetUrl('picker-cover'),
-      hierarchy_image_url: pickerGetUrl('picker-struktur'),
-      logo_kabinet_url: pickerGetUrl('picker-logo-kabinet'),
-      gallery: state.periodGallery
-    });
-    state.periodAbout = {
-      ...(state.periodAbout || {}),
-      period_label: PERIOD,
-      sejarah: quillGetHTML('editor-sejarah'),
-      tagline_title: document.getElementById('tentang-tagline-title').value,
-      tagline_subtitle: document.getElementById('tentang-tagline-subtitle').value,
-      tagline_description: document.getElementById('tentang-tagline-desc').value,
-      visi: quillGetHTML('editor-visi'),
-      misi: quillGetHTML('editor-misi'),
-      cover_image_url: pickerGetUrl('picker-cover'),
-      hierarchy_image_url: pickerGetUrl('picker-struktur'),
-      logo_kabinet_url: pickerGetUrl('picker-logo-kabinet')
-    };
-    renderTentangPreview();
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
-});
-
 async function loadGaleri() {
   if (!state.periodAbout) {
     await loadTentang();
@@ -1103,27 +1049,6 @@ async function deleteDept(id) {
   await loadKementerian();
 }
 
-document.getElementById('formKementerian')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const id = document.getElementById('dept-id').value;
-  const parentId = document.getElementById('dept-parent').value;
-  const body = {
-    name: document.getElementById('dept-name').value,
-    description: document.getElementById('dept-desc').value,
-    icon_url: pickerGetUrl('picker-dept-icon'),
-    period_label: PERIOD,
-    parent_id: parentId || null
-  };
-  if (!id) body.sort_order = deptCache.length;
-  try {
-    if (id) await api('PUT', `/api/cms/departments/${id}`, body);
-    else await api('POST', '/api/cms/departments', body);
-    closeModal('modalKementerian');
-    resetDeptForm();
-    await loadKementerian();
-  } catch (ex) { uiAlert('Error: ' + ex.message); }
-});
-
 function openAssignMemberModal(deptId) {
   const dept = deptCache.find(d => d.id === deptId);
   if (!dept) return;
@@ -1291,33 +1216,6 @@ async function deleteProgram(id) {
   await api('DELETE', `/api/cms/programs/${id}`);
   await loadPrograms();
 }
-
-document.getElementById('formProgram')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const id = document.getElementById('program-id').value;
-  const payload = {
-    period_label: PERIOD,
-    department: document.getElementById('program-department').value,
-    title: document.getElementById('program-title').value,
-    description: document.getElementById('program-desc').value,
-    image_url: pickerGetUrl('picker-program-image'),
-    order: id ? (programCache.find(x => x.id === id)?.order || 0) : programCache.length
-  };
-
-  if (!payload.department || !payload.title) {
-    uiAlert('Kementerian dan judul program wajib diisi.');
-    return;
-  }
-
-  try {
-    if (id) await api('PUT', `/api/cms/programs/${id}`, payload);
-    else await api('POST', '/api/cms/programs', payload);
-    closeModal('modalProgram');
-    await loadPrograms();
-  } catch (ex) {
-    uiAlert('Error: ' + ex.message);
-  }
-});
 
 // ── ANGGOTA ──────────────────────────────────────────────────────────────────
 function renderAnggotaActivationEditor(activePeriods = {}) {
@@ -1746,93 +1644,6 @@ async function loadGlobal() {
     renderGlobalPreview();
   }
 }
-
-document.getElementById('formGlobal')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const msg = document.getElementById('global-msg');
-  try {
-    const cur = await api('GET', '/api/cms/global-setting').catch(() => ({}));
-    await api('PUT', '/api/cms/global-setting', {
-      org_name: document.getElementById('global-orgname').value,
-      logo_url: pickerGetUrl('picker-logo'),
-      logo_university_url: pickerGetUrl('picker-logo-university'),
-      logo_yayasan_url: pickerGetUrl('picker-logo-yayasan'),
-      header_title: document.getElementById('global-header-title').value,
-      header_subtitle: document.getElementById('global-header-subtitle').value,
-      hero_badge_text: document.getElementById('global-hero-badge').value,
-      hero_title_main: document.getElementById('global-hero-title-main').value,
-      hero_title_accent: document.getElementById('global-hero-title-accent').value,
-      footer_title: document.getElementById('global-footer-title').value,
-      footer_text: document.getElementById('global-footer-text').value,
-      footer_copy_text: document.getElementById('global-footer-copy').value,
-      about_html: quillGetHTML('editor-global-about'),
-      social_media: cur.social_media || {}
-    });
-    state.globalSetting = {
-      ...cur,
-      org_name: document.getElementById('global-orgname').value,
-      logo_url: pickerGetUrl('picker-logo'),
-      logo_university_url: pickerGetUrl('picker-logo-university'),
-      logo_yayasan_url: pickerGetUrl('picker-logo-yayasan'),
-      header_title: document.getElementById('global-header-title').value,
-      header_subtitle: document.getElementById('global-header-subtitle').value,
-      hero_badge_text: document.getElementById('global-hero-badge').value,
-      hero_title_main: document.getElementById('global-hero-title-main').value,
-      hero_title_accent: document.getElementById('global-hero-title-accent').value,
-      footer_title: document.getElementById('global-footer-title').value,
-      footer_text: document.getElementById('global-footer-text').value,
-      footer_copy_text: document.getElementById('global-footer-copy').value,
-      about_html: quillGetHTML('editor-global-about'),
-      social_media: cur.social_media || {}
-    };
-    renderGlobalPreview();
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
-});
-
-document.getElementById('formSocmed')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const msg = document.getElementById('socmed-msg');
-  try {
-    const cur = await api('GET', '/api/cms/global-setting').catch(() => ({}));
-    await api('PUT', '/api/cms/global-setting', {
-      org_name: cur.org_name || '',
-      logo_url: cur.logo_url || '',
-      header_title: cur.header_title || '',
-      header_subtitle: cur.header_subtitle || '',
-      hero_badge_text: cur.hero_badge_text || '',
-      hero_title_main: cur.hero_title_main || '',
-      hero_title_accent: cur.hero_title_accent || '',
-      footer_title: cur.footer_title || '',
-      footer_text: cur.footer_text || '',
-      footer_copy_text: cur.footer_copy_text || '',
-      about_html: cur.about_html || '',
-      social_media: {
-        instagram: document.getElementById('sm-instagram').value,
-        twitter: document.getElementById('sm-twitter').value,
-        facebook: document.getElementById('sm-facebook').value,
-        youtube: document.getElementById('sm-youtube').value,
-        linkedin: document.getElementById('sm-linkedin').value,
-        tiktok: document.getElementById('sm-tiktok').value
-      }
-    });
-    state.globalSetting = {
-      ...cur,
-      social_media: {
-        instagram: document.getElementById('sm-instagram').value,
-        twitter: document.getElementById('sm-twitter').value,
-        facebook: document.getElementById('sm-facebook').value,
-        youtube: document.getElementById('sm-youtube').value,
-        linkedin: document.getElementById('sm-linkedin').value,
-        tiktok: document.getElementById('sm-tiktok').value
-      }
-    };
-    renderGlobalPreview();
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch(ex) { uiAlert('Error: ' + ex.message); }
-});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function escHtml(s) {
@@ -2321,22 +2132,6 @@ async function deleteFAQ(id, pLabel) {
   await api('DELETE', '/api/cms/faqs/' + id);
   loadFAQs(pLabel, 1);
 }
-document.getElementById('formFAQ')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const data = {
-    id: document.getElementById('faq-id').value,
-    period_label: document.getElementById('faq-period').value,
-    question: document.getElementById('faq-question').value,
-    answer: document.getElementById('faq-answer').value,
-    order: 0
-  };
-  try {
-      await api(data.id ? 'PUT' : 'POST', data.id ? '/api/cms/faqs/' + data.id : '/api/cms/faqs', data);
-     closeModal('modalFAQ');
-     loadFAQs(data.period_label, 1);
-  } catch(ex) { uiAlert(ex); }
-});
-
 // ── STATISTIK ──────────────────────────────────────────────────────────
 
 async function syncStats() {
