@@ -134,7 +134,7 @@ type PeriodAbout struct {
 	LogoKabinetURL     string             `bson:"logo_kabinet_url" json:"logo_kabinet_url"`
 	HierarchyImageURL  string             `bson:"hierarchy_image_url" json:"hierarchy_image_url"`
 	CoverImageURL      string             `bson:"cover_image_url" json:"cover_image_url"`
-	Gallery            []GalleryItem      `bson:"gallery,omitempty" json:"gallery,omitempty"`
+	Gallery            []GalleryItem      `bson:"gallery" json:"gallery,omitempty"`
 	UpdatedAt          time.Time          `bson:"updated_at"    json:"updated_at"`
 }
 

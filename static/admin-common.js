@@ -506,10 +506,7 @@ document.addEventListener('click', e => {
     if (!Number.isNaN(idx)) {
       state.periodGallery.splice(idx, 1);
       renderTentangGalleryEditor(state.periodGallery);
-      // Auto-save gallery after removal
-      api('GET', `/api/cms/period-about?period=${PERIOD}`).catch(() => ({ period_label: PERIOD })).then(cur => {
-        return api('PUT', '/api/cms/period-about', { ...cur, period_label: PERIOD, gallery: state.periodGallery });
-      }).catch(() => {});
+      saveGalleryToServer();
     }
     return;
   }
@@ -780,23 +777,27 @@ async function loadGaleri() {
   renderTentangGalleryEditor(state.periodGallery || []);
 }
 
-document.getElementById('btn-save-gallery')?.addEventListener('click', async () => {
+async function saveGalleryToServer() {
   const msg = document.getElementById('galeri-msg');
   const current = await api('GET', `/api/cms/period-about?period=${PERIOD}`).catch(() => ({ period_label: PERIOD }));
-  const gallery = collectTentangGallery();
+  const gallery = state.periodGallery;
   try {
     await api('PUT', '/api/cms/period-about', {
       ...current,
       period_label: PERIOD,
       gallery
     });
-    state.periodGallery = gallery;
     renderTentangPreview();
-    msg.classList.remove('hidden');
-    setTimeout(() => msg.classList.add('hidden'), 3000);
+    if (msg) { msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
   } catch (ex) {
+    console.error('Gallery save failed:', ex);
     uiAlert('Error: ' + ex.message);
   }
+}
+
+document.getElementById('btn-save-gallery')?.addEventListener('click', async () => {
+  state.periodGallery = collectTentangGallery();
+  await saveGalleryToServer();
 });
 
 
