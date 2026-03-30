@@ -45,6 +45,7 @@ func pagParams(r *http.Request) (page, perPage int, search string) {
 
 // paginated wraps a full result slice into a paginated response.
 func paginated[T any](items []T, page, perPage int) map[string]any {
+	if items == nil { items = make([]T, 0) }
 	total := len(items)
 	start := (page - 1) * perPage
 	end := start + perPage
