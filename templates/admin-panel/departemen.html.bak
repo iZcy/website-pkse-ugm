@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galeri - PKSE UGM Admin</title>
+<title>Kementerian - PKSE UGM Admin</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
@@ -25,7 +25,7 @@
 <a href="/admin/logout" class="bg-blue-800 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-lg transition">Keluar</a></div></header>
 <div class="bg-blue-800 px-6 py-2 flex items-center gap-4 flex-shrink-0">
 <label class="text-blue-200 text-sm font-medium flex-shrink-0">Periode:</label>
-<form action="/admin/galeri" method="get" class="min-w-[240px] max-w-full">
+<form action="/admin/departemen" method="get" class="min-w-[240px] max-w-full">
 <select id="period-switcher" name="period" onchange="this.form.submit()" class="w-full px-3 py-1.5 rounded-md text-sm font-medium bg-white text-blue-900 border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-300">{{range .AccessiblePeriods}}<option value="{{.Label}}" {{if eq $.SelectedPeriod .Label}}selected{{end}}>{{.DisplayName}}{{if .IsActive}} &#10022;{{end}}</option>{{end}}</select></form>
 {{if eq .Role "superadmin"}}<span class="ml-auto text-blue-300 text-xs">Superadmin dapat mengakses semua periode</span>{{end}}</div>
 <div class="flex flex-1 overflow-hidden"><aside class="w-56 bg-blue-900 text-blue-100 flex-shrink-0 overflow-y-auto sticky top-0"><nav class="p-3 space-y-1">
@@ -80,36 +80,43 @@
 {{end}}
 </nav></aside>
 <main class="flex-1 overflow-y-auto p-6">
-<h2 class="text-2xl font-bold text-slate-800 mb-6">Galeri Periode</h2>
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
-        <div class="flex items-center justify-between">
-          <p class="text-sm text-slate-600">Kelola foto kegiatan periode yang tampil di halaman frontend.</p>
-          <button type="button" id="btn-add-gallery-item" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg">+ Tambah Item</button>
-        </div>
-        <div id="tentang-gallery-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3"></div>
-        <div class="flex items-center gap-4">
-          <button type="button" id="btn-save-gallery" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Galeri</button>
-          <div id="galeri-msg" class="text-sm text-green-600 hidden">✓ Galeri tersimpan!</div>
-        </div>
-      </div>
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-2xl font-bold text-slate-800">Kementerian</h2>
+  <button onclick="openModal('modalKementerian'); resetDeptForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Tambah Kementerian</button></div>
+<div id="list-departemen" class="space-y-3"><div class="text-slate-400 text-center py-8">Memuat...</div></div>
 </main></div>
 <div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
-
+<div id="modalKementerian" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between"><h3 id="modalDeptTitle" class="text-lg font-bold">Tambah Kementerian</h3><button onclick="closeModal('modalKementerian')" class="text-slate-400 hover:text-slate-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+    <form id="formKementerian" class="p-6 space-y-4">
+      <input type="hidden" id="dept-id">
+      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Parent Kementerian</label><select id="dept-parent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"><option value="">Tidak ada (Kementerian Utama)</option></select><p class="text-xs text-slate-500 mt-1">Pilih parent jika ini adalah sub-kementerian</p></div>
+      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Nama Kementerian</label><input type="text" id="dept-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></div>
+      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label><textarea id="dept-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea></div>
+      <div><label class="block text-sm font-semibold text-slate-700 mb-2">Icon Kementerian</label><div id="picker-dept-icon"></div></div>
+      <div class="flex gap-3 pt-2"><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button><button type="button" onclick="closeModal('modalKementerian')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button></div></form></div></div>
+<div id="modalAssignMember" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <div class="p-6 border-b border-slate-200 flex items-center justify-between"><h3 class="text-lg font-bold">Assign Anggota ke Kementerian</h3><button onclick="closeModal('modalAssignMember')" class="text-slate-400 hover:text-slate-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button></div>
+    <div class="p-6 space-y-4">
+      <input type="hidden" id="assign-dept-id">
+      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Anggota</label><select id="assign-member-id" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></select></div>
+      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Jabatan</label><input type="text" id="assign-member-position" placeholder="Contoh: Koordinator" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></div>
+      <div class="flex gap-3 pt-2"><button onclick="submitAssignMember()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Assign</button><button type="button" onclick="closeModal('modalAssignMember')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button></div></div></div></div>
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v17-1774891066"></script>
+<script src="/static/admin-common.js?v10-1774875194"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  if (!state.periodAbout) { loadTentang().then(() => renderTentangGalleryEditor(state.periodGallery || [])); }
-  else { renderTentangGalleryEditor(state.periodGallery || []); }
-});
-document.getElementById('btn-save-gallery')?.addEventListener('click', async () => {
-  const msg = document.getElementById('galeri-msg');
-  const current = await api('GET', '/api/cms/period-about?period=' + PERIOD).catch(() => ({ period_label: PERIOD }));
-  const gallery = collectTentangGallery();
-  try {
-    await api('PUT', '/api/cms/period-about', { ...current, period_label: PERIOD, gallery });
-    state.periodGallery = gallery; renderTentangPreview(); msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000);
-  } catch (ex) { uiAlert('Error: ' + ex.message); }
+document.addEventListener('DOMContentLoaded', function() { loadKementerian(); });
+document.getElementById('formKementerian')?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('dept-id').value;
+  const parentId = document.getElementById('dept-parent').value;
+  const body = { name: document.getElementById('dept-name').value, description: document.getElementById('dept-desc').value, icon_url: pickerGetUrl('picker-dept-icon'), period_label: PERIOD, parent_id: parentId || null };
+  if (!id) body.sort_order = deptCache.length;
+  try { if (id) await api('PUT', '/api/cms/departments/' + id, body); else await api('POST', '/api/cms/departments', body); closeModal('modalKementerian'); resetDeptForm(); await loadKementerian(); } catch (ex) { uiAlert('Error: ' + ex.message); }
 });
 </script>
 </body></html>

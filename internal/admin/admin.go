@@ -73,6 +73,7 @@ func renderAdmin(w http.ResponseWriter, r *http.Request, templateName string, ac
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
 	if err := tmpl.ExecuteTemplate(w, templateName, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
