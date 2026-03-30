@@ -1030,7 +1030,7 @@ async function loadKementerian() {
       api('GET', `/api/cms/members?period=${PERIOD}`)
     ]);
     deptCache = depts || [];
-    memberCache = members || [];
+    memberCache = (members && members.items) ? members.items : (members || []);
 
     if (!deptCache.length) {
       el.innerHTML = emptyHtml('Belum ada departemen.');
