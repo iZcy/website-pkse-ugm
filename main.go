@@ -79,7 +79,6 @@ func main() {
 	mux.HandleFunc("/admin/artikel", admin.Artikel)
 	mux.HandleFunc("/admin/departemen", admin.Departemen)
 	mux.HandleFunc("/admin/program", admin.Program)
-	mux.HandleFunc("/admin/faq-periode", admin.FAQPeriode)
 	mux.HandleFunc("/admin/tentang", admin.Tentang)
 	mux.HandleFunc("/admin/galeri", admin.Galeri)
 	mux.HandleFunc("/admin/statistik", admin.Statistik)

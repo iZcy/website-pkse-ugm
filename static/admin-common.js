@@ -18,11 +18,12 @@ function pagHTML(key, page, pages) {
 function pagBtn(key, t, c, l) { return t===c ? '<span class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-medium">'+l+'</span>' : '<button onclick="'+key+'GoPage('+t+')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 text-slate-700 text-xs font-medium transition">'+l+'</button>'; }
 
 
+const allowed = new Set(['pengumuman','artikel','departemen','program','anggota','periode','akun','global','tentang','broadcast','galeri','shortlink','faq-global','global-stats','statistik']);
+
 let statPreviewChart = null;
 
 function _selectedSectionFromURL_DEPRECATED() {
   const section = new URLSearchParams(window.location.search).get('section') || 'pengumuman';
-  const allowed = new Set(['pengumuman', 'artikel', 'departemen', 'program', 'faq-periode', 'tentang', 'galeri', 'statistik', 'anggota', 'global', 'shortlink', 'faq-global', 'global-stats', 'periode', 'akun', 'broadcast']);
   return allowed.has(section) ? section : 'pengumuman';
 }
 
@@ -240,7 +241,6 @@ function _loadTab_DEPRECATED(name) {
   if (name === 'shortlink') loadShortlinks();
   
   if (name === 'faq-global') loadFAQs('GLOBAL');
-  if (name === 'faq-periode' && currentPeriod()) loadFAQs(currentPeriod());
   if (name === 'global-stats') loadGlobalStatsTab();
   if (name === 'statistik' && currentPeriod()) {
     // Load templates first, then statistics
@@ -2041,8 +2041,7 @@ document.addEventListener('input', (e) => {
 // ── FAQ GLOBAL & PERIODE ──────────────────────────────────────────────────
 
 function initFAQSorable(pLabel) {
-  const isGlobal = (pLabel === 'GLOBAL');
-  const tb = document.getElementById(isGlobal ? 'faq-global-tbody' : 'faq-periode-tbody');
+  const tb = document.getElementById('faq-global-tbody');
   if(!tb) return;
   
   if (tb._sortable) tb._sortable.destroy();
@@ -2074,7 +2073,7 @@ function loadFAQs(pLabel, page, search) {
   page = page || (state._faqPage || 1); search = search !== undefined ? search : (state._faqSearch || '');
   state._faqPage = page; state._faqSearch = search;
   const isGlobal = (pLabel === 'GLOBAL');
-  const tb = document.getElementById(isGlobal ? 'faq-global-tbody' : 'faq-periode-tbody');
+  const tb = document.getElementById('faq-global-tbody');
   api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel) + '&page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var items = data.items || [];
     state.faqs = items;

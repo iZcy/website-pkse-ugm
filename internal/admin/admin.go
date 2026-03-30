@@ -125,7 +125,6 @@ func Pengumuman(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "pen
 func Artikel(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "artikel.html", "artikel") }
 func Departemen(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "departemen.html", "departemen") }
 func Program(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "program.html", "program") }
-func FAQPeriode(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "faq-periode.html", "faq-periode") }
 func Tentang(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "tentang.html", "tentang") }
 func Galeri(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "galeri.html", "galeri") }
 func Statistik(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "statistik.html", "statistik") }
