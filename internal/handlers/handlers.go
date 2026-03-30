@@ -393,8 +393,9 @@ func (h *Handler) Galeri(w http.ResponseWriter, r *http.Request) {
 	data["Periods"] = periods
 
 	type galleryPeriod struct {
-		PeriodLabel string
-		Gallery     []db.GalleryItem
+		PeriodLabel  string
+		DisplayName string
+		Gallery      []db.GalleryItem
 	}
 	var gps []galleryPeriod
 	for _, p := range periods {
@@ -402,7 +403,7 @@ func (h *Handler) Galeri(w http.ResponseWriter, r *http.Request) {
 		if err != nil || len(pa.Gallery) == 0 {
 			continue
 		}
-		gps = append(gps, galleryPeriod{PeriodLabel: p.Label, Gallery: pa.Gallery})
+		gps = append(gps, galleryPeriod{PeriodLabel: p.Label, DisplayName: p.DisplayName, Gallery: pa.Gallery})
 	}
 	data["GalleryPeriods"] = gps
 	h.render(w, "galeri.html", data)

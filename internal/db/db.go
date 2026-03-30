@@ -787,12 +787,7 @@ func GetFAQs(periodLabel string) ([]FAQ, error) {
 	filter := bson.M{}
 	if periodLabel != "" && periodLabel != "ALL" {
 		if periodLabel == "GLOBAL" {
-			filter["$or"] = []bson.M{
-				{"period_label": "GLOBAL"},
-				{"period_label": ""},
-				{"period_label": bson.M{"$exists": false}},
-				{"period_label": nil},
-			}
+			filter["period_label"] = "GLOBAL"
 		} else {
 			filter["period_label"] = periodLabel
 		}

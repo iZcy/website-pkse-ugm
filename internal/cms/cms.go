@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,6 +27,40 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 
 func readJSON(r *http.Request, v any) error {
 	return json.NewDecoder(r.Body).Decode(v)
+}
+
+// pagParams extracts page, per_page, and search from query string.
+func pagParams(r *http.Request) (page, perPage int, search string) {
+	page, _ = strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	perPage, _ = strconv.Atoi(r.URL.Query().Get("per_page"))
+	if perPage < 1 || perPage > 100 {
+		perPage = 20
+	}
+	search = strings.TrimSpace(r.URL.Query().Get("search"))
+	return
+}
+
+// paginated wraps a full result slice into a paginated response.
+func paginated[T any](items []T, page, perPage int) map[string]any {
+	total := len(items)
+	start := (page - 1) * perPage
+	end := start + perPage
+	if start > total {
+		start = total
+	}
+	if end > total {
+		end = total
+	}
+	return map[string]any{
+		"items":    items[start:end],
+		"total":    total,
+		"page":     page,
+		"per_page": perPage,
+		"pages":    (total + perPage - 1) / perPage,
+	}
 }
 
 func requireAny(w http.ResponseWriter, r *http.Request) (string, string, bool) {
@@ -613,7 +648,20 @@ func Accounts(w http.ResponseWriter, r *http.Request) {
 		for i, u := range users {
 			safe[i] = safeUser{ID: u.ID, Username: u.Username, Role: u.Role, AssignedPeriod: u.AssignedPeriod}
 		}
-		writeJSON(w, 200, safe)
+		search := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("search")))
+		if search != "" {
+			filtered := make([]safeUser, 0)
+			for _, u := range safe {
+				if strings.Contains(strings.ToLower(u.Username), search) || strings.Contains(strings.ToLower(u.Role), search) {
+					filtered = append(filtered, u)
+				}
+			}
+			page, perPage, _ := pagParams(r)
+			writeJSON(w, 200, paginated(filtered, page, perPage))
+			return
+		}
+		page, perPage, _ := pagParams(r)
+		writeJSON(w, 200, paginated(safe, page, perPage))
 
 	case http.MethodPost:
 		var payload struct {
@@ -967,12 +1015,24 @@ func FAQs(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		pl := periodFromRequest()
-		items, err := db.GetFAQs(pl)
+		allItems, err := db.GetFAQs(pl)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		json.NewEncoder(w).Encode(items)
+		search := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("search")))
+		if search != "" {
+			filtered := make([]db.FAQ, 0)
+			for _, f := range allItems {
+				if strings.Contains(strings.ToLower(f.Question), search) || strings.Contains(strings.ToLower(f.Answer), search) {
+					filtered = append(filtered, f)
+				}
+			}
+			allItems = filtered
+		}
+		page, perPage, _ := pagParams(r)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(paginated(allItems, page, perPage))
 	case http.MethodPost:
 		var f db.FAQ
 		if err := json.NewDecoder(r.Body).Decode(&f); err != nil {
@@ -1067,12 +1127,23 @@ func ShortLinks(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		items, err := db.GetShortLinks()
+		allItems, err := db.GetShortLinks()
 		if err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		writeJSON(w, 200, items)
+		search := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("search")))
+		if search != "" {
+			filtered := make([]db.ShortLink, 0)
+			for _, s := range allItems {
+				if strings.Contains(strings.ToLower(s.Label), search) || strings.Contains(strings.ToLower(s.TargetURL), search) || strings.Contains(strings.ToLower(s.Code), search) {
+					filtered = append(filtered, s)
+				}
+			}
+			allItems = filtered
+		}
+		page, perPage, _ := pagParams(r)
+		writeJSON(w, 200, paginated(allItems, page, perPage))
 
 	case http.MethodPost:
 		var payload struct {

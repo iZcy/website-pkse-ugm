@@ -1,6 +1,22 @@
 
 let state = { periods: [], faqs: [], stats: [], periodGallery: [], globalSetting: null, periodAbout: null };
 
+// ── Pagination & Search Helpers ──────────────────────────────────────────
+var _searchTimers = {};
+function debounceSearch(key, fn, delay) { delay = delay || 350; if (_searchTimers[key]) clearTimeout(_searchTimers[key]); _searchTimers[key] = setTimeout(fn, delay); }
+function pagHTML(key, page, pages) {
+  if (pages <= 1) return '<div class="text-xs text-slate-400 py-2 text-center" id="pag-' + key + '">Menampilkan semua data</div>';
+  var h = '<div class="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50" id="pag-' + key + '"><span class="text-xs text-slate-500">Halaman ' + page + ' dari ' + pages + '</span><div class="flex items-center gap-1">';
+  h += pagBtn(key, Math.max(1, page-1), page, '&laquo;');
+  var s = Math.max(1, page-2), e = Math.min(pages, page+2);
+  if (s > 1) h += '<span class="px-1 text-xs text-slate-400">...</span>';
+  for (var i = s; i <= e; i++) h += pagBtn(key, i, page, ''+i);
+  if (e < pages) h += '<span class="px-1 text-xs text-slate-400">...</span>';
+  h += pagBtn(key, Math.min(pages, page+1), page, '&raquo;');
+  h += '</div></div>'; return h;
+}
+function pagBtn(key, t, c, l) { return t===c ? '<span class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-medium">'+l+'</span>' : '<button onclick="'+key+'GoPage('+t+')" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 text-slate-700 text-xs font-medium transition">'+l+'</button>'; }
+
 
 let statPreviewChart = null;
 
@@ -238,34 +254,24 @@ function shortlinkURL(code) {
   return `${window.location.origin}/l/${encodeURIComponent(code || '')}`;
 }
 
-async function loadShortlinks() {
+function loadShortlinks(page, search) {
+  page = page || (state._slPage || 1); search = search !== undefined ? search : (state._slSearch || '');
+  state._slPage = page; state._slSearch = search;
   const tb = document.getElementById('shortlink-tbody');
   if (!tb) return;
-  let rows = [];
-  try {
-    rows = await api('GET', '/api/cms/shortlinks');
-  } catch (ex) {
-    tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(toUiMessage(ex))}</td></tr>`;
-    return;
-  }
-  if (!rows.length) {
-    tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>';
-    return;
-  }
-  tb.innerHTML = rows.map((row) => `
-    <tr class="border-b border-slate-100 hover:bg-slate-50">
-      <td class="p-4 align-top font-medium text-slate-700">${escHtml(row.label || '-')}</td>
-      <td class="p-4 align-top">
-        <a href="${escHtml(shortlinkURL(row.code))}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">${escHtml(shortlinkURL(row.code))}</a>
-      </td>
-      <td class="p-4 align-top text-slate-600 break-all">${escHtml(row.target_url || '')}</td>
-      <td class="p-4 align-top text-right whitespace-nowrap">
-        <button onclick="copyShortlink('${(shortlinkURL(row.code)).replace(/'/g, "&#39;")}')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded mr-1">Copy</button>
-        <button onclick="deleteShortlink('${row.id || ''}')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded">Hapus</button>
-      </td>
-    </tr>
-  `).join('');
+  api('GET', '/api/cms/shortlinks?page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
+    var rows = data.items || [];
+    if (!rows.length) { tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>'; }
+    else {
+      tb.innerHTML = rows.map(function(row) {
+        return '<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-4 align-top font-medium text-slate-700">' + escHtml(row.label || '-') + '</td><td class="p-4 align-top"><a href="' + escHtml(shortlinkURL(row.code)) + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">' + escHtml(shortlinkURL(row.code)) + '</a></td><td class="p-4 align-top text-slate-600 break-all">' + escHtml(row.target_url || '') + '</td><td class="p-4 align-top text-right whitespace-nowrap"><button onclick="copyShortlink(\'' + (shortlinkURL(row.code)).replace(/'/g, "&#39;") + '\')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded mr-1">Copy</button><button onclick="deleteShortlink(\'' + (row.id || '') + '\')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded">Hapus</button></td></tr>';
+      }).join('');
+    }
+    var pagEl = document.getElementById('shortlink-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('shortlink', data.page, data.pages);
+  }).catch(function(ex) { tb.innerHTML = '<tr><td colspan="4" class="p-6">' + errHtml(toUiMessage(ex)) + '</td></tr>'; });
 }
+window.shortlinkGoPage = function(p) { loadShortlinks(p); };
+window.shortlinkSearch = function(s) { debounceSearch('shortlink', function() { loadShortlinks(1, s); }); };
 
 async function createShortlink(targetURL, label, code) {
   const body = {
@@ -274,7 +280,7 @@ async function createShortlink(targetURL, label, code) {
     code: code || ''
   };
   const created = await api('POST', '/api/cms/shortlinks', body);
-  await loadShortlinks();
+  loadShortlinks(1);
   return shortlinkURL(created.code || '');
 }
 
@@ -292,7 +298,7 @@ async function deleteShortlink(id) {
   if (!await uiConfirm('Hapus short link ini?', 'Konfirmasi')) return;
   try {
     await api('DELETE', '/api/cms/shortlinks/' + id);
-    await loadShortlinks();
+    loadShortlinks(1);
   } catch (ex) {
     uiAlert(ex);
   }
@@ -302,7 +308,7 @@ async function clearShortlinks() {
   if (!await uiConfirm('Bersihkan seluruh riwayat short link?', 'Konfirmasi')) return;
   try {
     await api('DELETE', '/api/cms/shortlinks?all=1');
-    await loadShortlinks();
+    loadShortlinks(1);
   } catch (ex) {
     uiAlert(ex);
   }
@@ -357,12 +363,18 @@ function uiActionModal(opts = {}) {
   const msgEl = document.getElementById('modalActionMessage');
   const btnOk = document.getElementById('modalActionOk');
   const btnCancel = document.getElementById('modalActionCancel');
+  // Ensure modal doesn't hit browser edges
+  if (modal) {
+    modal.classList.add('my-4');
+    var inner = modal.querySelector(':scope > div');
+    if (inner) { inner.classList.add('my-auto', 'max-h-[90vh]', 'overflow-y-auto'); }
+  }
   if (!modal || !titleEl || !msgEl || !btnOk || !btnCancel) {
     return Promise.resolve(showCancel ? true : undefined);
   }
 
   titleEl.textContent = title;
-  msgEl.textContent = toUiMessage(message);
+  msgEl.innerHTML = toUiMessage(message);
   btnOk.textContent = confirmText;
   btnCancel.textContent = cancelText;
   btnCancel.classList.toggle('hidden', !showCancel);
@@ -406,8 +418,8 @@ async function uiConfirm(message, title = 'Konfirmasi', danger = false) {
 function uiPrompt(message, defaultVal) {
   var result = null;
   var overlay = document.createElement('div');
-  overlay.className = 'fixed inset-0 bg-black/40 z-[90] flex items-center justify-center p-4';
-  overlay.innerHTML = '<div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">' +
+  overlay.className = 'fixed inset-0 bg-black/40 z-[90] flex items-center justify-center p-4 my-4';
+  overlay.innerHTML = '<div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden my-auto max-h-[90vh] overflow-y-auto">' +
     '<div class="p-5 border-b border-slate-200"><h3 class="text-base font-bold text-slate-800">' + escHtml(message || 'Input') + '</h3></div>' +
     '<div class="p-5"><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" value="' + escHtml(defaultVal || '') + '"></div>' +
     '<div class="px-5 pb-5 flex justify-end gap-3">' +
@@ -555,11 +567,14 @@ function periodSubPeriods(period) {
 }
 
 // ── PENGUMUMAN ───────────────────────────────────────────────────────────────
-async function loadPengumuman() {
+function loadPengumuman(page, search) {
+  page = page || (state._pengumumanPage || 1); search = search !== undefined ? search : (state._pengumumanSearch || '');
+  state._pengumumanPage = page; state._pengumumanSearch = search;
   const el = document.getElementById('list-pengumuman');
-  try {
-    const items = await api('GET', `/api/cms/announcements?period=${PERIOD}`);
-    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada pengumuman.'); return; }
+  api('GET', `/api/cms/announcements?period=${PERIOD}&page=` + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
+    var items = data.items || [];
+    state.pengumuman = items;
+    if (!items.length) { el.innerHTML = emptyHtml('Tidak ada data'); return; }
     el.innerHTML = items.map(a => `
       <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
         <div class="flex items-start gap-4 flex-1 min-w-0">
@@ -581,8 +596,11 @@ async function loadPengumuman() {
           </button>
         </div>
       </div>`).join('');
-  } catch(e) { el.innerHTML = errHtml(e.message); }
+    var pagEl = document.getElementById('pengumuman-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('pengumuman', data.page, data.pages);
+  }).catch(function(e) { el.innerHTML = errHtml(e.message); });
 }
+window.pengumumanGoPage = function(p) { loadPengumuman(p); };
+window.pengumumanSearch = function(s) { debounceSearch('pengumuman', function() { loadPengumuman(1, s); }); };
 
 function openPengumumanModal() {
   document.getElementById('pengumuman-id').value = '';
@@ -620,22 +638,25 @@ async function submitPengumuman() {
     if (id) await api('PUT', `/api/cms/announcements/${id}`, body);
     else await api('POST', '/api/cms/announcements', body);
     closeModal('modalPengumuman');
-    loadPengumuman();
+    loadPengumuman(1);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
 
 async function deletePengumuman(id) {
   if (!await uiConfirm('Hapus pengumuman ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/announcements/${id}`);
-  loadPengumuman();
+  loadPengumuman(1);
 }
 
 // ── ARTIKEL ──────────────────────────────────────────────────────────────────
-async function loadArtikel() {
+function loadArtikel(page, search) {
+  page = page || (state._artikelPage || 1); search = search !== undefined ? search : (state._artikelSearch || '');
+  state._artikelPage = page; state._artikelSearch = search;
   const el = document.getElementById('list-artikel');
-  try {
-    const items = await api('GET', `/api/cms/articles?period=${PERIOD}`);
-    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada artikel.'); return; }
+  api('GET', `/api/cms/articles?period=${PERIOD}&page=` + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
+    var items = data.items || [];
+    state.artikel = items;
+    if (!items.length) { el.innerHTML = emptyHtml('Tidak ada data'); return; }
     el.innerHTML = items.map(a => `
       <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
         <div class="flex items-start gap-4 flex-1">
@@ -658,8 +679,11 @@ async function loadArtikel() {
           </button>
         </div>
       </div>`).join('');
-  } catch(e) { el.innerHTML = errHtml(e.message); }
+    var pagEl = document.getElementById('artikel-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('artikel', data.page, data.pages);
+  }).catch(function(e) { el.innerHTML = errHtml(e.message); });
 }
+window.artikelGoPage = function(p) { loadArtikel(p); };
+window.artikelSearch = function(s) { debounceSearch('artikel', function() { loadArtikel(1, s); }); };
 
 function openArtikelModal() {
   document.getElementById('artikel-id').value = '';
@@ -710,14 +734,14 @@ async function submitArtikel() {
     if (id) await api('PUT', `/api/cms/articles/${id}`, body);
     else await api('POST', '/api/cms/articles', body);
     closeModal('modalArtikel');
-    loadArtikel();
+    loadArtikel(1);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 }
 
 async function deleteArtikel(id) {
   if (!await uiConfirm('Hapus artikel ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/articles/${id}`);
-  loadArtikel();
+  loadArtikel(1);
 }
 
 // ── TENTANG PERIODE ──────────────────────────────────────────────────────────
@@ -1324,12 +1348,14 @@ function collectAnggotaActivation() {
   return { periods };
 }
 
-async function loadAnggota() {
+function loadAnggota(page, search) {
+  page = page || (state._anggotaPage || 1); search = search !== undefined ? search : (state._anggotaSearch || '');
+  state._anggotaPage = page; state._anggotaSearch = search;
   const el = document.getElementById('list-anggota');
-  try {
-    const items = await api('GET', `/api/cms/members?period=${PERIOD}`);
-    memberCache = items || [];
-    if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada anggota.'); return; }
+  api('GET', `/api/cms/members?period=${PERIOD}&page=` + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
+    var items = data.items || [];
+    memberCache = items;
+    if (!items.length) { el.innerHTML = emptyHtml('Tidak ada data'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
         <th class="px-4 py-3 bg-slate-50 font-semibold">Foto</th>
@@ -1379,8 +1405,11 @@ async function loadAnggota() {
         </tr>`).join('')}
       </tbody>
     </table></div>`;
-  } catch (e) { el.innerHTML = errHtml(e.message); }
+    var pagEl = document.getElementById('anggota-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('anggota', data.page, data.pages);
+  }).catch(function(e) { el.innerHTML = errHtml(e.message); });
 }
+window.anggotaGoPage = function(p) { loadAnggota(p); };
+window.anggotaSearch = function(s) { debounceSearch('anggota', function() { loadAnggota(1, s); }); };
 
 async function openAnggotaModal() {
   if (ROLE === 'superadmin' && (!state.periods || !state.periods.length)) {
@@ -1438,7 +1467,7 @@ async function submitAnggota() {
     if (id) await api('PUT', `/api/cms/members/${id}`, body);
     else await api('POST', '/api/cms/members', body);
     closeModal('modalAnggota');
-    await loadAnggota();
+    loadAnggota(1);
     await loadKementerian();
   } catch (ex) { uiAlert('Error: ' + ex.message); }
 }
@@ -1446,7 +1475,7 @@ async function submitAnggota() {
 async function deleteAnggota(id) {
   if (!await uiConfirm('Hapus anggota ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/members/${id}`);
-  await loadAnggota();
+  loadAnggota(1);
   await loadKementerian();
 }
 
@@ -1591,12 +1620,14 @@ document.getElementById('formPeriode')?.addEventListener('submit', async e => {
 
 
 // ── MANAJEMEN AKUN ───────────────────────────────────────────────────────────
-async function loadAkun() {
+function loadAkun(page, search) {
+  page = page || (state._akunPage || 1); search = search !== undefined ? search : (state._akunSearch || '');
+  state._akunPage = page; state._akunSearch = search;
   const el = document.getElementById('list-akun');
-  try {
-    const items = await api('GET', '/api/cms/accounts');
+  api('GET', '/api/cms/accounts?page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
+    var items = data.items || [];
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
-    el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
+    el.innerHTML = '<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
         <th class="px-4 py-3 bg-slate-50 font-semibold">Username</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Role</th>
@@ -1622,8 +1653,11 @@ async function loadAkun() {
         </tr>`).join('')}
       </tbody>
     </table></div>`;
-  } catch(e) { el.innerHTML = errHtml(e.message); }
+    var pagEl = document.getElementById('akun-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('akun', data.page, data.pages);
+  }).catch(function(e) { el.innerHTML = errHtml(e.message); });
 }
+window.akunGoPage = function(p) { loadAkun(p); };
+window.akunSearch = function(s) { debounceSearch('akun', function() { loadAkun(1, s); }); };
 
 function openAkunModal() {
   document.getElementById('akun-id').value = '';
@@ -1651,7 +1685,7 @@ function editAkun(u) {
 async function deleteAkun(id) {
   if (!await uiConfirm('Hapus akun ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', `/api/cms/accounts/${id}`);
-  loadAkun();
+  loadAkun(1);
 }
 
 document.getElementById('formAkun')?.addEventListener('submit', async e => {
@@ -1667,7 +1701,7 @@ document.getElementById('formAkun')?.addEventListener('submit', async e => {
     if (id) await api('PUT', `/api/cms/accounts/${id}`, body);
     else await api('POST', '/api/cms/accounts', body);
     closeModal('modalAkun');
-    loadAkun();
+    loadAkun(1);
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
 
@@ -2228,26 +2262,48 @@ function initFAQSorable(pLabel) {
     }
   });
 }
-async function loadFAQs(pLabel) {
+function loadFAQs(pLabel, page, search) {
+  page = page || (state._faqPage || 1); search = search !== undefined ? search : (state._faqSearch || '');
+  state._faqPage = page; state._faqSearch = search;
   const isGlobal = (pLabel === 'GLOBAL');
   const tb = document.getElementById(isGlobal ? 'faq-global-tbody' : 'faq-periode-tbody');
-  try {
-    const items = await api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel));
-    state.faqs = items || [];
-    tb.innerHTML = (items||[]).map(f => `
-      <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
-        <td class="p-4 align-middle w-10 cursor-move faq-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
-        <td class="p-4 align-middle font-medium">${escHtml((f.question||'').substring(0,30))}...</td>
-        <td class="p-4 align-middle">${escHtml((f.answer||'').substring(0,30))}...</td>
-                <td class="p-4 align-middle text-right">
-          <button onclick="editFAQ('${f.id}','${pLabel}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button>
-          <button onclick="deleteFAQ('${f.id}','${pLabel}')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button>
-        </td>
-      </tr>
-    `).join('');
-    initFAQSorable(pLabel);
-  } catch(e) { tb.innerHTML = `<tr><td colspan="3">${errHtml(e.message)}</td></tr>`; }
+  api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel) + '&page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
+    var items = data.items || [];
+    state.faqs = items;
+    if (!items.length) {
+      tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada data</td></tr>';
+    } else {
+      tb.innerHTML = items.map(f => `
+        <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
+          <td class="p-4 align-middle w-10 cursor-move faq-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
+          <td class="p-4 align-middle font-medium">${escHtml((f.question||'').substring(0,30))}...</td>
+          <td class="p-4 align-middle">${escHtml((f.answer||'').substring(0,30))}...</td>
+                  <td class="p-4 align-middle text-right">
+            <button onclick="editFAQ('${f.id}','${pLabel}')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button>
+            <button onclick="deleteFAQ('${f.id}','${pLabel}')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+      initFAQSorable(pLabel);
+    }
+    var pagEl = document.getElementById('faq-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('faq', data.page, data.pages);
+  }).catch(function(e) { tb.innerHTML = `<tr><td colspan="3">${errHtml(e.message)}</td></tr>`; });
 }
+window.faqGoPage = function(p) {
+  var isGlobal = (document.getElementById('faq-global-tbody')?.querySelector('tr')) ? true : false;
+  var activeTab = document.querySelector('.faq-tab-btn.active');
+  var pLabel = 'GLOBAL';
+  if (activeTab && activeTab.dataset.label) pLabel = activeTab.dataset.label;
+  if (!isGlobal && activeTab) pLabel = activeTab.dataset.label;
+  loadFAQs(pLabel, p);
+};
+window.faqSearch = function(s) {
+  debounceSearch('faq', function() {
+    var activeTab = document.querySelector('.faq-tab-btn.active');
+    var pLabel = activeTab && activeTab.dataset.label ? activeTab.dataset.label : 'GLOBAL';
+    loadFAQs(pLabel, 1, s);
+  });
+};
 function openFAQModal(pLabel) {
   document.getElementById('formFAQ').reset();
   document.getElementById('faq-id').value = '';
@@ -2266,7 +2322,7 @@ function editFAQ(id, pLabel) {
 async function deleteFAQ(id, pLabel) {
   if(!await uiConfirm('Hapus FAQ ini?', 'Konfirmasi Hapus', true)) return;
   await api('DELETE', '/api/cms/faqs/' + id);
-  loadFAQs(pLabel);
+  loadFAQs(pLabel, 1);
 }
 document.getElementById('formFAQ')?.addEventListener('submit', async e => {
   e.preventDefault();
@@ -2280,7 +2336,7 @@ document.getElementById('formFAQ')?.addEventListener('submit', async e => {
   try {
       await api(data.id ? 'PUT' : 'POST', data.id ? '/api/cms/faqs/' + data.id : '/api/cms/faqs', data);
      closeModal('modalFAQ');
-     loadFAQs(data.period_label);
+     loadFAQs(data.period_label, 1);
   } catch(ex) { uiAlert(ex); }
 });
 
