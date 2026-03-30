@@ -506,7 +506,6 @@ document.addEventListener('click', e => {
     if (!Number.isNaN(idx)) {
       state.periodGallery.splice(idx, 1);
       renderTentangGalleryEditor(state.periodGallery);
-      saveGalleryToServer();
     }
     return;
   }
@@ -797,7 +796,6 @@ async function saveGalleryToServer() {
 
 document.getElementById('btn-save-gallery')?.addEventListener('click', async () => {
   state.periodGallery = collectTentangGallery();
-  await saveGalleryToServer();
 });
 
 
