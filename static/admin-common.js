@@ -403,6 +403,31 @@ async function uiConfirm(message, title = 'Konfirmasi', danger = false) {
   return uiActionModal({ title, message, confirmText: danger ? 'Ya, lanjutkan' : 'Ya', cancelText: 'Batal', showCancel: true, danger });
 }
 
+function uiPrompt(message, defaultVal) {
+  var result = null;
+  var overlay = document.createElement('div');
+  overlay.className = 'fixed inset-0 bg-black/40 z-[90] flex items-center justify-center p-4';
+  overlay.innerHTML = '<div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">' +
+    '<div class="p-5 border-b border-slate-200"><h3 class="text-base font-bold text-slate-800">' + escHtml(message || 'Input') + '</h3></div>' +
+    '<div class="p-5"><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" value="' + escHtml(defaultVal || '') + '"></div>' +
+    '<div class="px-5 pb-5 flex justify-end gap-3">' +
+    '<button id="uiPromptCancel" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button>' +
+    '<button id="uiPromptOk" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button>' +
+    '</div></div>';
+  document.body.appendChild(overlay);
+  var input = overlay.querySelector('input');
+  setTimeout(function() { input.focus(); input.select(); }, 50);
+  return new Promise(function(resolve) {
+    function cleanup() { document.body.removeChild(overlay); }
+    function doOk() { result = input.value; cleanup(); resolve(result); }
+    function doCancel() { result = null; cleanup(); resolve(null); }
+    overlay.querySelector('#uiPromptOk').onclick = doOk;
+    overlay.querySelector('#uiPromptCancel').onclick = doCancel;
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') doOk(); if (e.key === 'Escape') doCancel(); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) doCancel(); });
+  });
+}
+
 // ── Generic fetch ────────────────────────────────────────────────────────────
 async function api(method, url, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -2660,30 +2685,97 @@ function bcToggleHelp() {
     var hc = document.getElementById('bc-help-content');
     if (hc && !hc.dataset.loaded) {
       hc.dataset.loaded = '1';
-      var LB = String.fromCharCode(123,123);
-      var RB = String.fromCharCode(125,125);
-      hc.innerHTML = '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-mono">' + LB + 'var' + RB + '</span>'
-        + ' Variabel</h4>'
-        + '<p class="text-slate-600 mb-2">Gunakan <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs font-mono">' + LB + 'nama_kolom' + RB + '</code> untuk menyisipkan nilai dari kolom kontak.</p>'
-        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3">'
-        + '<p class="text-xs text-slate-400 mb-1">Contoh:</p>'
-        + '<p class="font-mono text-xs text-slate-700">Halo <span class="text-blue-600">' + LB + 'nickname' + RB + '</span>, selamat datang di <span class="text-blue-600">' + LB + 'kementerian' + RB + '</span>!</p>'
-        + '</div></div>'
+      var L = String.fromCharCode(123,123);
+      var R = String.fromCharCode(125,125);
+      var ex = function(t) { return '<span class="text-blue-600">' + t + '</span>'; };
+      var cm = function(t) { return '<code class="bg-slate-200 text-slate-800 px-1 rounded">' + t + '</code>'; };
+      hc.innerHTML =
+        // ── Variabel ──
+        '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'var' + R + '</span> Variabel</h4>'
+        + '<p class="text-slate-600 mb-2">Sisipkan nilai kolom kontak.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700">Halo ' + ex(L + 'nickname' + R) + ', dari ' + ex(L + 'department' + R) + '!</div></div>'
+        // ── Filter ──
         + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
-        + '<span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-mono">' + LB + 'if' + RB + '</span>'
-        + ' Kondisional</h4>'
-        + '<p class="text-slate-600 mb-2">Tampilkan teks berbeda berdasarkan nilai kolom.</p>'
+        + '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'var|filter' + R + '</span> Filter</h4>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2 font-mono text-xs text-slate-700">'
+        + '<p>' + ex(L + 'nickname|uppercase' + R) + ' <span class="text-slate-400">→ huruf kapital semua</span></p>'
+        + '<p>' + ex(L + 'nickname|lowercase' + R) + ' <span class="text-slate-400">→ huruf kecil semua</span></p>'
+        + '<p>' + ex(L + 'nickname|capitalize' + R) + ' <span class="text-slate-400">→ Yitzhak (kapital huruf pertama)</span></p>'
+        + '<p>' + ex(L + 'department|titlecase' + R) + ' <span class="text-slate-400">→ Title Case Setiap Kata</span></p>'
+        + '<p>' + ex(L + 'position|default:"Anggota"' + R) + ' <span class="text-slate-400">→ fallback jika kosong</span></p>'
+        + '<p>' + ex(L + 'full_name|trim' + R) + ' <span class="text-slate-400">→ hapus spasi berlebih</span></p>'
+        + '<p>' + ex(L + 'phone|length' + R) + ' <span class="text-slate-400">→ jumlah karakter</span></p>'
+        + '<p>' + ex(L + 'fakultas|slice:"0,6"' + R) + ' <span class="text-slate-400">→ potong teks (mulai,akhir)</span></p>'
+        + '<p>' + ex(L + 'full_name|replace:" ,"' + R) + ' <span class="text-slate-400">→ ganti teks (cari,ganti)</span></p>'
+        + '<p>' + ex(L + 'emoji|repeat:3' + R) + ' <span class="text-slate-400">→ ulang 3x (baris baru)</span></p>'
+        + '</div></div>'
+        // ── Set Variable ──
+        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-teal-100 text-teal-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'set' + R + '</span> Set Variabel Baru</h4>'
+        + '<p class="text-slate-600 mb-2">Definisikan variabel sementara dalam template.</p>'
         + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
-        + LB + 'if jabatan == "Ketua"' + RB + '\nSelamat datang, Ketua!\n' + LB + 'else' + RB + '\nHalo anggota!\n' + LB + 'endif' + RB + '</div></div>'
-        + '<div><h4 class="font-bold text-slate-700 mb-2">Tips</h4>'
-        + '<ul class="text-slate-600 space-y-1.5 list-disc list-inside">'
-        + '<li>Nama variabel harus sama persis dengan nama kolom (case-sensitive)</li>'
-        + '<li>Bisa menggabung beberapa variabel dalam satu kalimat</li>'
-        + '<li>Kondisional hanya mendukung perbandingan <code class="bg-slate-100 px-1 rounded text-xs">==</code></li>'
-        + '<li>Gunakan tab untuk paste data dari spreadsheet langsung ke tabel kontak</li>'
-        + '<li>Centang baris di tabel kontak untuk memilih penerima broadcast</li>'
-        + '</ul></div>';
+        + ex(L + 'set salam="Halo"' + R) + '\n'
+        + ex(L + 'salam' + R) + ' ' + ex(L + 'full_name' + R) + '!'
+        + '</div></div>'
+        // ── Math ──
+        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'var + N' + R + '</span> Matematika</h4>'
+        + '<p class="text-slate-600 mb-2">Operasi angka sederhana pada variabel.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2 font-mono text-xs text-slate-700">'
+        + '<p>' + ex(L + 'angkatan + 1' + R) + ' <span class="text-slate-400">→ 2023</span></p>'
+        + '<p>' + ex(L + 'angkatan - 4' + R) + ' <span class="text-slate-400">→ 2018</span></p>'
+        + '</div></div>'
+        // ── Kondisional ──
+        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded font-mono">' + L + 'if' + R + '</span> Kondisional</h4>'
+        + '<p class="text-slate-600 mb-2">Tampilkan teks berdasarkan kondisi. ' + cm(L + 'else' + R) + ' opsional.</p>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
+        + '<p class="text-slate-400 mb-1">// Persamaan</p>'
+        + ex(L + 'if angkatan == "2022"' + R) + '\nFresher!\n' + ex(L + 'else' + R) + '\nSenior!\n' + ex(L + 'endif' + R) + '\n\n'
+        + '<p class="text-slate-400 mb-1 mt-2">// Ketidaksamaan</p>'
+        + ex(L + 'if department != "Internal"' + R) + '\nDept lain\n' + ex(L + 'endif' + R) + '\n\n'
+        + '<p class="text-slate-400 mb-1 mt-2">// Mengandung teks</p>'
+        + ex(L + 'if program_studi contains "Informasi"' + R) + '\nTI squad!\n' + ex(L + 'endif' + R) + '\n\n'
+        + '<p class="text-slate-400 mb-1 mt-2">// Awalan / Akhiran</p>'
+        + ex(L + 'if nickname startswith "A"' + R) + '\nNama muawal A!\n' + ex(L + 'endif' + R) + '\n'
+        + ex(L + 'if fakultas endswith "Teknik"' + R) + '\nTeknik!\n' + ex(L + 'endif' + R) + '\n\n'
+        + '<p class="text-slate-400 mb-1 mt-2">// Regex</p>'
+        + ex(L + 'if phone matches "^0817"' + R) + '\nNomor 0817 detected!\n' + ex(L + 'endif' + R) + '\n\n'
+        + '<p class="text-slate-400 mb-1 mt-2">// Kosong / Tidak kosong</p>'
+        + ex(L + 'if position empty' + R) + '\nBelum ada jabatan\n' + ex(L + 'else' + R) + '\nJabatan: ' + ex(L + 'position' + R) + '\n' + ex(L + 'endif' + R) + '\n\n'
+        + '<p class="text-slate-400 mb-1 mt-2">// Perbandingan angka</p>'
+        + ex(L + 'if angkatan >= "2023"' + R) + '\nAngkatan baru!\n' + ex(L + 'endif' + R)
+        + '</div></div>'
+        // ── Contoh Lengkap ──
+        + '<div><h4 class="font-bold text-slate-700 mb-2 flex items-center gap-2">'
+        + '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded font-mono">Contoh</span> Template Lanjutan</h4>'
+        + '<div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-mono text-xs text-slate-700 whitespace-pre-wrap">'
+        + ex(L + 'set salam="Selamat pagi"' + R) + '\n'
+        + ex(L + 'salam' + R) + ', ' + ex(L + 'full_name|titlecase' + R) + '!\n'
+        + ex(L + 'if position notempty' + R) + '\n'
+        + 'Sebagai ' + ex(L + 'position' + R) + ' di ' + ex(L + 'department|default:"PKSE UGM"' + R) + '\n'
+        + ex(L + 'else' + R) + '\n'
+        + 'Anggota ' + ex(L + 'department|default:"PKSE UGM"' + R) + '\n'
+        + ex(L + 'endif' + R) + '\n'
+        + ex(L + 'if fakultas contains "Teknik"' + R) + '\n'
+        + 'Fakultas: ' + ex(L + 'fakultas' + R) + '\n'
+        + ex(L + 'if program_studi startswith "Tek"' + R) + '\n'
+        + ex(L + 'program_studi' + R) + ' (' + ex(L + 'angkatan + 4' + R) + ')\n'
+        + ex(L + 'endif' + R) + '\n'
+        + ex(L + 'endif' + R)
+        + '</div></div>'
+        // ── Tips ──
+        + '<div><h4 class="font-bold text-slate-700 mb-2">Referensi Operator</h4>'
+        + '<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-slate-600">'
+        + '<div><b>Perbandingan:</b></div><div>' + cm('==') + ' ' + cm('!=') + ' ' + cm('>') + ' ' + cm('>=') + ' ' + cm('<') + ' ' + cm('<=') + '</div>'
+        + '<div><b>Teks:</b></div><div>' + cm('contains') + ' ' + cm('!contains') + ' ' + cm('startswith') + ' ' + cm('endswith') + '</div>'
+        + '<div><b>Regex:</b></div><div>' + cm('matches') + ' ' + cm('!matches') + '</div>'
+        + '<div><b>Keberadaan:</b></div><div>' + cm('empty') + ' ' + cm('notempty') + '</div>'
+        + '<div><b>Filter:</b></div><div>' + cm('|uppercase') + ' ' + cm('|lowercase') + ' ' + cm('|capitalize') + ' ' + cm('|titlecase') + ' ' + cm('|trim') + ' ' + cm('|length') + ' ' + cm('|default:"..."') + ' ' + cm('|slice:"0,6"') + ' ' + cm('|replace:"a,b"') + ' ' + cm('|repeat:3') + '</div>'
+        + '<div><b>Math:</b></div><div>' + cm(L + 'var + N' + R) + ' ' + cm(L + 'var - N' + R) + '</div>'
+        + '<div><b>Lainnya:</b></div><div>' + cm(L + 'set var="val"' + R) + '</div>'
+        + '</div></div>';
     }
   } else {
     modal.classList.add('hidden');
@@ -2705,6 +2797,8 @@ function bcUnlockBroadcast() {
   bcBroadcasting = false;
   var lock = document.getElementById('bc-send-lock');
   if (lock) lock.classList.add('hidden');
+  var liveProgress = document.getElementById('bc-live-progress');
+  if (liveProgress) liveProgress.classList.add('hidden');
   var btn = document.getElementById('bc-send-btn');
   if (btn) { btn.disabled = false; btn.classList.remove('opacity-50'); }
 }
@@ -2740,6 +2834,7 @@ function bcGoToStep(step) {
   if (step === 2) {
     renderBCVarChips();
     renderBCPreviewRowSelector();
+    renderBCTestContactSelector();
     startLivePreview();
   }
   if (step === 3) {
@@ -3075,11 +3170,11 @@ function bcCopySelection() {
 }
 
 // ── Delete Column ────────────────────────────────────────────────────────
-function deleteBCColumn(colIdx) {
+async function deleteBCColumn(colIdx) {
   if (colIdx < 0 || colIdx >= bcColumnHeaders.length) return;
   var key = bcColumnHeaders[colIdx];
   var label = bcColumnLabels[colIdx] || key;
-  if (!confirm('Hapus kolom "' + label + '"?')) return;
+  if (!await uiConfirm('Hapus kolom "' + label + '"?')) return;
   bcPushUndo();
   bcColumnHeaders.splice(colIdx, 1);
   bcColumnLabels.splice(colIdx, 1);
@@ -3157,9 +3252,9 @@ function addBCRow() {
   renderBCContactsTable();
 }
 
-function addBCColumn() {
+async function addBCColumn() {
   bcPushUndo();
-  var name = prompt('Nama kolom baru:');
+  var name = await uiPrompt('Nama kolom baru:');
   if (!name || !name.trim()) return;
   var key = name.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
   if (!key) { key = 'col_' + bcColumnHeaders.length; }
@@ -3183,7 +3278,7 @@ async function renameBCColumn(colIdx) {
   bcPushUndo();
   var key = bcColumnHeaders[colIdx];
   var currentLabel = bcColumnLabels[colIdx] || key;
-  var newLabel = prompt('Rename kolom "' + currentLabel + '":', currentLabel);
+  var newLabel = await uiPrompt('Rename kolom "' + currentLabel + '":', currentLabel);
   if (newLabel === null || !newLabel.trim() || newLabel.trim() === currentLabel) return;
   bcColumnLabels[colIdx] = newLabel.trim();
   var newKey = newLabel.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
@@ -3355,32 +3450,142 @@ function updateLivePreview() {
 }
 
 function renderBCTemplateJS(template, vars) {
-  template = template.replace(/\{\{if\s+(\w+)\s*==\s*"([^"]*?)"\}\}(.*?)\{\{else\}\}(.*?)\{\{endif\}\}/gs, function(match, colName, compareVal, trueBody, falseBody) {
-    return (vars[colName] || '') === compareVal ? trueBody : falseBody;
-  });
-  for (var k in vars) {
-    if (vars.hasOwnProperty(k)) {
-      template = template.replace(new RegExp('\\{\\{' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}\\}', 'g'), vars[k]);
+  var MAX_ITER = 10, iter = 0;
+  function evalCond(col, op, val) {
+    var cv = (vars[col] !== undefined) ? String(vars[col]) : '';
+    switch (op) {
+      case '==': return cv === val;
+      case '!=': return cv !== val;
+      case 'contains': return val ? cv.indexOf(val) >= 0 : false;
+      case '!contains': return val ? cv.indexOf(val) < 0 : false;
+      case 'startswith': return val ? cv.indexOf(val) === 0 : false;
+      case '!startswith': return val ? cv.indexOf(val) !== 0 : false;
+      case 'endswith': return val ? cv.slice(-val.length) === val : false;
+      case '!endswith': return val ? cv.slice(-val.length) !== val : false;
+      case 'matches': try { return val ? new RegExp(val,'i').test(cv) : false; } catch(e) { return false; }
+      case '!matches': try { return val ? !new RegExp(val,'i').test(cv) : false; } catch(e) { return false; }
+      case 'empty': return cv.trim() === '';
+      case 'notempty': return cv.trim() !== '';
+      case '>': return parseFloat(cv) > parseFloat(val || '0');
+      case '>=': return parseFloat(cv) >= parseFloat(val || '0');
+      case '<': return parseFloat(cv) < parseFloat(val || '0');
+      case '<=': return parseFloat(cv) <= parseFloat(val || '0');
+      default: return false;
     }
   }
+  function processConditionals(tmpl) {
+    var condReWithElse = /\{\{if\s+(\w+)\s*(==|!=|contains|!contains|startswith|!startswith|endswith|!endswith|matches|!matches|empty|notempty|>|>=|<|<=)(?:"([^"]*?)")?\s*\}\}([\s\S]*?)\{\{else\}\}([\s\S]*?)\{\{endif\}\}/g;
+    var condReNoElse = /\{\{if\s+(\w+)\s*(==|!=|contains|!contains|startswith|!startswith|endswith|!endswith|matches|!matches|empty|notempty|>|>=|<|<=)(?:"([^"]*?)")?\s*\}\}([\s\S]*?)\{\{endif\}\}/g;
+    var prev = '';
+    while (tmpl !== prev && iter++ < MAX_ITER) {
+      prev = tmpl;
+      tmpl = tmpl.replace(condReWithElse, function(m, col, op, val, t, f) { return evalCond(col, op, val) ? t : f; });
+      tmpl = tmpl.replace(condReNoElse, function(m, col, op, val, body) { return evalCond(col, op, val) ? body : ''; });
+    }
+    return tmpl;
+  }
+  function processSet(tmpl) {
+    return tmpl.replace(/\{\{set\s+(\w+)\s*=\s*"([^"]*?)"\s*\}\}/g, function(m, k, v) { vars[k] = v; return ''; });
+  }
+  function processMath(tmpl) {
+    tmpl = tmpl.replace(/\{\{(\w+)\s*\+\s*(\d+)\}\}/g, function(m, col, n) { return String((parseInt(vars[col]) || 0) + parseInt(n)); });
+    tmpl = tmpl.replace(/\{\{(\w+)\s*-\s*(\d+)\}\}/g, function(m, col, n) { return String((parseInt(vars[col]) || 0) - parseInt(n)); });
+    return tmpl;
+  }
+  function processFilters(tmpl) {
+    tmpl = tmpl.replace(/\{\{(\w+)\|uppercase\}\}/g, function(m, c) { return (vars[c] || '').toUpperCase(); });
+    tmpl = tmpl.replace(/\{\{(\w+)\|lowercase\}\}/g, function(m, c) { return (vars[c] || '').toLowerCase(); });
+    tmpl = tmpl.replace(/\{\{(\w+)\|capitalize\}\}/g, function(m, c) { var s=(vars[c]||''); return s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(); });
+    tmpl = tmpl.replace(/\{\{(\w+)\|titlecase\}\}/g, function(m, c) { return (vars[c]||'').replace(/\b\w/g,function(ch){return ch.toUpperCase();}); });
+    tmpl = tmpl.replace(/\{\{(\w+)\|trim\}\}/g, function(m, c) { return (vars[c] || '').trim(); });
+    tmpl = tmpl.replace(/\{\{(\w+)\|default:"([^"]*?)"\}\}/g, function(m, c, fb) { return (vars[c] && String(vars[c]).trim()) ? vars[c] : fb; });
+    tmpl = tmpl.replace(/\{\{(\w+)\|length\}\}/g, function(m, c) { return String((vars[c] || '').length); });
+    tmpl = tmpl.replace(/\{\{(\w+)\|slice:"([^"]*?)"\}\}/g, function(m, c, args) {
+      var parts = args.split(',').map(function(s){return parseInt(s.trim());});
+      return (vars[c]||'').slice(parts[0], parts[1]);
+    });
+    tmpl = tmpl.replace(/\{\{(\w+)\|replace:"([^"]*?)"\}\}/g, function(m, c, args) {
+      var parts = args.split(',').map(function(s){return s.trim();});
+      return (vars[c]||'').split(parts[0]).join(parts[1] || '');
+    });
+    tmpl = tmpl.replace(/\{\{(\w+)\|repeat:(\d+)\}\}/g, function(m, c, n) {
+      var s = vars[c] || ''; var r = ''; for (var i = 0; i < parseInt(n); i++) r += (i > 0 ? '\n' : '') + s; return r;
+    });
+    return tmpl;
+  }
+  function processVars(tmpl) {
+    for (var k in vars) {
+      if (vars.hasOwnProperty(k)) {
+        tmpl = tmpl.replace(new RegExp('\\{\\{' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}\\}', 'g'), vars[k]);
+      }
+    }
+    return tmpl;
+  }
+  // Execute pipeline
+  template = processSet(template);
+  template = processMath(template);
+  template = processFilters(template);
+  template = processConditionals(template);
+  template = processVars(template);
   return template;
 }
 
 // ── Send ─────────────────────────────────────────────────────────────────
 
 async function sendBCTest() {
-  var phoneEl = document.getElementById('bc-test-phone');
-  if (!phoneEl || !phoneEl.value.trim()) { uiAlert('Masukkan nomor tujuan test.'); return; }
   var templateEl = document.getElementById('bc-template');
   if (!templateEl || !templateEl.value.trim()) { uiAlert('Template pesan kosong.'); return; }
-  var testVars = {};
-  bcColumnHeaders.forEach(function(h) { testVars[h] = '[' + (bcColumnLabels[bcColumnHeaders.indexOf(h)] || h) + ']'; });
-  var msg = renderBCTemplateJS(templateEl.value, testVars);
+  var sel = document.getElementById('bc-test-contact');
+  var phoneEl = document.getElementById('bc-test-phone');
+  var contactIdx = sel ? sel.value : '';
+  var phone = '';
+  var msg = '';
+  if (contactIdx !== '' && bcContactRows[parseInt(contactIdx)]) {
+    // Send to existing contact — use their actual data
+    var row = bcContactRows[parseInt(contactIdx)];
+    var phoneKeys = ['phone', 'no_hp', 'no__hp', 'nomor_hp', 'nomor', 'no hp'];
+    for (var i = 0; i < phoneKeys.length; i++) {
+      if (bcColumnHeaders.indexOf(phoneKeys[i]) >= 0) { phone = (row[phoneKeys[i]] || '').replace(/\D/g, ''); break; }
+    }
+    if (!phone || phone.length < 8) { uiAlert('Kontak tidak memiliki nomor HP valid.'); return; }
+    var vars = {};
+    bcColumnHeaders.forEach(function(h) { vars[h] = row[h] || ''; });
+    msg = renderBCTemplateJS(templateEl.value, vars);
+  } else {
+    // Custom number — send exactly what the preview shows
+    phone = phoneEl ? phoneEl.value.trim().replace(/\D/g, '') : '';
+    if (!phone || phone.length < 8) { uiAlert('Masukkan nomor HP valid (min 8 digit).'); return; }
+    var previewBox = document.getElementById('bc-preview-box');
+    msg = previewBox ? previewBox.textContent : renderBCTemplateJS(templateEl.value, {});
+  }
   try {
-    await api('POST', '/api/broadcast/send', { message: msg, phones: [phoneEl.value.trim()], messages: [msg], delay_ms: 0 });
-    uiAlert('Test terkirim ke ' + phoneEl.value.trim());
+    await api('POST', '/api/broadcast/send', { message: msg, phones: [phone], messages: [msg], delay_ms: 0 });
+    uiAlert('Test terkirim ke ' + phone);
   } catch(e) {
     uiAlert('Gagal kirim test: ' + e.message);
+  }
+}
+
+function renderBCTestContactSelector() {
+  var sel = document.getElementById('bc-test-contact');
+  if (!sel) return;
+  var selected = [];
+  bcContactRows.forEach(function(r, i) { if (r._selected) selected.push(i); });
+  var phoneKeys = ['phone', 'no_hp', 'no__hp', 'nomor_hp', 'nomor', 'no hp'];
+  sel.innerHTML = '<option value="">-- pilih kontak --</option>' + selected.map(function(ri) {
+    var name = bcContactRows[ri].full_name || bcContactRows[ri].nickname || ('Baris ' + (ri + 1));
+    return '<option value="' + ri + '">' + escHtml(name) + '</option>';
+  }).join('');
+}
+
+function toggleBCTestPhone() {
+  var sel = document.getElementById('bc-test-contact');
+  var wrap = document.getElementById('bc-test-phone-wrap');
+  if (!sel || !wrap) return;
+  if (sel.value === '') {
+    wrap.classList.remove('hidden');
+  } else {
+    wrap.classList.add('hidden');
   }
 }
 
@@ -3451,7 +3656,7 @@ async function loadBCHistory() {
       else statusBadge = '<span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">' + escHtml(log.status || '') + '</span>';
       var date = log.started_at ? new Date(log.started_at).toLocaleString('id-ID') : '';
       var msg = (log.message || '').substring(0, 80);
-      return '<div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50" onclick="showBCDetail(\'' + log.id + '\')">' +
+      return '<div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50" onclick="showBCDetail(\'' + log.id + '\', this)">' +
         statusBadge +
         '<span class="text-xs text-slate-400 hidden sm:inline">' + date + '</span>' +
         '<span class="text-sm text-slate-700 flex-1 truncate">' + escHtml(msg) + '</span>' +
@@ -3463,23 +3668,27 @@ async function loadBCHistory() {
   }
 }
 
-async function showBCDetail(id) {
-  var detailEl = document.getElementById('bc-history-detail');
-  if (!detailEl) return;
-  detailEl.classList.remove('hidden');
+async function showBCDetail(id, rowEl) {
+  var prev = document.getElementById('bc-log-detail-inline');
+  if (prev) prev.remove();
+  if (rowEl) {
+    var alreadyOpen = rowEl.nextElementSibling && rowEl.nextElementSibling.id === 'bc-log-detail-inline';
+    if (alreadyOpen) { return; }
+  }
   try {
     var data = await api('GET', '/api/broadcast/logs/' + id);
-    if (!data || !data.log) { detailEl.innerHTML = '<p class="text-sm text-slate-400">Detail tidak ditemukan.</p>'; return; }
+    if (!data || !data.log) return;
     var log = data.log;
     var recipients = data.recipients || [];
     var statusText = log.status === 'done' ? 'Selesai' : log.status === 'failed' ? 'Gagal' : (log.status || '');
-    var html = '<div class="border border-slate-200 rounded-lg p-4 bg-white">' +
+    var statusColor = log.status === 'done' ? 'green' : log.status === 'failed' ? 'red' : 'yellow';
+    var html = '<div id="bc-log-detail-inline" class="ml-4 sm:ml-8 mt-1 border border-slate-200 rounded-lg p-4 bg-white">' +
       '<div class="flex items-center justify-between mb-3">' +
       '<h4 class="text-sm font-bold text-slate-700">Detail Broadcast</h4>' +
-      '<button onclick="document.getElementById(\'bc-history-detail\').classList.add(\'hidden\')" class="text-xs text-slate-400 hover:text-slate-600">&times; Tutup</button>' +
+      '<button onclick="this.closest(\'#bc-log-detail-inline\').remove()" class="text-xs text-slate-400 hover:text-slate-600">&times; Tutup</button>' +
       '</div>' +
       '<div class="text-sm text-slate-600 space-y-1 mb-3">' +
-      '<p><strong>Status:</strong> ' + escHtml(statusText) + '</p>' +
+      '<p><strong>Status:</strong> <span class="text-' + statusColor + '-600">' + escHtml(statusText) + '</span></p>' +
       '<p><strong>Terkirim:</strong> ' + (log.sent_count || 0) + ' / ' + (log.total_receivers || 0) + '</p>' +
       (log.completed_at ? '<p><strong>Selesai:</strong> ' + new Date(log.completed_at).toLocaleString('id-ID') + '</p>' : '') +
       '</div>' +
@@ -3498,10 +3707,13 @@ async function showBCDetail(id) {
         '</div></div>';
     }
     html += '</div>';
-    detailEl.innerHTML = html;
-  } catch(e) {
-    detailEl.innerHTML = '<p class="text-sm text-red-500">Gagal memuat detail.</p>';
-  }
+    if (rowEl && rowEl.parentNode) {
+      rowEl.insertAdjacentHTML('afterend', html);
+    } else {
+      var list = document.getElementById('bc-history-list');
+      if (list) list.insertAdjacentHTML('beforeend', html);
+    }
+  } catch(e) {}
 }
 
 // ── WebSocket ────────────────────────────────────────────────────────────

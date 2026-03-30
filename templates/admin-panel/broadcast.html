@@ -97,7 +97,7 @@
   </div>
 
   <!-- ═══ TAB: Broadcast (Wizard) ═══ -->
-  <div id="bc-tab-broadcast" class="bc-tab-panel hidden relative">
+  <div id="bc-tab-broadcast" class="bc-tab-panel hidden relative bg-white rounded-xl border border-slate-200 p-6">
 
     <!-- Send Lock Overlay -->
     <div id="bc-send-lock" class="hidden absolute inset-0 bg-white/70 backdrop-blur-sm z-30 rounded-xl flex items-center justify-center">
@@ -108,7 +108,7 @@
     </div>
 
     <!-- Step Indicator -->
-    <div class="flex items-center gap-1 sm:gap-2">
+    <div class="flex items-center gap-2 sm:gap-3 mb-5">
       <button id="step-ind-1" onclick="bcGoToStep(1)" class="bc-step-ind flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-medium">
         <span class="step-num w-5 h-5 rounded-full bg-white text-blue-600 text-xs flex items-center justify-center font-bold">1</span>
         <span class="hidden sm:inline">Kontak</span>
@@ -125,7 +125,7 @@
 
     <!-- Step 1: Contacts Table -->
     <div id="bc-step-1" class="bc-step-panel">
-      <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
         <select id="bc-contact-filter" onchange="loadBCContacts()" class="text-sm border border-slate-300 rounded-lg px-2 py-1">
           <option value="ALL">Semua Periode</option>
         </select>
@@ -159,7 +159,7 @@
           </tbody>
         </table>
       </div>
-      <p class="text-xs text-slate-400 mt-2">Tip: Double-click column header untuk rename variabel. Klik sel untuk edit. Centang baris untuk pilih penerima broadcast. Ctrl+V untuk paste data dari spreadsheet.</p>
+      <p class="text-xs text-slate-400 mt-3">Tip: Double-click column header untuk rename variabel. Klik sel untuk edit. Centang baris untuk pilih penerima broadcast. Ctrl+V untuk paste data dari spreadsheet.</p>
       <div class="flex items-center justify-end mt-4 pt-3 border-t border-slate-200">
         <button onclick="bcGoToStep(2)" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2 rounded-lg transition font-medium flex items-center gap-2">
           Selanjutnya
@@ -203,14 +203,20 @@
         <div class="mt-3 border-t border-slate-200 pt-3">
           <div class="flex gap-2 items-end">
             <div class="flex-1">
-              <label class="text-xs text-slate-500 block mb-1">Test ke nomor:</label>
+              <label class="text-xs text-slate-500 block mb-1">Test ke:</label>
+              <select id="bc-test-contact" onchange="toggleBCTestPhone()" class="text-sm border border-slate-300 rounded-lg px-2 py-2 focus:ring-2 focus:ring-blue-300 focus:outline-none">
+                <option value="">-- pilih kontak --</option>
+              </select>
+            </div>
+            <div id="bc-test-phone-wrap" class="flex-1">
+              <label class="text-xs text-slate-500 block mb-1">Nomor custom:</label>
               <input type="text" id="bc-test-phone" placeholder="08xxxxxxxxxx" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 focus:outline-none">
             </div>
             <button onclick="sendBCTest()" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-2 rounded-lg transition font-medium">Kirim Test</button>
           </div>
         </div>
       </section>
-      <div class="flex items-center justify-between mt-4">
+      <div class="flex items-center justify-between mt-5">
         <button onclick="bcGoToStep(1)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm px-5 py-2 rounded-lg transition font-medium flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
           Kembali
@@ -282,7 +288,7 @@
       <button onclick="loadBCHistory()" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-lg transition border border-slate-200">Refresh</button>
     </div>
     <div id="bc-history-list"></div>
-    <div id="bc-history-detail" class="hidden mt-4"></div>
+
   </div>
 
 </div>
@@ -306,7 +312,7 @@
 <div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
 
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v=1774808945"></script>
+<script src="/static/admin-common.js?v=1774851000"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() { initBroadcast(); });
 </script>

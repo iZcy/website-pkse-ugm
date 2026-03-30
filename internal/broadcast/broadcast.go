@@ -203,8 +203,12 @@ func Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		storedMsg := body.Message
+		if len(body.Messages) > 0 {
+			storedMsg = body.Messages[0]
+		}
 		blog := db.BroadcastLog{
-			Message:        body.Message,
+			Message:        storedMsg,
 			TotalReceivers: len(body.Phones),
 			SentBy:         username,
 		}
@@ -337,7 +341,7 @@ func sendPerContact(blogID primitive.ObjectID, phones []string, messages []strin
 	for i, phone := range phones {
 		msg := messages[i]
 		singleBody, _ := json.Marshal(map[string]any{
-			"number":  phone,
+			"to":      phone,
 			"message": msg,
 		})
 		resp, err := proxyToWA(http.MethodPost, "/send", strings.NewReader(string(singleBody)))
