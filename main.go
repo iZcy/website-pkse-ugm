@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"os"
 
 	"webapp/internal/admin"
@@ -35,6 +36,15 @@ func main() {
 
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fs))
+
+	// GridFS uploads - served from MongoDB
+	mux.HandleFunc("/uploads/", cms.ServeUpload)
+
+	// Redirect legacy /static/uploads/ URLs to /uploads/
+	mux.HandleFunc("/static/uploads/", func(w http.ResponseWriter, r *http.Request) {
+		newURL := "/uploads/" + strings.TrimPrefix(r.URL.Path, "/static/uploads/")
+		http.Redirect(w, r, newURL, http.StatusMovedPermanently)
+	})
 
 	h := handlers.New()
 

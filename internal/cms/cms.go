@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -713,16 +712,43 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 	base := strings.TrimSuffix(filepath.Base(header.Filename), ext)
 	safeName := fmt.Sprintf("%d_%s%s", time.Now().UnixMilli(), sanitizeUploadName(base), ext)
 
-	os.MkdirAll("./static/uploads", 0755)
-	dst, err := os.Create("./static/uploads/" + safeName)
+	data, err := io.ReadAll(file)
 	if err != nil {
-		writeJSON(w, 500, map[string]string{"error": "cannot create file"})
+		writeJSON(w, 500, map[string]string{"error": "cannot read file"})
 		return
 	}
-	defer dst.Close()
-	io.Copy(dst, file)
+	contentType := header.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
 
-	writeJSON(w, 200, map[string]string{"url": "/static/uploads/" + safeName})
+	_, err = db.SaveFileToGridFS(safeName, data, contentType)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": "upload failed: " + err.Error()})
+		return
+	}
+
+	writeJSON(w, 200, map[string]string{"url": "/uploads/" + safeName})
+}
+
+func ServeUpload(w http.ResponseWriter, r *http.Request) {
+	filename := strings.TrimPrefix(r.URL.Path, "/uploads/")
+	filename = strings.Trim(filename, "/ ")
+	if filename == "" {
+		http.NotFound(w, r)
+		return
+	}
+	data, contentType, err := db.GetFileFromGridFS(filename)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
+	w.Write(data)
 }
 
 func sanitizeUploadName(s string) string {

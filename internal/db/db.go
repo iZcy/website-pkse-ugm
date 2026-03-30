@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"bytes"
 	"fmt"
 	"os"
 	"time"
@@ -9,11 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/gridfs"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var client *mongo.Client
 var database *mongo.Database
+
+func DB() *mongo.Database {
+	return database
+}
 
 func Connect() error {
 	uri := os.Getenv("MONGODB_URI")
@@ -1268,3 +1274,41 @@ func DeleteBroadcastSession(id string) error {
 	return err
 }
 
+
+
+// GridFS
+
+func SaveFileToGridFS(filename string, data []byte, contentType string) (primitive.ObjectID, error) {
+	bucket, err := gridfs.NewBucket(database, options.GridFSBucket().SetName("uploads"))
+	if err != nil {
+		return primitive.NilObjectID, fmt.Errorf("gridfs bucket: %w", err)
+	}
+	uploadOpts := options.GridFSUpload().SetMetadata(bson.M{
+		"content_type": contentType,
+		"uploaded_at":  time.Now(),
+	})
+	id, err := bucket.UploadFromStream(filename, bytes.NewReader(data), uploadOpts)
+	if err != nil {
+		return primitive.NilObjectID, fmt.Errorf("gridfs upload: %w", err)
+	}
+	return id, nil
+}
+
+func GetFileFromGridFS(filename string) ([]byte, string, error) {
+	bucket, err := gridfs.NewBucket(database, options.GridFSBucket().SetName("uploads"))
+	if err != nil {
+		return nil, "", fmt.Errorf("gridfs bucket: %w", err)
+	}
+	var buf bytes.Buffer
+	_, err = bucket.DownloadToStreamByName(filename, &buf)
+	if err != nil {
+		return nil, "", err
+	}
+	var fileDoc bson.M
+	_ = bucket.GetFilesCollection().FindOne(nil, bson.M{"filename": filename}).Decode(&fileDoc)
+	ct := ""
+	if meta, ok := fileDoc["metadata"].(bson.M); ok {
+		ct, _ = meta["content_type"].(string)
+	}
+	return buf.Bytes(), ct, nil
+}
