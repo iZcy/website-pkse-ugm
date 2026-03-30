@@ -52,18 +52,22 @@
 </div>
 
 <script>
+function noDataMsg(el) {
+  el.innerHTML = '<div class="flex items-center justify-center min-h-[220px]"><div class="text-center"><div class="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg></div><p class="text-gray-400 text-sm font-medium">Belum ada data untuk statistik ini.</p></div></div>';
+}
+
 function normalizeLegacySeries(raw) {
   return String(raw || '')
     .split(',')
-    .map(part => part.trim())
+    .map(function(part) { return part.trim(); })
     .filter(Boolean)
-    .map(part => {
-      const chunks = part.split(':');
+    .map(function(part) {
+      var chunks = part.split(':');
       if (chunks.length < 2) return null;
-      const label = chunks[0].trim();
-      const value = Number(chunks.slice(1).join(':').trim());
+      var label = chunks[0].trim();
+      var value = Number(chunks.slice(1).join(':').trim());
       if (!label || Number.isNaN(value)) return null;
-      return { label, value };
+      return { label: label, value: value };
     })
     .filter(Boolean);
 }
@@ -73,21 +77,21 @@ function parseRaw(raw) {
   try {
     return JSON.parse(raw);
   } catch (_) {
-    const legacy = normalizeLegacySeries(raw);
+    var legacy = normalizeLegacySeries(raw);
     if (legacy.length) return legacy;
     return raw;
   }
 }
 
 function statColorPalette(size) {
-  const colors = ['#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd', '#2563eb', '#38bdf8', '#0ea5e9', '#0284c7'];
-  const out = [];
-  for (let i = 0; i < size; i++) out.push(colors[i % colors.length]);
+  var colors = ['#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd', '#2563eb', '#38bdf8', '#0ea5e9', '#0284c7'];
+  var out = [];
+  for (var i = 0; i < size; i++) out.push(colors[i % colors.length]);
   return out;
 }
 
 function ensureCanvas(el) {
-  const canvas = document.createElement('canvas');
+  var canvas = document.createElement('canvas');
   canvas.className = 'w-full h-[280px]';
   el.innerHTML = '';
   el.appendChild(canvas);
@@ -97,78 +101,66 @@ function ensureCanvas(el) {
 function asLabelValueArray(parsed) {
   if (!Array.isArray(parsed)) return [];
   return parsed
-    .map(item => ({
-      label: String(item?.label ?? item?.name ?? ''),
-      value: Number(item?.value)
-    }))
-    .filter(item => item.label && !Number.isNaN(item.value));
+    .map(function(item) {
+      return {
+        label: String(item && (item.label || item.name) || ''),
+        value: Number(item && item.value)
+      };
+    })
+    .filter(function(item) { return item.label && !Number.isNaN(item.value); });
 }
 
 function renderChart(el, chartType, data, options) {
-  const ctx = ensureCanvas(el);
+  var ctx = ensureCanvas(el);
   new Chart(ctx, {
     type: chartType,
-    data,
+    data: data,
     options: Object.assign({ responsive: true, maintainAspectRatio: false }, options || {})
   });
 }
 
 function renderKPI(el, raw) {
-  el.innerHTML = `<div class="h-full min-h-[220px] flex items-center justify-center text-6xl font-black text-brand-600">${raw || '-'}</div>`;
+  if (!raw) { noDataMsg(el); return; }
+  el.innerHTML = '<div class="h-full min-h-[220px] flex items-center justify-center text-6xl font-black text-brand-600">' + raw + '</div>';
 }
 
 function renderTable(el, parsed) {
-  if (!Array.isArray(parsed) || !parsed.length || typeof parsed[0] !== 'object') {
-    el.innerHTML = '<div class="text-sm text-gray-400">Data tabel tidak valid.</div>';
-    return;
-  }
-  const keys = Object.keys(parsed[0]);
-  const th = keys.map(k => `<th class="px-3 py-2 text-left text-xs uppercase tracking-wide text-gray-500">${k}</th>`).join('');
-  const rows = parsed.map(row => `<tr class="border-t border-gray-100">${keys.map(k => `<td class="px-3 py-2 text-sm text-gray-700">${row[k] ?? ''}</td>`).join('')}</tr>`).join('');
-  el.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full bg-white border border-gray-100 rounded-xl"><thead><tr>${th}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  if (!parsed || !Array.isArray(parsed) || !parsed.length || typeof parsed[0] !== 'object') { noDataMsg(el); return; }
+  var keys = Object.keys(parsed[0]);
+  var th = keys.map(function(k) { return '<th class="px-3 py-2 text-left text-xs uppercase tracking-wide text-gray-500">' + k + '</th>'; }).join('');
+  var rows = parsed.map(function(row) { return '<tr class="border-t border-gray-100">' + keys.map(function(k) { return '<td class="px-3 py-2 text-sm text-gray-700">' + (row[k] || '') + '</td>'; }).join('') + '</tr>'; }).join('');
+  el.innerHTML = '<div class="overflow-x-auto"><table class="min-w-full bg-white border border-gray-100 rounded-xl"><thead><tr>' + th + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 }
 
 function renderHeatmap(el, parsed) {
-  const arr = asLabelValueArray(parsed);
-  if (!arr.length) {
-    el.innerHTML = '<div class="text-sm text-gray-400">Data heatmap tidak valid.</div>';
-    return;
-  }
-  const max = Math.max(...arr.map(x => x.value), 1);
-  el.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${arr.map(item => {
-    const alpha = Math.max(0.15, item.value / max);
-    return `<div class="rounded-lg p-3 border border-blue-100" style="background-color: rgba(37,99,235,${alpha});">
-      <p class="text-xs text-white/90 font-semibold truncate">${item.label}</p>
-      <p class="text-lg font-black text-white mt-1">${item.value}</p>
-    </div>`;
-  }).join('')}</div>`;
+  var arr = asLabelValueArray(parsed);
+  if (!arr.length) { noDataMsg(el); return; }
+  var max = Math.max.apply(null, arr.map(function(x) { return x.value; }).concat([1]));
+  el.innerHTML = '<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">' + arr.map(function(item) {
+    var alpha = Math.max(0.15, item.value / max);
+    return '<div class="rounded-lg p-3 border border-blue-100" style="background-color: rgba(37,99,235,' + alpha + ');"><p class="text-xs text-white/90 font-semibold truncate">' + item.label + '</p><p class="text-lg font-black text-white mt-1">' + item.value + '</p></div>';
+  }).join('') + '</div>';
 }
 
 function renderFunnel(el, parsed) {
-  const arr = asLabelValueArray(parsed);
-  if (!arr.length) {
-    el.innerHTML = '<div class="text-sm text-gray-400">Data funnel tidak valid.</div>';
-    return;
-  }
-  const max = Math.max(...arr.map(x => x.value), 1);
-  el.innerHTML = `<div class="space-y-2">${arr.map(item => {
-    const width = Math.max(24, Math.round((item.value / max) * 100));
-    return `<div class="mx-auto rounded-lg px-3 py-2 text-white text-sm font-semibold text-center" style="width:${width}%; background: linear-gradient(90deg,#2563eb,#60a5fa);">${item.label} (${item.value})</div>`;
-  }).join('')}</div>`;
+  var arr = asLabelValueArray(parsed);
+  if (!arr.length) { noDataMsg(el); return; }
+  var max = Math.max.apply(null, arr.map(function(x) { return x.value; }).concat([1]));
+  el.innerHTML = '<div class="space-y-2">' + arr.map(function(item) {
+    var width = Math.max(24, Math.round((item.value / max) * 100));
+    return '<div class="mx-auto rounded-lg px-3 py-2 text-white text-sm font-semibold text-center" style="width:' + width + '%; background: linear-gradient(90deg,#2563eb,#60a5fa);">' + item.label + ' (' + item.value + ')</div>';
+  }).join('') + '</div>';
 }
 
 function renderStandardSeries(el, type, parsed) {
-  const arr = asLabelValueArray(parsed);
-  if (!arr.length) {
-    el.innerHTML = '<div class="text-sm text-gray-400">Data chart belum valid.</div>';
-    return;
-  }
-  const labels = arr.map(x => x.label);
-  const values = arr.map(x => x.value);
-  const colors = statColorPalette(values.length);
-  const isArea = type === 'area';
+  var arr = asLabelValueArray(parsed);
+  if (!arr.length) { noDataMsg(el); return; }
+  var labels = arr.map(function(x) { return x.label; });
+  var values = arr.map(function(x) { return x.value; });
+  var colors = statColorPalette(values.length);
+  var isArea = type === 'area';
 
-  let chartType = 'bar';
+  var chartType = 'bar';
   if (type === 'line' || type === 'area') chartType = 'line';
   if (type === 'pie') chartType = 'pie';
   if (type === 'doughnut') chartType = 'doughnut';
@@ -176,7 +168,7 @@ function renderStandardSeries(el, type, parsed) {
   if (type === 'radar') chartType = 'radar';
 
   renderChart(el, chartType, {
-    labels,
+    labels: labels,
     datasets: [{
       label: 'Nilai',
       data: values,
@@ -188,16 +180,13 @@ function renderStandardSeries(el, type, parsed) {
     }]
   }, {
     plugins: { legend: { display: chartType !== 'bar' && chartType !== 'line' } },
-    scales: ['pie', 'doughnut', 'polarArea', 'radar'].includes(chartType) ? {} : { y: { beginAtZero: true } }
+    scales: ['pie', 'doughnut', 'polarArea', 'radar'].indexOf(chartType) >= 0 ? {} : { y: { beginAtZero: true } }
   });
 }
 
 function renderScatter(el, parsed) {
-  const points = Array.isArray(parsed) ? parsed.map(p => ({ x: Number(p?.x), y: Number(p?.y) })).filter(p => !Number.isNaN(p.x) && !Number.isNaN(p.y)) : [];
-  if (!points.length) {
-    el.innerHTML = '<div class="text-sm text-gray-400">Data scatter tidak valid. Gunakan [{"x":1,"y":2}]</div>';
-    return;
-  }
+  var points = Array.isArray(parsed) ? parsed.map(function(p) { return { x: Number(p.x), y: Number(p.y) }; }).filter(function(p) { return !Number.isNaN(p.x) && !Number.isNaN(p.y); }) : [];
+  if (!points.length) { noDataMsg(el); return; }
   renderChart(el, 'scatter', {
     datasets: [{ label: 'Titik', data: points, backgroundColor: '#2563eb' }]
   }, {
@@ -206,13 +195,10 @@ function renderScatter(el, parsed) {
 }
 
 function renderBubble(el, parsed) {
-  const points = Array.isArray(parsed)
-    ? parsed.map(p => ({ x: Number(p?.x), y: Number(p?.y), r: Number(p?.r ?? 8) })).filter(p => !Number.isNaN(p.x) && !Number.isNaN(p.y) && !Number.isNaN(p.r))
+  var points = Array.isArray(parsed)
+    ? parsed.map(function(p) { return { x: Number(p.x), y: Number(p.y), r: Number(p.r || 8) }; }).filter(function(p) { return !Number.isNaN(p.x) && !Number.isNaN(p.y) && !Number.isNaN(p.r); })
     : [];
-  if (!points.length) {
-    el.innerHTML = '<div class="text-sm text-gray-400">Data bubble tidak valid. Gunakan [{"x":1,"y":2,"r":10}]</div>';
-    return;
-  }
+  if (!points.length) { noDataMsg(el); return; }
   renderChart(el, 'bubble', {
     datasets: [{ label: 'Bubble', data: points, backgroundColor: 'rgba(37,99,235,0.55)', borderColor: '#1d4ed8' }]
   }, {
@@ -222,15 +208,17 @@ function renderBubble(el, parsed) {
 
 function renderStackedOrGrouped(el, type, parsed) {
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.labels) && Array.isArray(parsed.series)) {
-    const colors = statColorPalette(parsed.series.length);
-    const datasets = parsed.series.map((s, idx) => ({
-      label: String(s?.name || `Seri ${idx + 1}`),
-      data: Array.isArray(s?.values) ? s.values.map(v => Number(v) || 0) : [],
-      backgroundColor: colors[idx]
-    }));
-    const stacked = type === 'stacked_bar';
-    renderChart(el, 'bar', { labels: parsed.labels, datasets }, {
-      scales: { x: { stacked }, y: { beginAtZero: true, stacked } }
+    var colors = statColorPalette(parsed.series.length);
+    var datasets = parsed.series.map(function(s, idx) {
+      return {
+        label: String(s.name || ('Seri ' + (idx + 1))),
+        data: Array.isArray(s.values) ? s.values.map(function(v) { return Number(v) || 0; }) : [],
+        backgroundColor: colors[idx]
+      };
+    });
+    var stacked = type === 'stacked_bar';
+    renderChart(el, 'bar', { labels: parsed.labels, datasets: datasets }, {
+      scales: { x: { stacked: stacked }, y: { beginAtZero: true, stacked: stacked } }
     });
     return;
   }
@@ -238,9 +226,11 @@ function renderStackedOrGrouped(el, type, parsed) {
 }
 
 function renderStatBlock(el) {
-  const type = (el.dataset.chartType || 'kpi').toLowerCase();
-  const raw = el.dataset.rawValue || '';
-  const parsed = parseRaw(raw);
+  var type = (el.dataset.chartType || 'kpi').toLowerCase();
+  var raw = el.dataset.rawValue || '';
+  var parsed = parseRaw(raw);
+
+  if (!raw && !parsed) { noDataMsg(el); return; }
 
   if (type === 'kpi' || type === 'kpi_card' || type === 'gauge') {
     renderKPI(el, raw);

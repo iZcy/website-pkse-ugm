@@ -7,191 +7,266 @@
 <body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
 {{template "navbar" .}}
 
-<div class="bg-brand-950 pt-28 pb-24 px-6 text-center text-white relative">
-  <div class="absolute inset-0 {{if and .PeriodAbout .PeriodAbout.CoverImageURL}}bg-[url('{{.PeriodAbout.CoverImageURL}}')]{{else}}bg-[url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80')]{{end}} bg-cover bg-center mix-blend-overlay opacity-10"></div>
+<!-- Hero with cover image background -->
+<div class="relative bg-brand-950 pt-28 pb-20 px-6 text-center text-white min-h-[340px] md:min-h-[280px] flex items-center justify-center">
+  {{if and .PeriodAbout .PeriodAbout.CoverImageURL}}
+  <img src="{{.PeriodAbout.CoverImageURL}}" alt="" class="absolute inset-0 w-full h-full object-cover opacity-30">
+  {{else}}
+  <div class="absolute inset-0 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 opacity-60"></div>
+  {{end}}
+  <div class="absolute inset-0 bg-black/40"></div>
   <div class="relative z-10 max-w-5xl mx-auto">
-    <a href="/periode" class="inline-flex items-center gap-2 text-brand-300 hover:text-white mb-5 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Sejarah</a>
+    <a href="/periode" class="inline-flex items-center gap-2 text-brand-300 hover:text-white mb-5 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      Kembali ke Sejarah
+    </a>
     <h1 class="text-4xl md:text-6xl font-black mb-4">Periode {{.Period.DisplayName}}</h1>
     {{if .Period.IsActive}}
-    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-500/20 border border-accent-500 font-bold text-accent-400 uppercase tracking-widest text-xs mb-5">
-      <span class="w-2 h-2 rounded-full bg-accent-400 animate-pulse"></span> Kepengurusan Aktif
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 border border-white font-bold text-white uppercase tracking-widest text-xs mb-5">
+      <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Kepengurusan Aktif
     </div>
     {{end}}
-    <div class="flex flex-wrap justify-center gap-2">
-      <a href="#tentang" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Latar Belakang</a>
-      <a href="#struktur" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Struktur</a>
-      {{if and .PeriodAbout (gt (len .PeriodAbout.Gallery) 0)}}<a href="#galeri" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Galeri</a>{{end}}
-      {{if .Articles}}<a href="#artikel" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Artikel</a>{{end}}
-      {{if .Stats}}<a href="#statistik" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Statistik</a>{{end}}
-      {{if or .UngroupedPrograms .DepartmentGroups}}<a href="#program" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold">Program</a>{{end}}
+    <div class="flex flex-wrap justify-center gap-2 mt-4">
+      <a href="#struktur" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/30 text-xs font-semibold transition">Struktur</a>
+      <a href="#rekam-jejak" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/3 text-xs font-semibold transition">Rekam Jejak</a>
+      {{if .Articles}}<a href="#artikel" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/3 text-xs font-semibold transition">Artikel</a>{{end}}
+      {{if .Stats}}<a href="#statistik" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/3 text-xs font-semibold transition">Statistik</a>{{end}}
+      {{if and .PeriodAbout (gt (len .PeriodAbout.Gallery) 0)}}<a href="#galeri" class="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/3 text-xs font-semibold transition">Galeri</a>{{end}}
     </div>
   </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-6 -mt-10 relative z-20 pb-16 space-y-6">
-  <section id="tentang" class="bg-white rounded-2xl p-5 md:p-7 shadow-lg border border-gray-100">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-      <div>
-        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3">Latar Belakang Periode</h2>
-        <div class="prose prose-sm max-w-none text-gray-700">
-          {{if and .PeriodAbout .PeriodAbout.Sejarah}}
-            {{safeHTML .PeriodAbout.Sejarah}}
+<!-- Struktur Organisasi -->
+{{if .Period.HierarchyImageURL}}
+<section id="struktur" class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Struktur Organisasi</h2>
+  <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm overflow-hidden">
+    <img src="{{.Period.HierarchyImageURL}}" alt="Struktur Organisasi" class="w-full h-auto object-contain rounded-xl">
+  </div>
+</section>
+{{end}}
+
+<!-- Rekam Jejak Kementerian -->
+{{if .DepartmentGroups}}
+<section id="rekam-jejak" class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Rekam Jejak Kementerian</h2>
+  <div class="space-y-6">
+    {{range .DepartmentGroups}}
+    {{if or .Members .Children}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <!-- Department Header -->
+      <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div class="flex items-center gap-3">
+          {{if .Department.IconURL}}
+          <img src="{{.Department.IconURL}}" alt="{{.Department.Name}}" class="w-10 h-10 rounded-lg object-cover">
           {{else}}
-            <p>Latar belakang periode ini belum ditambahkan.</p>
+          <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V15a3 3 0 00-3-3H8a3 3 0 00-3 3v6"/></svg>
           {{end}}
+          <div>
+            <h3 class="text-lg font-black text-gray-900">{{.Department.Name}}</h3>
+            {{if .Department.Description}}<p class="text-xs text-gray-500 mt-0.5">{{.Department.Description}}</p>{{end}}
+          </div>
         </div>
       </div>
-      <div>
-        {{if and .PeriodAbout .PeriodAbout.CoverImageURL}}
-        <div class="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
-          <img src="{{.PeriodAbout.CoverImageURL}}" alt="Cover Periode {{.Period.DisplayName}}" class="w-full h-64 md:h-72 object-cover">
-        </div>
-        {{else}}
-        <div class="rounded-2xl border border-gray-100 bg-gray-50 h-64 md:h-72 flex items-center justify-center text-gray-400">Cover periode belum ditambahkan.</div>
-        {{end}}
-      </div>
-    </div>
-  </section>
 
-  <section id="struktur" class="bg-white rounded-2xl p-5 md:p-7 shadow-sm border border-gray-100 text-center">
-    <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4">Struktur Organisasi</h2>
-    {{if .Period.HierarchyImageURL}}
-    <div class="rounded-xl overflow-hidden border border-gray-100 bg-gray-50 p-2 shadow-inner inline-block mx-auto max-w-full">
-      <img src="{{.Period.HierarchyImageURL}}" alt="Struktur Organisasi" class="max-w-full h-auto rounded-xl">
-    </div>
-    {{else}}
-    <div class="py-8 text-gray-400 bg-gray-50 rounded-xl border border-gray-100">Bagan struktur organisasi belum diperbarui.</div>
-    {{end}}
-  </section>
-
-  {{if and .PeriodAbout (gt (len .PeriodAbout.Gallery) 0)}}
-  <section id="galeri" class="bg-white rounded-2xl p-5 md:p-7 shadow-sm border border-gray-100">
-    <div class="flex items-end justify-between mb-4">
-      <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900">Galeri Periode</h2>
-      <p class="text-sm text-gray-500">Dokumentasi kegiatan dan momen periode</p>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {{range .PeriodAbout.Gallery}}
-      <figure class="rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
-        <img src="{{.ImageURL}}" alt="{{if .Title}}{{.Title}}{{else}}Galeri Periode{{end}}" class="w-full h-44 object-cover">
-        <figcaption class="p-3">
-          {{if .Title}}<p class="font-semibold text-gray-900 mb-1">{{.Title}}</p>{{end}}
-          {{if .Caption}}<p class="text-xs text-gray-600">{{.Caption}}</p>{{end}}
-        </figcaption>
-      </figure>
-      {{end}}
-    </div>
-  </section>
-  {{end}}
-
-  {{if .Articles}}
-  <section id="artikel">
-    <div class="flex items-end justify-between mb-4">
-      <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900">Artikel Periode</h2>
-      <a href="/artikel?period={{.Period.Label}}" class="text-brand-600 font-bold hover:text-brand-800">Lihat semua</a>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {{range .Articles}}
-      <article class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
-        {{if .CoverURL}}
-        <img src="{{.CoverURL}}" alt="{{.Title}}" class="w-full h-40 object-cover">
-        {{else}}
-        <div class="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-300"><i data-lucide="image" class="w-10 h-10"></i></div>
-        {{end}}
-        <div class="p-4">
-          <h3 class="font-bold text-base text-gray-900 mb-2 line-clamp-2">{{.Title}}</h3>
-          <p class="text-sm text-gray-500 line-clamp-2 mb-3">{{.Excerpt}}</p>
-          <a href="/artikel/{{.Slug}}" class="text-brand-600 font-semibold text-sm hover:text-brand-800 inline-flex items-center gap-1">Baca artikel <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
-        </div>
-      </article>
-      {{end}}
-    </div>
-  </section>
-  {{end}}
-
-  {{if .Stats}}
-  <section id="statistik" class="bg-white rounded-2xl p-5 md:p-7 border border-gray-100 shadow-sm">
-    <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900 mb-4">Statistik Periode</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {{range .Stats}}
-      <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-        <p class="text-xs uppercase tracking-wide font-semibold text-gray-500 mb-1">{{.Label}}</p>
-        <p class="text-2xl font-black text-brand-700 leading-tight">{{.Value}}</p>
-        {{if .Desc}}<p class="text-xs text-gray-500 mt-2">{{.Desc}}</p>{{end}}
-      </div>
-      {{end}}
-    </div>
-  </section>
-  {{end}}
-
-  {{if or .UngroupedPrograms .DepartmentGroups}}
-  <section id="program">
-    <h2 class="text-2xl md:text-3xl font-extrabold text-brand-900 mb-4">Program Per Kementerian</h2>
-    <div class="space-y-4">
-      {{range .DepartmentGroups}}
-        {{if or .Programs .Children}}
-        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 class="text-lg font-black text-gray-900 mb-3">{{.Department.Name}}</h3>
-          {{if .Programs}}
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {{range .Programs}}
-            <article class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-              {{if .ImageURL}}
-              <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-32 object-cover rounded-lg mb-2">
-              {{end}}
-              <h4 class="font-bold text-gray-900 mb-2">{{.Title}}</h4>
-              <p class="text-sm text-gray-600 line-clamp-3">{{.Description}}</p>
-            </article>
-            {{end}}
+      <!-- Members Grid -->
+      {{if .Members}}
+      <div class="px-5 pb-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {{range .Members}}
+          <div class="flex flex-col items-center text-center p-3 rounded-xl hover:bg-gray-50 transition group">
+            {{if .PhotoURL}}
+            <img src="{{.PhotoURL}}" alt="{{.FullName}}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white">
+            {{else}}
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brand-400 to-brand-300 flex items-center justify-center text-white text-xs font-bold">
+              {{substr .FullName 0 1}}{{end}}
+            </div>
+            <p class="text-xs font-semibold text-gray-800 mt-1 truncate">{{.FullName}}</p>
+            {{if .Position}}<p class="text-[10px] text-gray-500">{{.Position}}</p>{{end}}
           </div>
           {{end}}
-          {{if .Children}}
-          <div class="mt-4 pl-4 border-l-2 border-brand-200 space-y-3">
-            {{range .Children}}
-            <div>
-              <h4 class="text-base font-bold text-gray-800 mb-2">{{.Department.Name}}</h4>
-              {{if .Programs}}
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                {{range .Programs}}
-                <article class="rounded-xl border border-gray-100 bg-gray-50 p-3">
-                  {{if .ImageURL}}
-                  <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-24 object-cover rounded-lg mb-2">
-                  {{end}}
-                  <h5 class="font-bold text-gray-900 text-sm mb-1">{{.Title}}</h5>
-                  <p class="text-xs text-gray-600 line-clamp-2">{{.Description}}</p>
-                </article>
-                {{end}}
+        </div>
+      </div>
+      {{end}}
+
+      <!-- Children (Sub-Kementerian) -->
+      {{if .Children}}
+      <div class="px-5 pb-4 space-y-3">
+        {{range .Children}}
+        <div class="ml-4 border-l-2 border-brand-200 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            {{if .Department.IconURL}}
+            <img src="{{.Department.IconURL}}" alt="{{.Department.Name}}" class="w-7 h-7 rounded object-cover">
+            {{end}}
+            <h4 class="text-sm font-bold text-gray-800">{{.Department.Name}}</h4>
+          </div>
+
+          <!-- Sub members -->
+          {{if .Members}}
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-2">
+            {{range .Members}}
+            <div class="flex flex-col items-center text-center p-2 rounded-lg hover:bg-gray-50 transition">
+              {{if .PhotoURL}}
+              <img src="{{.PhotoURL}}" alt="{{.FullName}}" class="w-10 h-10 rounded-full object-cover ring-1 ring-white">
+              {{else}}
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-300 flex items-center justify-center text-white text-[9px]">
+                {{substr .FullName 0 1}}{{end}}
               </div>
-              {{end}}
+              <p class="text-[10px] font-semibold text-gray-800 mt-0.5 truncate">{{.FullName}}</p>
+              {{if .Position}}<p class="text-[9px] text-gray-500">{{.Position}}</p>{{end}}
             </div>
             {{end}}
           </div>
           {{end}}
-        </div>
-        {{end}}
-      {{end}}
 
-      {{if .UngroupedPrograms}}
-      <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-        <h3 class="text-lg font-black text-gray-900 mb-3">Program Lainnya</h3>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {{range .UngroupedPrograms}}
-          <article class="rounded-xl border border-gray-100 bg-gray-50 p-4">
-            {{if .ImageURL}}
-            <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-32 object-cover rounded-lg mb-2">
-            {{end}}
-            <h4 class="font-bold text-gray-900 mb-2">{{.Title}}</h4>
-            <p class="text-sm text-gray-600 line-clamp-3">{{.Description}}</p>
-          </article>
+          <!-- Sub programs (scrollable) -->
+          {{if .Programs}}
+          <details class="mb-1">
+            <summary class="cursor-pointer text-xs font-medium text-brand-600 hover:text-brand-800 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7-2z"/></svg>
+              Program Kerja ({{len .Programs}})
+            </summary>
+            <div class="max-h-60 overflow-y-auto space-y-2 pr-1">
+              {{range .Programs}}
+              <div class="flex items-start gap-2 p-2 rounded-lg bg-gray-50 text-xs">
+                {{if .ImageURL}}<img src="{{.ImageURL}}" alt="{{.Title}}" class="w-12 h-12 rounded object-cover flex-shrink-0">{{end}}
+                <div>
+                  <p class="font-bold text-gray-800">{{.Title}}</p>
+                  {{if .Description}}<p class="text-gray-500 line-clamp-2">{{.Description}}</p>{{end}}
+                </div>
+              </div>
+              {{end}}
+            </div>
+          </details>
           {{end}}
         </div>
+        {{end}}
       </div>
       {{end}}
-    </div>
-  </section>
-  {{end}}
-</div>
 
+      <!-- Parent department programs (scrollable) -->
+      {{if .Programs}}
+      <details class="mx-5">
+        <summary class="cursor-pointer text-xs font-medium text-brand-600 hover:text-brand-800 flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7-2z"/></svg>
+          Program Kerja ({{len .Programs}})
+        </summary>
+        <div class="max-h-60 overflow-y-auto space-y-2 p-1">
+          {{range .Programs}}
+          <div class="flex items-start gap-2 p-2 rounded-lg bg-gray-50 text-xs">
+            {{if .ImageURL}}<img src="{{.ImageURL}}" alt="{{.Title}}" class="w-12 h-12 rounded object-cover flex-shrink-0">{{end}}
+            <div>
+              <p class="font-bold text-gray-800">{{.Title}}</p>
+              {{if .Description}}<p class="text-gray-500 line-clamp-2">{{.Description}}</p>{{end}}
+            </div>
+          </div>
+          {{end}}
+        </div>
+      </details>
+      {{end}}
+    </div>
+    {{end}}
+    {{end}}
+  </div>
+</section>
+{{end}}
+
+<!-- Ungrouped Programs -->
+{{if .UngroupedPrograms}}
+<section class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Program Lainnya</h2>
+  <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {{range .UngroupedPrograms}}
+      <article class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+        {{if .ImageURL}}
+        <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-32 object-cover rounded-lg mb-2">
+        {{end}}
+        <h4 class="font-bold text-gray-900 mb-2">{{.Title}}</h4>
+        <p class="text-sm text-gray-600 line-clamp-3">{{.Description}}</p>
+      </article>
+      {{end}}
+    </div>
+  </div>
+</section>
+{{end}}
+
+{{if .Articles}}
+<section id="artikel" class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Artikel</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {{range .Articles}}
+    <a href="/artikel/{{.Slug}}" class="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+      {{if .ImageURL}}
+      <div class="aspect-video overflow-hidden">
+        <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+      </div>
+      {{end}}
+      <div class="p-5">
+        <h3 class="font-bold text-gray-900 group-hover:text-brand-600 transition-colors mb-2">{{.Title}}</h3>
+        <p class="text-sm text-gray-600 line-clamp-2">{{.Description}}</p>
+      </div>
+    </a>
+    {{end}}
+  </div>
+</section>
+{{end}}
+
+{{if .Stats}}
+<section id="statistik" class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Statistik</h2>
+  <div class="space-y-6">
+    {{range $idx, $stat := .Stats}}
+    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h3 class="text-xl font-black text-brand-900">{{$stat.Label}}</h3>
+          {{if $stat.Desc}}<p class="text-sm text-gray-500 mt-1">{{$stat.Desc}}</p>{{end}}
+        </div>
+        <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full bg-brand-50 text-brand-600">{{$stat.ChartType}}</span>
+      </div>
+      <div id="pd-stat-{{$idx}}" data-chart-type="{{$stat.ChartType}}" data-raw-value="{{$stat.Value}}" class="min-h-[180px]"></div>
+    </div>
+    {{end}}
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+  function normalizeLegacySeries(raw){return String(raw||'').split(',').map(p=>p.trim()).filter(Boolean).map(p=>{const c=p.split(':');if(c.length<2)return null;return{label:c[0].trim(),value:Number(c.slice(1).join(':').trim())}}).filter(Boolean)}
+  function parseRaw(r){if(!r)return null;try{return JSON.parse(r)}catch(_){const l=normalizeLegacySeries(r);if(l.length)return l;return r}}
+  function statColors(n){const p=['#2563eb','#7c3aed','#f59e0b','#10b981','#8b5cf6','#06b6d4','#ea580c','#dc2626'];return Array.from({length:n},(_,i)=>p[i%p.length])}
+  function renderC(el,t,d,o){new Chart(el,{type:t,data:d,options:o||{}})}
+  document.querySelectorAll('[id^="pd-stat-"]').forEach(function(el){
+    const t=(el.dataset.chartType||'kpi').toLowerCase();
+    const raw=el.dataset.rawValue||'';
+    const parsed=parseRaw(raw);
+    if(t==='kpi'||t==='kpi_card'){el.innerHTML='<div class="text-4xl font-black text-brand-600">'+(raw||'-')+'</div>';return}
+    if(t==='table'&&Array.isArray(parsed)){el.innerHTML='<table class="w-full text-sm"><thead><tr>'+parsed.map(x=>'<th class="px-3 py-2 text-left font-bold">'+x.label+'</th>').join('')+'</tr></thead><tbody><tr>'+parsed.map(x=>'<td class="px-3 py-2">'+x.value+'</td>').join('')+'</tr></tbody></table>';return}
+    if(!parsed||!parsed.length){el.innerHTML='<p class="text-sm text-gray-400">Belum ada data.</p>';return}
+    const arr=Array.isArray(parsed)?parsed.map(x=>({label:x.label,value:Number(x.value)||0})):[];const labels=arr.map(x=>x.label),values=arr.map(x=>x.value),colors=statColors(values.length);
+    let ct='bar';if(t==='line'||t==='area')ct='line';if(t==='pie')ct='pie';if(t==='doughnut')ct='doughnut';if(t==='polar')ct='polarArea';if(t==='radar')ct='radar';
+    renderC(el,ct,{labels,datasets:[{label:'Nilai',data:values,backgroundColor:ct==='line'?'rgba(37,99,235,0.2)':colors,borderColor:ct==='line'?'#1d4ed8':colors,borderWidth:2,fill:t==='area',tension:.35}]},{plugins:{legend:{display:ct!=='bar'&&ct!=='line'}},scales:['pie','doughnut','polarArea','radar'].includes(ct)?{}:{y:{beginAtZero:true}}});
+  });
+  </script>
+</section>
+{{end}}
+
+{{if and .PeriodAbout (gt (len .PeriodAbout.Gallery) 0)}}
+<section id="galeri" class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Galeri</h2>
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    {{range .PeriodAbout.Gallery}}
+    <div class="aspect-square rounded-2xl overflow-hidden group cursor-pointer">
+      <img src="{{.URL}}" alt="Gallery" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+    </div>
+    {{end}}
+  </div>
+</section>
+{{end}}
+
+<script>
+(function(){var bg=document.getElementById('heroCoverBg');if(bg&&bg.dataset.cover){bg.style.backgroundImage='url('+bg.dataset.cover+')'}})();
+</script>
 {{template "footer" .}}
 </body>
 </html>

@@ -94,7 +94,7 @@
     <form id="formKementerian" class="p-6 space-y-4">
       <input type="hidden" id="dept-id">
       <div><label class="block text-sm font-semibold text-slate-700 mb-1">Parent Kementerian</label><select id="dept-parent" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"><option value="">Tidak ada (Kementerian Utama)</option></select><p class="text-xs text-slate-500 mt-1">Pilih parent jika ini adalah sub-kementerian</p></div>
-      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Nama Kementerian</label><input type="text" id="dept-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></div>
+      <div><label class="block text-sm font-semibold text-slate-700 mb-1">Nama</label><input type="text" id="dept-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></div>
       <div><label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi</label><textarea id="dept-desc" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea></div>
       <div><label class="block text-sm font-semibold text-slate-700 mb-2">Icon Kementerian</label><div id="picker-dept-icon"></div></div>
       <div class="flex gap-3 pt-2"><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button><button type="button" onclick="closeModal('modalKementerian')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button></div></form></div></div>
@@ -107,7 +107,7 @@
       <div><label class="block text-sm font-semibold text-slate-700 mb-1">Jabatan</label><input type="text" id="assign-member-position" placeholder="Contoh: Koordinator" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"></div>
       <div class="flex gap-3 pt-2"><button onclick="submitAssignMember()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Assign</button><button type="button" onclick="closeModal('modalAssignMember')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button></div></div></div></div>
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v10-1774875194"></script>
+<script src="/static/admin-common.js?v14-1774882400"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() { loadKementerian(); });
 document.getElementById('formKementerian')?.addEventListener('submit', async e => {

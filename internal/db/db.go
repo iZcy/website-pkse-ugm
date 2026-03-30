@@ -373,7 +373,7 @@ func DeletePeriod(label string) error {
 func PeriodHasData(label string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	collections := []string{"period_abouts", "announcements", "articles", "departments", "programs", "stats"}
+	collections := []string{"announcements", "articles", "departments", "programs", "stats"}
 	for _, c := range collections {
 		count, err := database.Collection(c).CountDocuments(ctx, bson.M{"period_label": label})
 		if err != nil {

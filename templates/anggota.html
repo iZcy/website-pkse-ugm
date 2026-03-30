@@ -31,7 +31,7 @@
         {{end}}
       </select>
       <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center gap-2">
-        <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <input id="searchInput" type="text" placeholder="Cari nama..." class="bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none w-40">
       </div>
     </div>
@@ -41,8 +41,8 @@
 <section class="py-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-6">
     {{if .Members}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {{range .Members}}
+    <div id="memberGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {{range $i, $m := .Members}}
       <article class="member-card bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer"
         data-name="{{.FullName}}"
         data-nickname="{{.Nickname}}"
@@ -57,9 +57,11 @@
         <div class="p-5">
           <div class="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden shadow-sm mb-3">
             {{if .PhotoURL}}
-            <img src="{{.PhotoURL}}" alt="{{.FullName}}" class="w-full h-full object-cover">
+            <img src="{{.PhotoURL}}" alt="{{.FullName}}" class="w-full h-full object-cover" loading="lazy">
             {{else}}
-            <div class="w-full h-full flex items-center justify-center text-gray-300"><i data-lucide="user" class="w-7 h-7"></i></div>
+            <div class="w-full h-full flex items-center justify-center text-gray-300">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
             {{end}}
           </div>
           <h3 class="font-bold text-lg text-gray-900">{{.FullName}}</h3>
@@ -68,6 +70,13 @@
         </div>
       </article>
       {{end}}
+    </div>
+    <div id="scrollSentinel" class="h-4"></div>
+    <div id="loadMoreIndicator" class="hidden text-center py-8">
+      <div class="inline-flex items-center gap-2 text-gray-400 text-sm">
+        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+        Memuat anggota...
+      </div>
     </div>
     <div id="emptyFilterMsg" class="hidden flex items-center justify-center min-h-[300px]">
       <div class="text-center">
@@ -95,7 +104,7 @@
     <div class="p-6 md:p-8">
       <div class="flex items-end gap-4 mb-6">
         <div id="memberModalPhotoWrap" class="w-20 h-20 rounded-2xl bg-gray-100 overflow-hidden shadow-sm flex-shrink-0 flex items-center justify-center">
-          <i data-lucide="user" class="w-8 h-8 text-gray-300"></i>
+          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         </div>
         <div>
           <h3 id="memberModalName" class="text-2xl font-black text-gray-900"></h3>
@@ -112,72 +121,128 @@
 </div>
 
 <script>
-function parseTrackRecords(raw) {
-  if (!raw) return [];
-  return raw.split(';;').map(c => c.trim()).filter(Boolean).map(c => {
-    const [period, subPeriod, position] = c.split('|');
-    return { period: period || '-', subPeriod: subPeriod || '-', position: position || '' };
-  }).sort((a, b) => String(a.period).localeCompare(String(b.period)));
-}
+(function() {
+  var BATCH = 24;
+  var allCards = [];
+  var filteredCards = [];
+  var shownCount = 0;
+  var loading = false;
 
-function openMemberModal(card) {
-  const photo = card.dataset.photo || '';
-  document.getElementById('memberModalName').textContent = card.dataset.name || '-';
-  document.getElementById('memberModalMeta').textContent = [card.dataset.program, card.dataset.fakultas, card.dataset.angkatan].filter(Boolean).join(' \u2022 ');
-  const photoWrap = document.getElementById('memberModalPhotoWrap');
-  if (photo) {
-    photoWrap.innerHTML = '<img src="' + photo + '" class="w-full h-full object-cover">';
-  } else {
-    photoWrap.innerHTML = '<i data-lucide="user" class="w-8 h-8 text-gray-300"></i>';
-    if (window.lucide) lucide.createIcons();
+  function init() {
+    allCards = Array.from(document.querySelectorAll('.member-card'));
+    allCards.forEach(function(card) { card.style.display = 'none'; });
+    filteredCards = allCards.slice();
+    shownCount = 0;
+    showNextBatch();
   }
-  const records = parseTrackRecords(card.dataset.trackRecords);
-  const posFallback = card.dataset.position || 'Anggota';
-  const trackWrap = document.getElementById('memberModalTrack');
-  if (!records.length) {
-    trackWrap.innerHTML = '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-400">Belum ada track record periode.</div>';
-  } else {
-    trackWrap.innerHTML = records.map(r => '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700"><span class="font-semibold text-gray-900">Periode ' + r.period + '</span> \u2022 ' + r.subPeriod + ' \u2022 ' + (r.position || posFallback) + '</div>').join('');
+
+  function showNextBatch() {
+    var end = Math.min(shownCount + BATCH, filteredCards.length);
+    for (var i = shownCount; i < end; i++) {
+      filteredCards[i].style.display = '';
+    }
+    shownCount = end;
+    updateEmptyState();
+    if (shownCount >= filteredCards.length) {
+      var indicator = document.getElementById('loadMoreIndicator');
+      if (indicator) indicator.classList.add('hidden');
+    }
   }
-  document.getElementById('memberModal').classList.remove('hidden');
-}
 
-function closeMemberModal() {
-  document.getElementById('memberModal').classList.add('hidden');
-}
+  function updateEmptyState() {
+    var emptyEl = document.getElementById('emptyFilterMsg');
+    if (!emptyEl) return;
+    if (filteredCards.length === 0) {
+      emptyEl.style.display = '';
+    } else {
+      emptyEl.style.display = 'none';
+    }
+  }
 
-document.querySelectorAll('.member-card').forEach(card => {
-  card.addEventListener('click', () => openMemberModal(card));
-});
+  function applyFilter() {
+    var dept = document.getElementById('deptFilter').value.toLowerCase();
+    var query = document.getElementById('searchInput').value.toLowerCase().trim();
 
+    filteredCards = allCards.filter(function(card) {
+      var cardDept = (card.dataset.department || '').toLowerCase();
+      var cardName = (card.dataset.name || '').toLowerCase();
+      var cardNick = (card.dataset.nickname || '').toLowerCase();
+      var matchDept = !dept || cardDept === dept;
+      var matchSearch = !query || cardName.indexOf(query) >= 0 || cardNick.indexOf(query) >= 0;
+      return matchDept && matchSearch;
+    });
 
-function filterMembers() {
-  const dept = document.getElementById('deptFilter').value.toLowerCase();
-  const query = document.getElementById('searchInput').value.toLowerCase().trim();
-  let visibleCount = 0;
+    allCards.forEach(function(card) { card.style.display = 'none'; });
+    shownCount = 0;
+    showNextBatch();
+  }
 
-  document.querySelectorAll('.member-card').forEach((card) => {
-    const cardDept = (card.dataset.department || '').toLowerCase();
-    const cardName = (card.dataset.name || '').toLowerCase();
-    const cardNick = (card.dataset.nickname || '').toLowerCase();
-
-    const matchDept = !dept || cardDept === dept;
-    const matchSearch = !query || cardName.includes(query) || cardNick.includes(query);
-
-    card.style.display = (matchDept && matchSearch) ? '' : 'none';
-    if (matchDept && matchSearch) visibleCount++;
+  var debounceTimer;
+  document.getElementById('deptFilter').addEventListener('change', applyFilter);
+  document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(applyFilter, 200);
   });
 
-  const emptyEl = document.getElementById('emptyFilterMsg');
-  if (emptyEl) {
-    emptyEl.style.display = visibleCount === 0 ? '' : 'none';
+  // Intersection Observer for infinite scroll
+  var sentinel = document.getElementById('scrollSentinel');
+  if (sentinel && 'IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting && shownCount < filteredCards.length && !loading) {
+        loading = true;
+        var indicator = document.getElementById('loadMoreIndicator');
+        if (indicator) indicator.classList.remove('hidden');
+        setTimeout(function() {
+          showNextBatch();
+          loading = false;
+        }, 150);
+      }
+    }, { rootMargin: '200px' });
+    observer.observe(sentinel);
   }
-}
 
-document.getElementById('deptFilter').addEventListener('change', filterMembers);
-document.getElementById('searchInput').addEventListener('input', filterMembers);
+  // Modal
+  window.parseTrackRecords = function(raw) {
+    if (!raw) return [];
+    return raw.split(';;').map(function(c) { return c.trim(); }).filter(Boolean).map(function(c) {
+      var parts = c.split('|');
+      return { period: parts[0] || '-', subPeriod: parts[1] || '-', position: parts[2] || '' };
+    }).sort(function(a, b) { return String(a.period).localeCompare(String(b.period)); });
+  };
 
+  window.openMemberModal = function(card) {
+    var photo = card.dataset.photo || '';
+    document.getElementById('memberModalName').textContent = card.dataset.name || '-';
+    document.getElementById('memberModalMeta').textContent = [card.dataset.program, card.dataset.fakultas, card.dataset.angkatan].filter(Boolean).join(' \u2022 ');
+    var photoWrap = document.getElementById('memberModalPhotoWrap');
+    if (photo) {
+      photoWrap.innerHTML = '<img src="' + photo + '" class="w-full h-full object-cover">';
+    } else {
+      photoWrap.innerHTML = '<svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>';
+    }
+    var records = parseTrackRecords(card.dataset.trackRecords);
+    var posFallback = card.dataset.position || 'Anggota';
+    var trackWrap = document.getElementById('memberModalTrack');
+    if (!records.length) {
+      trackWrap.innerHTML = '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-400">Belum ada track record periode.</div>';
+    } else {
+      trackWrap.innerHTML = records.map(function(r) { return '<div class="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-700"><span class="font-semibold text-gray-900">Periode ' + r.period + '</span> \u2022 ' + r.subPeriod + ' \u2022 ' + (r.position || posFallback) + '</div>'; }).join('');
+    }
+    document.getElementById('memberModal').classList.remove('hidden');
+  };
 
+  window.closeMemberModal = function() {
+    document.getElementById('memberModal').classList.add('hidden');
+  };
+
+  document.getElementById('memberGrid').addEventListener('click', function(e) {
+    var card = e.target.closest('.member-card');
+    if (card) openMemberModal(card);
+  });
+
+  // Initialize
+  if (allCards.length) init();
+})();
 </script>
 
 {{template "footer" .}}

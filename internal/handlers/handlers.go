@@ -27,6 +27,17 @@ func New() *Handler {
 		"sub": func(a, b int) int { return a - b },
 		"mod": func(a, b int) int { return a % b },
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
+		"substr": func(s string, start, length int) string {
+			runes := []rune(s)
+			if start >= len(runes) {
+				return ""
+			}
+			end := start + length
+			if end > len(runes) {
+				end = len(runes)
+			}
+			return string(runes[start:end])
+		},
 	}
 	tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 	return &Handler{tmpl: tmpl}

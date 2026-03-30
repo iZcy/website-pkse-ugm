@@ -527,7 +527,16 @@ func Periods(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		writeJSON(w, 200, periods)
+		type periodWithFlag struct {
+			db.Period
+			HasData bool `json:"has_data"`
+		}
+		result := make([]periodWithFlag, len(periods))
+		for i, p := range periods {
+			hd, _ := db.PeriodHasData(p.Label)
+			result[i] = periodWithFlag{Period: p, HasData: hd}
+		}
+		writeJSON(w, 200, result)
 
 	case http.MethodPost:
 		if !requireSuperAdmin(w, r) {

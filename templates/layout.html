@@ -64,7 +64,7 @@
 {{end}}
 
 {{define "navbar"}}
-<nav x-data="{ mobileMenuOpen: false, scrolled: false, get isDark() { return (window.location.pathname === '/' || window.location.pathname.startsWith('/tentang-kami')) && !this.scrolled && !this.mobileMenuOpen; } }" @scroll.window="scrolled = (window.pageYOffset > 20)" :class="{ 'glass-nav shadow-sm': scrolled, 'bg-transparent': !scrolled, 'glass-nav': mobileMenuOpen }" class="fixed w-full z-50 transition-all duration-300 top-0">
+<nav x-data="{ mobileMenuOpen: false, scrolled: false, get isDark() { return (window.location.pathname === '/' || window.location.pathname.startsWith('/tentang-kami') || window.location.pathname.match(/^\/periode\/[^/]+\/?$/)) && !this.scrolled && !this.mobileMenuOpen; } }" @scroll.window="scrolled = (window.pageYOffset > 20)" :class="{ 'glass-nav shadow-sm': scrolled, 'bg-transparent': !scrolled, 'glass-nav': mobileMenuOpen }" class="fixed w-full z-50 transition-all duration-300 top-0">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-20">
       <div class="flex-shrink-0 flex items-center">

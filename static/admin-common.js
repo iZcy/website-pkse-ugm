@@ -797,6 +797,7 @@ document.getElementById('btn-save-gallery')?.addEventListener('click', async () 
 
 // ── DEPARTEMEN ───────────────────────────────────────────────────────────────
 let deptSortInstance = null;
+let periodSortInstance = null;
 let memberSortInstances = [];
 let deptCache = [];
 let memberCache = [];
@@ -806,6 +807,17 @@ function getMembersByDept(deptName) {
     .filter(m => (m.department || '') === deptName)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 }
+
+function hasChildMembers(dept) {
+  if (!dept._children || !dept._children.length) return false;
+  for (var i = 0; i < dept._children.length; i++) {
+    var child = dept._children[i];
+    if (getMembersByDept(child.name).length > 0) return true;
+    if (hasChildMembers(child)) return true;
+  }
+  return false;
+}
+
 
 function renderDeptMemberItem(m) {
   return `<li class="dept-member-item flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2" data-member-id="${m.id}">
@@ -964,7 +976,7 @@ function renderDeptCard(d, depth) {
       <ul class="dept-member-list space-y-2 min-h-[40px] rounded-lg bg-slate-50 p-2" data-dept-name="${escHtml(d.name)}">
         ${members.length
           ? members.map(renderDeptMemberItem).join('')
-          : '<li class="text-xs text-slate-400 p-2">Belum ada anggota di kementerian ini.</li>'}
+          : (!hasChildMembers(d) ? '<li class="text-xs text-slate-400 p-2">Belum ada anggota di kementerian ini.</li>' : '')}
       </ul>
       ${childrenHtml}
     </div>`;
@@ -1434,6 +1446,7 @@ document.addEventListener('input', e => {
 });
 
 async function loadPeriode() {
+  if (periodSortInstance) { periodSortInstance.destroy(); periodSortInstance = null; }
   const el = document.getElementById('list-periode');
   if (!el) return;
   try {
@@ -1441,20 +1454,24 @@ async function loadPeriode() {
     state.periods = items || [];
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada periode.'); return; }
     el.innerHTML = items.map(p => `
-      <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between gap-4">
+      <div class="period-card bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-center justify-between gap-4" data-label="${p.label}">
         <div class="flex items-center gap-3">
+          <button type="button" class="period-drag text-slate-400 hover:text-slate-600 cursor-grab" title="Geser urutan periode">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 15h8"/></svg>
+          </button>
           ${p.is_active ? '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">Aktif</span>' : ''}
           <div>
             <h3 class="font-semibold text-slate-800">${escHtml(p.display_name)}</h3>
             <p class="text-xs text-slate-400 font-mono">${p.label}</p>
           </div>
         </div>
-        
+
         <div class="flex gap-2 flex-shrink-0 items-center">
           <button onclick="editPeriode('${p.label}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100">Edit</button>
-          ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button><button onclick="deletePeriode('${p.label}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg font-medium transition">Hapus</button>` : ''}
+          ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button><button onclick="deletePeriode('${p.label}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs px-3 py-1.5 rounded-lg font-medium transition ${p.has_data ? 'opacity-40 cursor-not-allowed' : ''}" ${p.has_data ? 'disabled title="Periode ini memiliki data terkait"' : ''}>Hapus</button>` : ''}
         </div>
       </div>`).join('');
+    initPeriodSortable();
     // also populate akun period selector
     const sel = document.getElementById('akun-assigned-period');
     if (sel) {
@@ -1527,6 +1544,35 @@ document.getElementById('formPeriode')?.addEventListener('submit', async e => {
     loadPeriode();
   } catch(ex) { uiAlert('Error: ' + ex.message); }
 });
+
+// ── Periode Drag Reorder ──────────────────────────────────────────────
+async function persistPeriodOrder() {
+  const cards = Array.from(document.querySelectorAll('#list-periode .period-card'));
+  if (!cards.length) return;
+  for (let idx = 0; idx < cards.length; idx++) {
+    const label = cards[idx].dataset.label;
+    await api('PUT', '/api/cms/periods/' + label, { sort_order: idx });
+  }
+}
+
+function initPeriodSortable() {
+  if (periodSortInstance) { periodSortInstance.destroy(); periodSortInstance = null; }
+  const el = document.getElementById('list-periode');
+  if (!el) return;
+  periodSortInstance = Sortable.create(el, {
+    animation: 180,
+    handle: '.period-drag',
+    draggable: '.period-card',
+    onEnd: async () => {
+      try {
+        await persistPeriodOrder();
+      } catch (ex) {
+        uiAlert('Gagal menyimpan urutan periode: ' + ex.message);
+      }
+    }
+  });
+}
+
 //__REPLACE_ME__
 
 
