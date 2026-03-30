@@ -167,6 +167,7 @@ const toolbarFull = [
 
 function initQuill(id, toolbar) {
   if (quills[id]) return quills[id];
+  if (!document.getElementById(id)) return null;
   quills[id] = new Quill('#' + id, {
     theme: 'snow',
     modules: {
