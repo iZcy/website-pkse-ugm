@@ -3158,14 +3158,33 @@ function onBCCellPaste(e, cell) {
   if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
   var origRow = startRow, origCol = startColIdx;
   if (bcSelRange) { var n = bcNormRange(bcSelRange); origRow = n.r1; origCol = n.c1; }
+  // First pass: determine needed dimensions
+  var maxCols = 0;
+  var parsedLines = [];
   for (var i = 0; i < lines.length; i++) {
-    var ri = origRow + i;
-    if (ri >= bcContactRows.length) break;
     var vals = lines[i].split('\t');
-    for (var vi = 0; vi < vals.length; vi++) {
+    parsedLines.push(vals);
+    if (vals.length > maxCols) maxCols = vals.length;
+  }
+  // Expand columns if needed (add unnamed-N for extras)
+  while (bcColumnHeaders.length < origCol + maxCols) {
+    bcColumnHeaders.push('unnamed-' + (bcColumnHeaders.length + 1));
+    bcColumnLabels.push('unnamed-' + bcColumnHeaders.length);
+  }
+  // Expand rows if needed
+  while (bcContactRows.length < origRow + lines.length) {
+    var emptyRow = {};
+    bcColumnHeaders.forEach(function(h) { emptyRow[h] = ''; });
+    bcContactRows.push(emptyRow);
+  }
+  // Fill data
+  for (var i = 0; i < parsedLines.length; i++) {
+    var ri = origRow + i;
+    for (var vi = 0; vi < parsedLines[i].length; vi++) {
       var ci = origCol + vi;
-      if (ci >= bcColumnHeaders.length) break;
-      bcContactRows[ri][bcColumnHeaders[ci]] = vals[vi];
+      if (ci < bcColumnHeaders.length) {
+        bcContactRows[ri][bcColumnHeaders[ci]] = parsedLines[i][vi];
+      }
     }
   }
   renderBCContactsTable();
@@ -3196,14 +3215,33 @@ function handleBCPaste(e) {
 
   var origRow = startRow, origCol = startColIdx;
   if (bcSelRange) { var n = bcNormRange(bcSelRange); origRow = n.r1; origCol = n.c1; }
+  // First pass: determine needed dimensions
+  var maxCols = 0;
+  var parsedLines = [];
   for (var i = 0; i < lines.length; i++) {
-    var ri = origRow + i;
-    if (ri >= bcContactRows.length) break;
     var vals = lines[i].split('\t');
-    for (var vi = 0; vi < vals.length; vi++) {
+    parsedLines.push(vals);
+    if (vals.length > maxCols) maxCols = vals.length;
+  }
+  // Expand columns if needed (add unnamed-N for extras)
+  while (bcColumnHeaders.length < origCol + maxCols) {
+    bcColumnHeaders.push('unnamed-' + (bcColumnHeaders.length + 1));
+    bcColumnLabels.push('unnamed-' + bcColumnHeaders.length);
+  }
+  // Expand rows if needed
+  while (bcContactRows.length < origRow + lines.length) {
+    var emptyRow = {};
+    bcColumnHeaders.forEach(function(h) { emptyRow[h] = ''; });
+    bcContactRows.push(emptyRow);
+  }
+  // Fill data
+  for (var i = 0; i < parsedLines.length; i++) {
+    var ri = origRow + i;
+    for (var vi = 0; vi < parsedLines[i].length; vi++) {
       var ci = origCol + vi;
-      if (ci >= bcColumnHeaders.length) break;
-      bcContactRows[ri][bcColumnHeaders[ci]] = vals[vi];
+      if (ci < bcColumnHeaders.length) {
+        bcContactRows[ri][bcColumnHeaders[ci]] = parsedLines[i][vi];
+      }
     }
   }
   renderBCContactsTable();
