@@ -261,10 +261,13 @@ func (h *Handler) PeriodeDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	announcements, _ := db.GetAnnouncements(10, true, label)
+
 	data["Articles"] = articles
 	data["Stats"] = visibleStats
 	data["DepartmentGroups"] = groups
 	data["UngroupedPrograms"] = ungroupedPrograms
+	data["Announcements"] = announcements
 	h.render(w, "periode-detail.html", data)
 }
 
