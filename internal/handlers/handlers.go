@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -263,9 +262,6 @@ func (h *Handler) PeriodeDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	announcements, _ := db.GetAnnouncements(10, true, label)
-
-	log.Printf("[PeriodeDetail] label=%s members=%d programs=%d depts=%d articles=%d groups=%d",
-		label, len(members), len(programs), len(depts), len(articles), len(groups))
 
 	data["Articles"] = articles
 	data["Stats"] = visibleStats
