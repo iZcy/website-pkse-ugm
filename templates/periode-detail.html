@@ -344,14 +344,9 @@
   <div class="space-y-4">
     {{range .Announcements}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h3 class="font-bold text-gray-900 mb-2">{{.Title}}</h3>
-          {{if .Content}}<p class="text-sm text-gray-600 line-clamp-3">{{.Content}}</p>{{end}}
-        </div>
-        {{if .Pinned}}
-        <span class="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">Disematkan</span>
-        {{end}}
+      <div>
+        <h3 class="font-bold text-gray-900 mb-2">{{.Title}}</h3>
+        {{if .Content}}<div class="text-sm text-gray-600 line-clamp-3">{{.Content | safeHTML}}</div>{{end}}
       </div>
     </div>
     {{end}}
