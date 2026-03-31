@@ -105,10 +105,9 @@
           <p class="text-xs text-slate-500 mt-4">Shortlink dibuat di backend dan dapat diakses publik dengan format <span class="font-mono">domain-anda/l/kode</span>.</p>
         </div>
         <div class="xl:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="px-5 py-4 border-b border-slate-200 flex items-center gap-3 flex-wrap">
+          <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
             <h3 class="font-semibold text-slate-700">Riwayat Short Link</h3>
-            <input type="text" oninput="shortlinkSearch(this.value)" placeholder="Cari..." class="ml-auto w-48 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent">
-            <button onclick="clearShortlinks()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg">Bersihkan</button>
+            <button onclick="clearShortlinks()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg">Bersihkan Riwayat</button>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -122,7 +121,6 @@
               </thead>
               <tbody id="shortlink-tbody"></tbody>
             </table>
-            <div id="shortlink-pagination"></div>
           </div>
         </div>
       </div>
@@ -130,22 +128,6 @@
 <div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
 
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v19-1774892066"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() { loadShortlinks(); });
-document.getElementById('formShortlink')?.addEventListener('submit', async e => {
-  e.preventDefault();
-  const longURL = (document.getElementById('shortlink-long-url')?.value || '').trim();
-  const code = (document.getElementById('shortlink-code')?.value || '').trim();
-  const label = (document.getElementById('shortlink-label')?.value || '').trim();
-  if (!longURL) { uiAlert('URL tujuan wajib diisi.'); return; }
-  try {
-    const created = await api('POST', '/api/cms/shortlinks', { target_url: longURL, label: label || '', code: code || '' });
-    const url = window.location.origin + '/l/' + encodeURIComponent(created.code || '');
-    loadShortlinks(1);
-    uiAlert('Short link berhasil dibuat:<br><a class="text-blue-600 underline break-all" href="' + escHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escHtml(url) + '</a>', 'Sukses');
-    document.getElementById('formShortlink').reset();
-  } catch (ex) { uiAlert(ex); }
-});
-</script>
+<script src="/static/admin-common.js?v=1774948393"></script>
+<script src="/static/admin-shortlink.js?v=1774948393"></script>
 </body></html>

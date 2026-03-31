@@ -121,15 +121,6 @@
   </div>
 </div>
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v19-1774892066"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() { loadPeriode(); });
-document.addEventListener('click', function(e) {
-  if (e.target.matches('#btn-add-subperiod')) { periodSubperiodDraft.push('Gelombang ' + (periodSubperiodDraft.length + 1)); renderPeriodSubperiodEditor(); }
-  if (e.target.matches('[data-remove-subperiod]')) { const idx = parseInt(e.target.getAttribute('data-remove-subperiod'), 10); if (!Number.isNaN(idx) && periodSubperiodDraft.length > 1) { periodSubperiodDraft.splice(idx, 1); renderPeriodSubperiodEditor(); } }
-});
-document.addEventListener('input', function(e) {
-  if (e.target.matches('[data-subperiod-index]')) { const idx = parseInt(e.target.getAttribute('data-subperiod-index'), 10); if (!Number.isNaN(idx)) periodSubperiodDraft[idx] = e.target.value; }
-});
-</script>
+<script src="/static/admin-common.js?v=1774948393"></script>
+<script src="/static/admin-periode.js?v=1774948393"></script>
 </body></html>

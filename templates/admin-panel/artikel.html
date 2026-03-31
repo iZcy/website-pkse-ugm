@@ -85,9 +85,7 @@
   <button onclick="openArtikelModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
     Tambah Artikel</button></div>
-<div class="mb-3"><input type="text" oninput="artikelSearch(this.value)" placeholder="Cari..." class="w-48 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-400 focus:border-transparent"></div>
 <div id="list-artikel" class="space-y-3"><div class="text-slate-400 text-center py-8">Memuat...</div></div>
-<div id="artikel-pagination"></div>
 </main></div>
 <div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
 <div id="modalArtikel" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
@@ -105,8 +103,6 @@
       <div class="flex items-center gap-2"><input type="checkbox" id="artikel-published" class="rounded text-blue-600"><label for="artikel-published" class="text-sm font-medium text-slate-700">Publikasikan</label></div>
       <div class="flex gap-3 pt-2"><button onclick="submitArtikel()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button><button type="button" onclick="closeModal('modalArtikel')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button></div></div></div></div>
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v19-1774892066"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() { loadArtikel(); });
-</script>
+<script src="/static/admin-common.js?v=1774948393"></script>
+<script src="/static/admin-artikel.js?v=1774948393"></script>
 </body></html>

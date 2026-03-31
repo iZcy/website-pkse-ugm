@@ -92,9 +92,6 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         Program
       </a>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        FAQ Periode
-      </a>
       <a href="/admin/dashboard?period={{.SelectedPeriod}}&section=tentang" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2" id="tab-btn-tentang">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         Tentang Periode
@@ -616,27 +613,6 @@
       </div>
     </div>
 
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-slate-800">FAQ Periode</h2>
-        <button onclick="openFAQModal(currentPeriod())" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Tambah FAQ
-        </button>
-      </div>
-      <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
-        <table class="w-full text-sm">
-          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
-            <tr>
-              <th class="p-4 text-left font-medium w-10"></th>
-              <th class="p-4 text-left font-medium">Pertanyaan</th>
-              <th class="p-4 text-left font-medium">Jawaban</th>
-              <th class="p-4 text-right font-medium">Aksi</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-    </div>
-
         <div id="tab-statistik" class="tab-content">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Statistik Periode</h2>
@@ -962,26 +938,6 @@
               <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition">Simpan Media Sosial</button>
               <div id="socmed-msg" class="text-sm text-green-600 hidden">✓ Tersimpan!</div>
           </form>
-    <!-- FAQ PERIODE -->
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-slate-800">FAQ Periode</h2>
-        <button onclick="openFAQModal(currentPeriod())" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Tambah FAQ
-        </button>
-      </div>
-      <div class="overflow-x-auto bg-white rounded-lg border border-slate-200">
-        <table class="w-full text-sm">
-          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
-            <tr>
-              <th class="p-4 text-left font-medium w-10"></th>
-              <th class="p-4 text-left font-medium">Pertanyaan</th>
-              <th class="p-4 text-left font-medium">Jawaban</th>
-              <th class="p-4 text-right font-medium">Aksi</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
     <!-- STATISTIK -->
     <div id="tab-statistik" class="tab-content">
       <div class="flex items-center justify-between mb-6">
@@ -1053,6 +1009,7 @@ const ROLE = "{{.Role}}";
 let statPreviewChart = null;
 function selectedSectionFromURL() {
   const section = new URLSearchParams(window.location.search).get('section') || 'pengumuman';
+  const allowed = new Set(['pengumuman', 'artikel', 'departemen', 'program', 'tentang', 'galeri', 'statistik', 'anggota', 'global', 'shortlink', 'faq-global', 'global-stats', 'periode', 'akun', 'broadcast']);
   return allowed.has(section) ? section : 'pengumuman';
 }
 function syncPeriodSwitcherRouteSection() {
@@ -1266,7 +1223,7 @@ async function loadShortlinks() {
   if (!tb) return;
   let rows = [];
   try {
-    const slData = await api('GET', '/api/cms/shortlinks'); rows = slData.items || slData || [];
+    rows = await api('GET', '/api/cms/shortlinks');
   } catch (ex) {
     tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(toUiMessage(ex))}</td></tr>`;
     return;
@@ -1538,7 +1495,7 @@ function periodSubPeriods(period) {
 async function loadPengumuman() {
   const el = document.getElementById('list-pengumuman');
   try {
-    const data = await api('GET', `/api/cms/announcements?period=${PERIOD}`); const items = data.items || data || [];
+    const items = await api('GET', `/api/cms/announcements?period=${PERIOD}`);
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada pengumuman.'); return; }
     el.innerHTML = items.map(a => `
       <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
@@ -1607,7 +1564,7 @@ async function deletePengumuman(id) {
 async function loadArtikel() {
   const el = document.getElementById('list-artikel');
   try {
-    const data = await api('GET', `/api/cms/articles?period=${PERIOD}`); const items = data.items || data || [];
+    const items = await api('GET', `/api/cms/articles?period=${PERIOD}`);
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada artikel.'); return; }
     el.innerHTML = items.map(a => `
       <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex items-start justify-between gap-4">
@@ -1949,7 +1906,7 @@ async function loadKementerian() {
       api('GET', `/api/cms/members?period=${PERIOD}`)
     ]);
     deptCache = depts || [];
-    memberCache = (members && members.items) ? members.items : (members || []);
+    memberCache = members || [];
     if (!deptCache.length) {
       el.innerHTML = emptyHtml('Belum ada departemen.');
       destroyDeptSortables();
@@ -2233,7 +2190,7 @@ function collectAnggotaActivation() {
 async function loadAnggota() {
   const el = document.getElementById('list-anggota');
   try {
-    const data = await api('GET', `/api/cms/members?period=${PERIOD}`); const items = data.items || data || [];
+    const items = await api('GET', `/api/cms/members?period=${PERIOD}`);
     memberCache = items || [];
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada anggota.'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
@@ -2363,7 +2320,7 @@ async function loadSubperiodUsage(periodLabel) {
   try {
     const members = await api('GET', `/api/cms/members?period=${encodeURIComponent(periodLabel)}`);
     const used = new Set();
-    const mArr = (members && members.items) ? members.items : (members || []); mArr.forEach(m => {
+    (members || []).forEach(m => {
       const sp = m?.active_periods?.[periodLabel];
       if (sp) used.add(sp);
     });
@@ -2472,7 +2429,7 @@ document.getElementById('formPeriode').addEventListener('submit', async e => {
 async function loadAkun() {
   const el = document.getElementById('list-akun');
   try {
-    const data = await api('GET', '/api/cms/accounts'); const items = data.items || data || [];
+    const items = await api('GET', '/api/cms/accounts');
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
@@ -3036,9 +2993,9 @@ document.addEventListener('input', (e) => {
     renderGlobalPreview();
   }
 });
-// ── FAQ GLOBAL & PERIODE ──────────────────────────────────────────────────
+// ── FAQ GLOBAL ──────────────────────────────────────────────────
 function initFAQSorable(pLabel) {
-  const isGlobal = (pLabel === 'GLOBAL');
+  const tb = document.getElementById('faq-global-tbody');
   if(!tb) return;
   if (tb._sortable) tb._sortable.destroy();
   tb._sortable = Sortable.create(tb, {
@@ -3066,9 +3023,9 @@ function initFAQSorable(pLabel) {
   });
 }
 async function loadFAQs(pLabel) {
-  const isGlobal = (pLabel === 'GLOBAL');
+  const tb = document.getElementById('faq-global-tbody');
   try {
-    const data = await api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel)); const items = data.items || data || [];
+    const items = await api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel));
     state.faqs = items || [];
     tb.innerHTML = (items||[]).map(f => `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
