@@ -34,16 +34,71 @@
     </div>
     {{end}}
 
-    {{if .Period.HierarchyImageURL}}
-    <div class="mt-4">
-      <a href="#struktur" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-white/5">
+    <!-- Navigation Pills -->
+    <div class="flex flex-wrap justify-center gap-2 mt-6">
+      {{if .Period.HierarchyImageURL}}
+      <a href="#struktur" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-medium transition-all duration-300">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
-        Lihat Struktur Organisasi
+        Struktur
       </a>
+      {{end}}
+      {{if .DepartmentGroups}}
+      <a href="#rekam-jejak" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-medium transition-all duration-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        Kementerian
+      </a>
+      {{end}}
+      {{if or .UngroupedPrograms .DepartmentGroups}}
+      <a href="#program" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-medium transition-all duration-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Program
+      </a>
+      {{end}}
+      {{if .Articles}}
+      <a href="#artikel" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-medium transition-all duration-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+        Artikel
+      </a>
+      {{end}}
+      {{if .Stats}}
+      <a href="#statistik" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-medium transition-all duration-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Statistik
+      </a>
+      {{end}}
+      {{if .Announcements}}
+      <a href="#pengumuman" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 hover:border-white/40 text-sm font-medium transition-all duration-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+        Pengumuman
+      </a>
+      {{end}}
     </div>
-    {{end}}
   </div>
 </div>
+
+<!-- Quick Stats Banner -->
+<section class="bg-gradient-to-r from-brand-600 via-brand-700 to-brand-800 py-12">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+        <div class="text-4xl md:text-5xl font-black mb-2">{{len .Members}}</div>
+        <div class="text-sm font-medium text-brand-200 uppercase tracking-wider">Anggota</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+        <div class="text-4xl md:text-5xl font-black mb-2">{{len .DepartmentGroups}}</div>
+        <div class="text-sm font-medium text-brand-200 uppercase tracking-wider">Kementerian</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+        <div class="text-4xl md:text-5xl font-black mb-2">{{len .Programs}}</div>
+        <div class="text-sm font-medium text-brand-200 uppercase tracking-wider">Program</div>
+      </div>
+      <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+        <div class="text-4xl md:text-5xl font-black mb-2">{{len .Articles}}</div>
+        <div class="text-sm font-medium text-brand-200 uppercase tracking-wider">Artikel</div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- Tagline Section -->
 {{if and .PeriodAbout (or .PeriodAbout.TaglineTitle .PeriodAbout.TaglineSubtitle .PeriodAbout.TaglineDescription)}}
@@ -243,7 +298,7 @@
 
 <!-- Ungrouped Programs -->
 {{if .UngroupedPrograms}}
-<section class="max-w-5xl mx-auto px-6 py-16">
+<section id="program" class="max-w-5xl mx-auto px-6 py-16">
   <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Program Lainnya</h2>
   <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -263,6 +318,7 @@
 
 {{if .Articles}}
 <section id="artikel" class="max-w-5xl mx-auto px-6 py-16">
+  <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Artikel</h2>
   <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8">Artikel</h2>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {{range .Articles}}

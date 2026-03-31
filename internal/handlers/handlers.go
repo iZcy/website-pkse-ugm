@@ -268,6 +268,8 @@ func (h *Handler) PeriodeDetail(w http.ResponseWriter, r *http.Request) {
 	data["DepartmentGroups"] = groups
 	data["UngroupedPrograms"] = ungroupedPrograms
 	data["Announcements"] = announcements
+	data["Members"] = members
+	data["Programs"] = programs
 	h.render(w, "periode-detail.html", data)
 }
 
