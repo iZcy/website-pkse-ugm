@@ -33,6 +33,7 @@ async function loadGlobal() {
     document.getElementById('sm-linkedin').value = sm.linkedin || '';
     document.getElementById('sm-tiktok').value = sm.tiktok || '';
     document.getElementById('sm-email').value = sm.email || '';
+    document.getElementById('sm-eksplorazcy-url').value = g.eksplorazcy_url || '';
     renderGlobalPreview();
   } catch(e) {
     state.globalSetting = {};
@@ -101,6 +102,7 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
       footer_text: cur.footer_text || '',
       footer_copy_text: cur.footer_copy_text || '',
       about_html: cur.about_html || '',
+      eksplorazcy_url: document.getElementById('sm-eksplorazcy-url').value,
       social_media: {
         instagram: document.getElementById('sm-instagram').value,
         twitter: document.getElementById('sm-twitter').value,
@@ -113,6 +115,7 @@ document.getElementById('formSocmed')?.addEventListener('submit', async e => {
     });
     state.globalSetting = {
       ...cur,
+      eksplorazcy_url: document.getElementById('sm-eksplorazcy-url').value,
       social_media: {
         instagram: document.getElementById('sm-instagram').value,
         twitter: document.getElementById('sm-twitter').value,
@@ -194,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('input', (e) => {
     var t = e.target;
     if (!t) return;
-    if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok', 'sm-email'].includes(t.id)) {
+    if (['global-orgname', 'global-header-title', 'global-header-subtitle', 'global-hero-badge', 'global-hero-title-main', 'global-hero-title-accent', 'global-footer-title', 'global-footer-copy', 'global-footer-text', 'sm-instagram', 'sm-twitter', 'sm-facebook', 'sm-youtube', 'sm-linkedin', 'sm-tiktok', 'sm-email', 'sm-eksplorazcy-url'].includes(t.id)) {
       renderGlobalPreview();
     }
   });

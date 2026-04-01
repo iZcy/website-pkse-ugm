@@ -84,6 +84,7 @@ func Run() {
 			TikTok:    "https://tiktok.com/@pkseugm",
 			LinkedIn:  "https://linkedin.com/company/pkseugm",
 		},
+		EksploraZcyURL: "http://localhost:5300",
 	}); err != nil {
 		log.Printf("[seed] global setting: %v", err)
 	}
