@@ -52,17 +52,21 @@
     }
   };
 
-  function extractUsername(url) {
+  function extractUsername(url, platform) {
     if (!url) return null;
     try {
       const u = new URL(url);
       let path = u.pathname.replace(/^\/+|\/+$/g, '');
       // Handle /company/name for LinkedIn
       path = path.replace(/^company\//, '');
-      // Remove @ prefix
-      path = path.replace(/^@/, '');
       // Take first segment
-      const seg = path.split('/')[0];
+      let seg = path.split('/')[0];
+
+      // TikTok requires @ prefix
+      if (platform === 'tiktok' && seg && !seg.startsWith('@')) {
+        seg = '@' + seg;
+      }
+
       return seg || null;
     } catch(_) {
       return null;
@@ -100,7 +104,7 @@
   // Build list of platforms to fetch
   for (const [key, url] of Object.entries(SOCMED)) {
     if (!url || !PLATFORM_MAP[key]) continue;
-    const username = extractUsername(url);
+    const username = extractUsername(url, key);
     if (!username) continue;
     activePlatforms.push({ key, username, url });
   }
