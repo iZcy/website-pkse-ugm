@@ -3,6 +3,12 @@
 <head>
   {{template "head" .}}
   <title>PKSE UGM | Beranda</title>
+  <style>
+    /* Force white text in Visi/Misi section, override inline styles */
+    .bg-brand-900 .prose p, .bg-brand-900 .prose li, .bg-brand-900 .prose span[style*="color: rgb(0, 0, 0)"], .bg-brand-900 .prose span[style*="color:#000"], .bg-brand-900 .prose span[style*="color: black"] {
+      color: white !important;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
 {{template "navbar" .}}
@@ -77,13 +83,13 @@
           {{if and .PeriodAbout .PeriodAbout.Visi}}
           <div class="mb-10">
             <div class="flex items-center gap-3 mb-4 text-accent-400 font-bold text-xl uppercase tracking-wide"><i data-lucide="eye"></i> Visi</div>
-            <div class="text-white/90 leading-relaxed text-sm prose prose-invert prose-sm max-w-none">{{safeHTML .PeriodAbout.Visi}}</div>
+            <div class="text-white leading-relaxed text-sm prose prose-invert prose-sm max-w-none prose-headings:text-white prose-p:text-white prose-strong:text-white prose-li:text-white prose-ul:text-white prose-ol:text-white">{{safeHTML .PeriodAbout.Visi}}</div>
           </div>
           {{end}}
           {{if and .PeriodAbout .PeriodAbout.Misi}}
           <div>
             <div class="flex items-center gap-3 mb-4 text-accent-400 font-bold text-xl uppercase tracking-wide"><i data-lucide="target"></i> Misi</div>
-            <div class="text-white/90 leading-relaxed text-sm prose prose-invert prose-sm max-w-none">{{safeHTML .PeriodAbout.Misi}}</div>
+            <div class="text-white leading-relaxed text-sm prose prose-invert prose-sm max-w-none prose-headings:text-white prose-p:text-white prose-strong:text-white prose-li:text-white prose-ul:text-white prose-ol:text-white">{{safeHTML .PeriodAbout.Misi}}</div>
           </div>
           {{end}}
         </div>
@@ -305,7 +311,7 @@ window.__SOCMED__ = {
   linkedin: "{{if and .GlobalSetting .GlobalSetting.SocialMedia.LinkedIn}}{{.GlobalSetting.SocialMedia.LinkedIn}}{{end}}"
 };
 </script>
-<script src="/static/social-feed.js"></script>
+<script src="/static/social-feed.js?v=3"></script>
 {{template "footer" .}}
 </body>
 </html>

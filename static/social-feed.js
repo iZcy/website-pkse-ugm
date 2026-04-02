@@ -8,12 +8,48 @@
   }
 
   const PLATFORM_MAP = {
-    instagram: { label: 'Instagram', color: 'bg-gradient-to-br from-purple-500 to-pink-500', icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 3 .1 4.4 1.5 4.6 4.6.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3-1.5 4.4-4.6 4.6-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3-.1-4.4-1.5-4.6-4.6-.1-1.2-.1-1.6-.1-4.8s0-3.6.1-4.8c.1-3 1.5-4.4 4.6-4.6 1.2-.1 1.6-.1 4.8-.1z"/></svg>' },
-    twitter: { label: 'X', color: 'bg-gray-900', icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24H16.17l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25H8.08l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z"/></svg>' },
-    youtube: { label: 'YouTube', color: 'bg-red-600', icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.6V8.4L15.8 12l-6.3 3.6z"/></svg>' },
-    tiktok: { label: 'TikTok', color: 'bg-black', icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>' },
-    facebook: { label: 'Facebook', color: 'bg-blue-600', icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.8l-.5 2.9h-2.3v7A10 10 0 0022 12z"/></svg>' },
-    linkedin: { label: 'LinkedIn', color: 'bg-blue-700', icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.45 20.45h-3.56V14.9c0-1.33 0-3.04-1.85-3.04s-2.14 1.45-2.14 2.95v5.64H9.34V9h3.42v1.56h.05c.47-.9 1.63-1.85 3.35-1.85 3.59 0 4.25 2.36 4.25 5.44v6.3zM5.34 7.43A2.06 2.06 0 113.28 5.37a2.06 2.06 0 012.06 2.06zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.55C0 23.23.8 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.72C24 .77 23.2 0 22.22 0z"/></svg>' }
+    instagram: {
+      label: 'Instagram',
+      color: 'bg-gradient-to-br from-purple-500 to-pink-500',
+      icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 3 .1 4.4 1.5 4.6 4.6.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3-1.5 4.4-4.6 4.6-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3-.1-4.4-1.5-4.6-4.6-.1-1.2-.1-1.6-.1-4.8s0-3.6.1-4.8c.1-3 1.5-4.4 4.6-4.6 1.2-.1 1.6-.1 4.8-.1z"/></svg>',
+      aspectRatio: 'aspect-square', // 1:1 ratio
+      containerClass: 'aspect-square'
+    },
+    twitter: {
+      label: 'X',
+      color: 'bg-gray-900',
+      icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24H16.17l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25H8.08l4.71 6.23zm-1.16 17.52h1.83L7.08 4.13H5.12z"/></svg>',
+      aspectRatio: 'aspect-[16/9]', // 16:9 ratio for images in tweets
+      containerClass: 'aspect-[16/9]'
+    },
+    youtube: {
+      label: 'YouTube',
+      color: 'bg-red-600',
+      icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.6V8.4L15.8 12l-6.3 3.6z"/></svg>',
+      aspectRatio: 'aspect-video', // 16:9 ratio for video thumbnails
+      containerClass: 'aspect-video'
+    },
+    tiktok: {
+      label: 'TikTok',
+      color: 'bg-black',
+      icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>',
+      aspectRatio: 'aspect-[9/16]', // 9:16 ratio for vertical TikTok videos
+      containerClass: 'aspect-[9/16]'
+    },
+    facebook: {
+      label: 'Facebook',
+      color: 'bg-blue-600',
+      icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.8l-.5 2.9h-2.3v7A10 10 0 0022 12z"/></svg>',
+      aspectRatio: 'aspect-[16/9]', // 16:9 ratio for Facebook images
+      containerClass: 'aspect-[16/9]'
+    },
+    linkedin: {
+      label: 'LinkedIn',
+      color: 'bg-blue-700',
+      icon: '<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.45 20.45h-3.56V14.9c0-1.33 0-3.04-1.85-3.04s-2.14 1.45-2.14 2.95v5.64H9.34V9h3.42v1.56h.05c.47-.9 1.63-1.85 3.35-1.85 3.59 0 4.25 2.36 4.25 5.44v6.3zM5.34 7.43A2.06 2.06 0 113.28 5.37a2.06 2.06 0 012.06 2.06zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.55C0 23.23.8 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.72C24 .77 23.2 0 22.22 0z"/></svg>',
+      aspectRatio: 'aspect-[1200/627]', // LinkedIn's recommended 1.91:1 ratio
+      containerClass: 'aspect-[1200/627]'
+    }
   };
 
   function extractUsername(url) {
@@ -102,9 +138,10 @@
       const p = PLATFORM_MAP[post.platform] || {};
       const text = stripHTML(post.text || '');
       const truncated = text.length > 150 ? text.slice(0, 150) + '...' : text;
+      const aspectClass = p.aspectRatio || 'aspect-video';
       return `
         <a href="${post.permalink || '#'}" target="_blank" rel="noopener" class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all overflow-hidden flex flex-col">
-          ${post.imageUrl ? `<div class="aspect-video bg-gray-100 overflow-hidden"><img src="${EKSPORAZCY}/proxy-image?url=${encodeURIComponent(post.imageUrl)}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : ''}
+          ${post.imageUrl ? `<div class="${aspectClass} bg-gray-100 overflow-hidden"><img src="${EKSPORAZCY}/proxy-image?url=${encodeURIComponent(post.imageUrl)}" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : ''}
           <div class="p-5 flex flex-col flex-1">
             <div class="flex items-center gap-2 mb-3">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-white text-xs font-bold ${p.color || 'bg-gray-500'}">${p.icon || ''} ${p.label || post.platform}</span>
@@ -121,7 +158,7 @@
   const base = EKSPORAZCY.replace(/\/+$/, '');
   Promise.allSettled(
     activePlatforms.map(p =>
-      fetch(`${base}/api/${p.key}/user/${p.username}`)
+      fetch(`${base}/api/${p.key}/user/${p.username}?limit=9`)
         .then(r => r.ok ? r.json() : Promise.reject(r.status))
         .then(data => {
           const posts = (data.posts || []).map(post => ({
@@ -140,8 +177,8 @@
       const tb = new Date(b.timestamp || b.createdAt || 0).getTime();
       return tb - ta;
     });
-    // Limit to 12 posts
-    allPosts.splice(12);
+    // Limit to 27 posts (9 per platform)
+    allPosts.splice(27);
     renderPosts('all');
   });
 })();
