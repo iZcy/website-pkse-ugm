@@ -157,8 +157,13 @@
   // Fetch from all platforms in parallel
   const base = EKSPORAZCY.replace(/\/+$/, '');
   Promise.allSettled(
-    activePlatforms.map(p =>
-      fetch(`${base}/api/${p.key}/user/${p.username}?limit=9`)
+    activePlatforms.map(p => {
+      // LinkedIn uses company endpoint, others use user endpoint
+      const endpoint = p.key === 'linkedin'
+        ? `${base}/api/linkedin/company/${p.username}?limit=9`
+        : `${base}/api/${p.key}/user/${p.username}?limit=9`;
+
+      return fetch(endpoint)
         .then(r => r.ok ? r.json() : Promise.reject(r.status))
         .then(data => {
           const posts = (data.posts || []).map(post => ({
@@ -168,8 +173,8 @@
           }));
           allPosts.push(...posts);
         })
-        .catch(() => {})
-    )
+        .catch(() => {});
+    })
   ).then(() => {
     // Sort by timestamp, most recent first
     allPosts.sort((a, b) => {
