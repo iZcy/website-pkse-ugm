@@ -59,14 +59,10 @@
       let path = u.pathname.replace(/^\/+|\/+$/g, '');
       // Handle /company/name for LinkedIn
       path = path.replace(/^company\//, '');
+      // Remove @ prefix (all platforms use username without @)
+      path = path.replace(/^@/, '');
       // Take first segment
-      let seg = path.split('/')[0];
-
-      // TikTok requires @ prefix
-      if (platform === 'tiktok' && seg && !seg.startsWith('@')) {
-        seg = '@' + seg;
-      }
-
+      const seg = path.split('/')[0];
       return seg || null;
     } catch(_) {
       return null;
