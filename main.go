@@ -108,6 +108,7 @@ func main() {
 	mux.HandleFunc("/api/cms/period-about", cms.PeriodAboutHandler)
 	mux.HandleFunc("/api/cms/departments", cms.Departments)
 	mux.HandleFunc("/api/cms/departments/", cms.Departments)
+	mux.HandleFunc("/api/cms/bulk-create", cms.BulkCreate)
 	mux.HandleFunc("/api/cms/batch-update-members", cms.BatchUpdateMembers)
 	mux.HandleFunc("/api/cms/batch-update-departments", cms.BatchUpdateDepartments)
 	mux.HandleFunc("/api/cms/members", cms.Members)

@@ -82,6 +82,10 @@
 <main class="flex-1 overflow-y-auto p-6">
 <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Shorten Link</h2>
+        <button onclick="MassUpload.open(shortlinkMassUploadConfig)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Mass Upload
+        </button>
       </div>
       <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -130,4 +134,5 @@
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
 <script src="/static/admin-common.js?v=1774968421"></script>
 <script src="/static/admin-shortlink.js?v=1774948393"></script>
+<script src="/static/admin-mass-upload.js"></script>
 </body></html>

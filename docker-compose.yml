@@ -28,7 +28,7 @@ services:
     volumes:
       - ./templates:/app/templates
       - ./webapp-prod:/app/webapp-prod
-      - ./static/uploads:/app/static/uploads
+      - ./static:/app/static
     depends_on:
       mongo:
         condition: service_healthy

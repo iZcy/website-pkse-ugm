@@ -573,7 +573,14 @@ document.addEventListener('click', e => {
 });
 
 function currentPeriod() {
-    return window.customPeriodOverride || "{{.SelectedPeriod}}";
+    if (window.customPeriodOverride) return window.customPeriodOverride;
+    // Try URL param (e.g. ?period=25.26)
+    const urlParams = new URLSearchParams(window.location.search);
+    const p = urlParams.get('period');
+    if (p) return p;
+    // Try window.PERIOD set by the HTML template
+    if (window.PERIOD) return window.PERIOD;
+    return '';
 }
 function emptyHtml(msg) { return `<div class="text-center py-12 text-slate-400"><p>${msg}</p></div>`; }
 
@@ -784,9 +791,9 @@ async function loadTentang() {
     quillSetHTML('editor-sejarah', pa.sejarah || '');
     quillSetHTML('editor-visi', pa.visi || '');
     quillSetHTML('editor-misi', pa.misi || '');
-    document.getElementById('tentang-tagline-title')?.value = pa.tagline_title || '';
-    document.getElementById('tentang-tagline-subtitle')?.value = pa.tagline_subtitle || '';
-    document.getElementById('tentang-tagline-desc')?.value = pa.tagline_description || '';
+    const _t1 = document.getElementById('tentang-tagline-title'); if (_t1) _t1.value = pa.tagline_title || '';
+    const _t2 = document.getElementById('tentang-tagline-subtitle'); if (_t2) _t2.value = pa.tagline_subtitle || '';
+    const _t3 = document.getElementById('tentang-tagline-desc'); if (_t3) _t3.value = pa.tagline_description || '';
     if (pa.cover_image_url) pickerSetUrl('picker-cover', pa.cover_image_url);
     else pickerClear('picker-cover');
     if (pa.hierarchy_image_url) pickerSetUrl('picker-struktur', pa.hierarchy_image_url);
@@ -3800,3 +3807,100 @@ function handleBCEvent(data) {
     uiAlert(msg, 'Hasil Broadcast');
   }
 }
+
+// ── Mass Upload Configs ──────────────────────────────────────────────────────
+
+var pengumumanMassUploadConfig = {
+  entity: 'announcements', title: 'Pengumuman', hasPeriod: true,
+  columns: [
+    { key: 'title', label: 'Judul', required: true },
+    { key: 'content', label: 'Konten (teks)' },
+    { key: 'published', label: 'Publikasi', type: 'boolean' }
+  ],
+  onSuccess: function() { loadPengumuman(1); }
+};
+
+var artikelMassUploadConfig = {
+  entity: 'articles', title: 'Artikel', hasPeriod: true,
+  columns: [
+    { key: 'title', label: 'Judul', required: true },
+    { key: 'slug', label: 'Slug' },
+    { key: 'excerpt', label: 'Ringkasan' },
+    { key: 'content', label: 'Konten (teks)' },
+    { key: 'published', label: 'Publikasi', type: 'boolean' }
+  ],
+  onSuccess: function() { loadArtikel(1); }
+};
+
+var departemenMassUploadConfig = {
+  entity: 'departments', title: 'Kementerian', hasPeriod: true,
+  columns: [
+    { key: 'name', label: 'Nama Kementerian', required: true },
+    { key: 'description', label: 'Deskripsi' }
+  ],
+  onSuccess: function() { loadKementerian(); }
+};
+
+var programMassUploadConfig = {
+  entity: 'programs', title: 'Program', hasPeriod: true,
+  columns: [
+    { key: 'department', label: 'Kementerian', required: true },
+    { key: 'title', label: 'Judul Program', required: true },
+    { key: 'description', label: 'Deskripsi' }
+  ],
+  onSuccess: function() { loadPrograms(); }
+};
+
+var anggotaMassUploadConfig = {
+  entity: 'members', title: 'Anggota', hasPeriod: true,
+  columns: [
+    { key: 'full_name', label: 'Nama Lengkap', required: true },
+    { key: 'nickname', label: 'Nama Panggilan' },
+    { key: 'program_studi', label: 'Program Studi' },
+    { key: 'fakultas', label: 'Fakultas' },
+    { key: 'angkatan', label: 'Angkatan' },
+    { key: 'phone', label: 'No. HP' },
+    { key: 'department', label: 'Kementerian' },
+    { key: 'position', label: 'Jabatan' }
+  ],
+  onSuccess: function() { loadAnggota(1); }
+};
+
+var shortlinkMassUploadConfig = {
+  entity: 'shortlinks', title: 'Short Link', hasPeriod: false,
+  columns: [
+    { key: 'target_url', label: 'URL Tujuan', required: true },
+    { key: 'code', label: 'Kode (opsional)' },
+    { key: 'label', label: 'Label' }
+  ],
+  onSuccess: function() { loadShortlinks(1); }
+};
+
+var faqMassUploadConfig = {
+  entity: 'faqs', title: 'FAQ', hasPeriod: true,
+  columns: [
+    { key: 'question', label: 'Pertanyaan', required: true },
+    { key: 'answer', label: 'Jawaban', required: true }
+  ],
+  onSuccess: function() { loadFAQs && loadFAQs('GLOBAL', 1); }
+};
+
+var periodeMassUploadConfig = {
+  entity: 'periods', title: 'Periode', hasPeriod: false,
+  columns: [
+    { key: 'label', label: 'Label (contoh: 25.26)', required: true },
+    { key: 'display_name', label: 'Nama Tampilan', required: true }
+  ],
+  onSuccess: function() { loadPeriode(); }
+};
+
+var akunMassUploadConfig = {
+  entity: 'accounts', title: 'Akun', hasPeriod: false,
+  columns: [
+    { key: 'username', label: 'Username', required: true },
+    { key: 'password', label: 'Password', required: true },
+    { key: 'role', label: 'Role', required: true, type: 'select', options: ['admin', 'superadmin'] },
+    { key: 'assigned_period', label: 'Periode (untuk admin)' }
+  ],
+  onSuccess: function() { loadAkun(1); }
+};

@@ -1463,3 +1463,299 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 	}
 }
+
+// ── Bulk Create ─────────────────────────────────────────────────────────────
+
+func BulkCreate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		return
+	}
+
+	username, role, ok := requireAny(w, r)
+	if !ok {
+		return
+	}
+
+	var payload struct {
+		Entity string           `json:"entity"`
+		Items  []map[string]any `json:"items"`
+	}
+	if err := readJSON(r, &payload); err != nil {
+		writeJSON(w, 400, map[string]string{"error": err.Error()})
+		return
+	}
+	if payload.Entity == "" || len(payload.Items) == 0 {
+		writeJSON(w, 400, map[string]string{"error": "entity and items required"})
+		return
+	}
+
+	// Resolve user's assigned period for non-superadmin
+	var assignedPeriod string
+	if role != "superadmin" {
+		u, err := db.GetUserByUsername(username)
+		if err == nil {
+			assignedPeriod = u.AssignedPeriod
+		}
+	}
+
+	type rowResult struct {
+		Row    int    `json:"row"`
+		Status string `json:"status"`
+		Error  string `json:"error,omitempty"`
+	}
+	var results []rowResult
+	created := 0
+	failed := 0
+
+	for i, item := range payload.Items {
+		err := bulkCreateOne(payload.Entity, item, role, username, assignedPeriod)
+		if err != nil {
+			failed++
+			results = append(results, rowResult{Row: i, Status: "error", Error: err.Error()})
+		} else {
+			created++
+			results = append(results, rowResult{Row: i, Status: "ok"})
+		}
+	}
+
+	writeJSON(w, 200, map[string]any{
+		"total":   len(payload.Items),
+		"created": created,
+		"failed":  failed,
+		"results": results,
+	})
+}
+
+func bulkCreateOne(entity string, item map[string]any, role, username, assignedPeriod string) error {
+	switch entity {
+
+	case "announcements":
+		var a db.Announcement
+		marshalUnmarshal(item, &a)
+		if strings.TrimSpace(a.Title) == "" {
+			return fmt.Errorf("judul wajib diisi")
+		}
+		if role != "superadmin" {
+			a.PeriodLabel = assignedPeriod
+		}
+		return db.CreateAnnouncement(a)
+
+	case "articles":
+		var a db.Article
+		marshalUnmarshal(item, &a)
+		if strings.TrimSpace(a.Title) == "" {
+			return fmt.Errorf("judul wajib diisi")
+		}
+		if strings.TrimSpace(a.Slug) == "" {
+			a.Slug = slugify(a.Title)
+		}
+		if role != "superadmin" {
+			a.PeriodLabel = assignedPeriod
+		}
+		return db.CreateArticle(a)
+
+	case "departments":
+		var d db.Department
+		marshalUnmarshal(item, &d)
+		if strings.TrimSpace(d.Name) == "" {
+			return fmt.Errorf("nama kementerian wajib diisi")
+		}
+		if role != "superadmin" {
+			d.PeriodLabel = assignedPeriod
+		}
+		return db.CreateDepartment(d)
+
+	case "programs":
+		var p db.Program
+		marshalUnmarshal(item, &p)
+		if strings.TrimSpace(p.Title) == "" {
+			return fmt.Errorf("judul program wajib diisi")
+		}
+		period := p.PeriodLabel
+		if role != "superadmin" {
+			period = assignedPeriod
+			p.PeriodLabel = assignedPeriod
+		}
+		if period == "" {
+			return fmt.Errorf("periode wajib")
+		}
+		dept := strings.TrimSpace(p.Department)
+		if dept == "" {
+			return fmt.Errorf("kementerian wajib diisi")
+		}
+		depts, err := db.GetDepartments(period)
+		if err != nil {
+			return fmt.Errorf("gagal memuat kementerian: %v", err)
+		}
+		found := false
+		for _, d := range depts {
+			if strings.EqualFold(strings.TrimSpace(d.Name), dept) {
+				found = true
+				p.Department = d.Name
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("kementerian \"%s\" tidak ditemukan", dept)
+		}
+		return db.InsertProgram(&p)
+
+	case "members":
+		var m db.Member
+		marshalUnmarshal(item, &m)
+		if strings.TrimSpace(m.FullName) == "" {
+			return fmt.Errorf("nama lengkap wajib diisi")
+		}
+		if role != "superadmin" {
+			m.PeriodLabel = assignedPeriod
+			m.ActivePeriods = nil
+			m.ActivePositions = nil
+		}
+		return db.CreateMember(m)
+
+	case "shortlinks":
+		if role != "superadmin" {
+			return fmt.Errorf("hanya superadmin yang dapat membuat shortlink")
+		}
+		target, _ := item["target_url"].(string)
+		target = strings.TrimSpace(target)
+		if target == "" {
+			return fmt.Errorf("target_url wajib diisi")
+		}
+		parsed, err := url.ParseRequestURI(target)
+		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+			return fmt.Errorf("target_url harus URL http/https yang valid")
+		}
+		label, _ := item["label"].(string)
+		code := normalizeShortCode(getString(item, "code"))
+		if code == "" {
+			for i := 0; i < 12; i++ {
+				cand, err := randomShortCode(6)
+				if err != nil {
+					return fmt.Errorf("gagal membuat kode")
+				}
+				exists, err := db.ShortLinkCodeExists(cand)
+				if err != nil {
+					return err
+				}
+				if !exists {
+					code = cand
+					break
+				}
+			}
+			if code == "" {
+				return fmt.Errorf("gagal membuat kode unik")
+			}
+		} else {
+			exists, err := db.ShortLinkCodeExists(code)
+			if err != nil {
+				return err
+			}
+			if exists {
+				return fmt.Errorf("kode \"%s\" sudah digunakan", code)
+			}
+		}
+		s := db.ShortLink{
+			Code:      code,
+			TargetURL: target,
+			Label:     label,
+			CreatedBy: username,
+		}
+		return db.InsertShortLink(&s)
+
+	case "faqs":
+		var f db.FAQ
+		marshalUnmarshal(item, &f)
+		if strings.TrimSpace(f.Question) == "" {
+			return fmt.Errorf("pertanyaan wajib diisi")
+		}
+		if strings.TrimSpace(f.Answer) == "" {
+			return fmt.Errorf("jawaban wajib diisi")
+		}
+		if role != "superadmin" && f.PeriodLabel == "" {
+			f.PeriodLabel = assignedPeriod
+		}
+		return db.InsertFAQ(&f)
+
+	case "periods":
+		if role != "superadmin" {
+			return fmt.Errorf("hanya superadmin yang dapat membuat periode")
+		}
+		var p db.Period
+		marshalUnmarshal(item, &p)
+		if strings.TrimSpace(p.Label) == "" {
+			return fmt.Errorf("label wajib diisi")
+		}
+		if strings.TrimSpace(p.DisplayName) == "" {
+			p.DisplayName = p.Label
+		}
+		if len(p.SubPeriods) == 0 {
+			p.SubPeriods = []string{"Gelombang 1"}
+		}
+		return db.CreatePeriod(p)
+
+	case "accounts":
+		if role != "superadmin" {
+			return fmt.Errorf("hanya superadmin yang dapat membuat akun")
+		}
+		acctUsername := getString(item, "username")
+		password := getString(item, "password")
+		acctRole := getString(item, "role")
+		assigned := getString(item, "assigned_period")
+		if strings.TrimSpace(acctUsername) == "" {
+			return fmt.Errorf("username wajib diisi")
+		}
+		if strings.TrimSpace(password) == "" {
+			return fmt.Errorf("password wajib diisi")
+		}
+		if acctRole != "admin" && acctRole != "superadmin" {
+			return fmt.Errorf("role harus \"admin\" atau \"superadmin\"")
+		}
+		hash, err := auth.HashPassword(password)
+		if err != nil {
+			return fmt.Errorf("gagal hash password: %v", err)
+		}
+		u := db.User{
+			ID:             acctUsername,
+			Username:       acctUsername,
+			PasswordHash:   hash,
+			Role:           acctRole,
+			AssignedPeriod: assigned,
+		}
+		return db.CreateUser(u)
+
+	default:
+		return fmt.Errorf("entity \"%s\" tidak dikenali", entity)
+	}
+}
+
+// marshalUnmarshal converts a map[string]any into a typed struct via JSON round-trip.
+func marshalUnmarshal(src map[string]any, dst any) {
+	b, _ := json.Marshal(src)
+	json.Unmarshal(b, dst)
+}
+
+// getString safely extracts a string from a map.
+func getString(m map[string]any, key string) string {
+	v, _ := m[key].(string)
+	return v
+}
+
+// slugify generates a URL-safe slug from a title.
+func slugify(s string) string {
+	s = strings.ToLower(s)
+	replacer := strings.NewReplacer(" ", "-", "_", "-")
+	s = replacer.Replace(s)
+	result := make([]byte, 0, len(s))
+	for _, c := range s {
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-' {
+			result = append(result, byte(c))
+		}
+	}
+	s = string(result)
+	for strings.Contains(s, "--") {
+		s = strings.ReplaceAll(s, "--", "-")
+	}
+	return strings.Trim(s, "-")
+}
