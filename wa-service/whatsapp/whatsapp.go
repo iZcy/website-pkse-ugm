@@ -133,6 +133,16 @@ func Disconnect() {
 	if client != nil {
 		client.Disconnect()
 	}
+	// Auto-reconnect after disconnect to generate fresh QR
+	go func() {
+		time.Sleep(3 * time.Second)
+		log.Println("[WA] Reconnecting after disconnect...")
+		if client != nil {
+			if err := client.Connect(); err != nil {
+				log.Printf("[WA] Reconnect failed: %v", err)
+			}
+		}
+	}()
 }
 
 func GetQR() ([]byte, bool) {
