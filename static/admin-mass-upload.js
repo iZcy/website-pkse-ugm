@@ -10,6 +10,12 @@ var MassUpload = (function () {
   var _modal = null;
   var _submitted = false;
 
+  // Selection state for drag-select
+  var _selRange = null;
+  var _selAnchor = null;
+  var _selecting = false;
+  var _mouseDownPos = null;
+
   // ── Public API ─────────────────────────────────────────────────────────────
 
   function open(config) {
@@ -18,6 +24,10 @@ var MassUpload = (function () {
     _history = [];
     _future = [];
     _submitted = false;
+    _selRange = null;
+    _selAnchor = null;
+    _selecting = false;
+    _mouseDownPos = null;
     _ensureModal();
     // Reset
     var title = document.getElementById('mu-title');
@@ -86,11 +96,15 @@ var MassUpload = (function () {
         _handlePaste(e, active);
       }
     });
-    // Global keyboard listener for undo/redo
+    // Global keyboard listener for undo/redo/copy
     document.addEventListener('keydown', function (e) {
       if (!_config || !document.getElementById('modalMassUpload') || document.getElementById('modalMassUpload').classList.contains('hidden')) return;
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); _undo(); }
       else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); _redo(); }
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && _selRange) {
+        var active = document.activeElement;
+        if (!active || active.tagName !== 'INPUT') { e.preventDefault(); _copySelection(); }
+      }
     });
   }
 
@@ -149,6 +163,7 @@ var MassUpload = (function () {
     if (_history.length === 0) return;
     _future.push(_snapshot());
     _rows = _history.pop();
+    _selRange = null; _selAnchor = null;
     _renderTable();
   }
 
@@ -156,6 +171,7 @@ var MassUpload = (function () {
     if (_future.length === 0) return;
     _history.push(_snapshot());
     _rows = _future.pop();
+    _selRange = null; _selAnchor = null;
     _renderTable();
   }
 
@@ -197,7 +213,7 @@ var MassUpload = (function () {
               return '<td class="px-2 py-1 border-r border-slate-100' + errorClass + '"><select data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onchange="MassUpload._onCellChange(' + ri + ',\'' + col.key + '\',this.value)" class="w-full border-0 bg-transparent text-xs py-1 focus:ring-0">' + opts + '</select></td>';
             }
             var borderErr = (!val && col.required && _submitted) ? ' border-red-300' : '';
-            return '<td class="px-1 py-0.5 border-r border-slate-100' + errorClass + '"><input type="text" value="' + escHtml(String(val)) + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onblur="MassUpload._onCellChange(' + ri + ',\'' + col.key + '\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" class="w-full border-0 bg-transparent text-xs px-1 py-1.5 focus:ring-1 focus:ring-blue-400 focus:rounded' + borderErr + '"></td>';
+            return '<td class="px-1 py-0.5 border-r border-slate-100' + errorClass + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onmousedown="MassUpload._cellMouseDown(event,this)" onmousemove="MassUpload._cellMouseMove(event,this)"><input type="text" value="' + escHtml(String(val)) + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onblur="MassUpload._onCellChange(' + ri + ',\'' + col.key + '\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" class="w-full border-0 bg-transparent text-xs px-1 py-1.5 focus:ring-1 focus:ring-blue-400 focus:rounded' + borderErr + '"></td>';
           }).join('');
           return '<tr class="border-t border-slate-100 hover:bg-blue-50/30' + errorClass + '">'
             + '<td class="px-2 py-1 text-center"><input type="checkbox" ' + (row._selected ? 'checked' : '') + ' onchange="MassUpload._toggleRow(' + ri + ')" class="rounded"></td>'
@@ -215,6 +231,9 @@ var MassUpload = (function () {
       var sel = _rows.filter(function (r) { return r._selected; }).length;
       countEl.textContent = _rows.length + ' baris' + (sel > 0 ? ' (' + sel + ' dipilih)' : '');
     }
+
+    // Re-apply selection highlighting after render
+    _updateCellStyles();
   }
 
   function _onCellChange(rowIdx, colKey, value) {
@@ -481,6 +500,113 @@ var MassUpload = (function () {
     });
   }
 
+  // ── Drag Selection ──────────────────────────────────────────────────────────
+
+  function _normRange(r) {
+    var r1 = Math.min(r.startRow, r.endRow), r2 = Math.max(r.startRow, r.endRow);
+    var c1 = Math.min(r.startCol, r.endCol), c2 = Math.max(r.startCol, r.endCol);
+    return {r1:r1, c1:c1, r2:r2, c2:c2};
+  }
+
+  function _isCellSelected(ri, ci) {
+    if (!_selRange) return false;
+    var n = _normRange(_selRange);
+    return ri >= n.r1 && ri <= n.r2 && ci >= n.c1 && ci <= n.c2;
+  }
+
+  function _setSelection(sr, sc, er, ec) {
+    _selRange = {startRow:sr, startCol:sc, endRow:er, endCol:ec};
+    _updateCellStyles();
+  }
+
+  function _clearSelection() {
+    _selRange = null;
+    _selAnchor = null;
+    _updateCellStyles();
+  }
+
+  function _updateCellStyles() {
+    var cells = document.querySelectorAll('#mu-tbody td[data-mu-row][data-mu-col]');
+    cells.forEach(function(td) {
+      var ri = parseInt(td.getAttribute('data-mu-row'));
+      var colKey = td.getAttribute('data-mu-col');
+      var cols = _config ? _config.columns || [] : [];
+      var ci = -1;
+      for (var i = 0; i < cols.length; i++) { if (cols[i].key === colKey) { ci = i; break; } }
+      if (_isCellSelected(ri, ci)) td.classList.add('bg-blue-200');
+      else td.classList.remove('bg-blue-200');
+    });
+  }
+
+  function _cellMouseDown(e, cell) {
+    if (!cell.hasAttribute('data-mu-row') || !cell.hasAttribute('data-mu-col')) return;
+    // Clear previous selection unless shift-clicking
+    if (_selRange && !e.shiftKey) { _selRange = null; _selAnchor = null; _updateCellStyles(); }
+    var ri = parseInt(cell.getAttribute('data-mu-row'));
+    var colKey = cell.getAttribute('data-mu-col');
+    var cols = _config ? _config.columns || [] : [];
+    var ci = -1;
+    for (var i = 0; i < cols.length; i++) { if (cols[i].key === colKey) { ci = i; break; } }
+    if (ci < 0) return;
+    if (e.shiftKey && _selAnchor) {
+      _setSelection(_selAnchor.row, _selAnchor.col, ri, ci);
+      e.preventDefault();
+    } else {
+      _mouseDownPos = {x: e.clientX, y: e.clientY, ri: ri, ci: ci};
+      // Focus the input inside the cell for single clicks
+      var input = cell.querySelector('input');
+      if (input) { input.focus(); input.select(); }
+    }
+  }
+
+  function _cellMouseMove(e, cell) {
+    if (!_mouseDownPos || !(e.buttons & 1)) return;
+    var dx = e.clientX - _mouseDownPos.x, dy = e.clientY - _mouseDownPos.y;
+    if (!_selecting && (dx*dx + dy*dy) < 25) return;
+    if (!_selecting) {
+      _selecting = true;
+      _selAnchor = {row: _mouseDownPos.ri, col: _mouseDownPos.ci};
+      document.addEventListener('mouseup', _cellMouseUpHandler);
+      document.addEventListener('selectstart', _preventSelect);
+    }
+    if (!cell.hasAttribute('data-mu-row') || !cell.hasAttribute('data-mu-col')) return;
+    var ri = parseInt(cell.getAttribute('data-mu-row'));
+    var colKey = cell.getAttribute('data-mu-col');
+    var cols = _config ? _config.columns || [] : [];
+    var ci = -1;
+    for (var i = 0; i < cols.length; i++) { if (cols[i].key === colKey) { ci = i; break; } }
+    if (ci < 0) return;
+    _setSelection(_selAnchor.row, _selAnchor.col, ri, ci);
+  }
+
+  function _cellMouseUpHandler() {
+    _mouseDownPos = null;
+    _selecting = false;
+    _selAnchor = null;
+    _updateCellStyles();
+    document.removeEventListener('mouseup', _cellMouseUpHandler);
+    document.removeEventListener('selectstart', _preventSelect);
+  }
+
+  function _preventSelect(e) { e.preventDefault(); }
+
+  function _copySelection() {
+    if (!_selRange) return;
+    var n = _normRange(_selRange);
+    var cols = _config ? _config.columns || [] : [];
+    var lines = [];
+    for (var ri = n.r1; ri <= n.r2; ri++) {
+      if (ri >= _rows.length) break;
+      var vals = [];
+      for (var ci = n.c1; ci <= n.c2; ci++) {
+        if (ci >= cols.length) break;
+        vals.push(String(_rows[ri][cols[ci].key] || ''));
+      }
+      lines.push(vals.join('\t'));
+    }
+    navigator.clipboard.writeText(lines.join('\n')).catch(function(){});
+  }
+
   // Public methods
   return {
     open: open,
@@ -494,6 +620,8 @@ var MassUpload = (function () {
     _redo: _redo,
     _onCellChange: _onCellChange,
     _importCSV: _importCSV,
-    _submit: _submit
+    _submit: _submit,
+    _cellMouseDown: _cellMouseDown,
+    _cellMouseMove: _cellMouseMove
   };
 })();
