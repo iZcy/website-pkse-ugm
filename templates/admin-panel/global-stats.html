@@ -157,31 +157,6 @@
   </div>
 </div>
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
-<script src="/static/admin-common.js?v15-1774948443"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() { loadGlobalStatsTab(); renderChartChoices('bar'); });
-document.addEventListener('click', function(e) {
-  const addSeriesBtn = e.target.closest('#btn-add-series');
-  if (addSeriesBtn) { const chartType = document.getElementById('stat-chart-type')?.value || 'bar'; const mode = statChartMode(chartType) === 'xy' ? 'xy' : 'series'; const list = document.getElementById('stat-series-list'); if (list) { list.insertAdjacentHTML('beforeend', statRowInputTemplate(mode, list.querySelectorAll('.stat-row').length, {})); renderStatPreview(chartType, collectStatInputValue(chartType)); } return; }
-  const removeSeriesBtn = e.target.closest('[data-remove-series]');
-  if (removeSeriesBtn) { const row = removeSeriesBtn.closest('.stat-row'); if (row) row.remove(); const chartType = document.getElementById('stat-chart-type')?.value || 'bar'; try { renderStatPreview(chartType, collectStatInputValue(chartType)); } catch (_) {} return; }
-  const btn = e.target.closest('.chart-choice');
-  if (!btn) return; renderChartChoices(btn.getAttribute('data-chart-value') || 'bar');
-});
-document.addEventListener('input', function(e) {
-  const t = e.target; if (!t) return;
-  if (t.id === 'stat-simple-value' || t.matches('#stat-series-list input')) { const chartType = document.getElementById('stat-chart-type')?.value || 'bar'; try { const value = collectStatInputValue(chartType); document.getElementById('stat-value').value = value; renderStatPreview(chartType, value); } catch (_) {} return; }
-});
-document.getElementById('formStatistik').addEventListener('submit', async e => {
-  e.preventDefault();
-  const periodLabel = document.getElementById('stat-period').value || currentPeriod();
-  const chartType = document.getElementById('stat-chart-type').value;
-  let normalizedValue = document.getElementById('stat-value').value;
-  if (periodLabel !== '_TEMPLATE_') { try { normalizedValue = collectStatInputValue(chartType); } catch (ex) { uiAlert(ex.message || String(ex)); return; } }
-  if (periodLabel !== '_TEMPLATE_' && !String(normalizedValue || '').trim()) { uiAlert('Value statistik periode wajib diisi.'); return; }
-  document.getElementById('stat-value').value = normalizedValue;
-  const data = { id: document.getElementById('stat-id').value, template_id: document.getElementById('stat-template-id').value, period_label: periodLabel, label: document.getElementById('stat-label').value, value: normalizedValue, desc: document.getElementById('stat-desc').value, chart_type: chartType, fillable: document.getElementById('stat-fillable').checked, visible: document.getElementById('stat-visible').checked, order: 0 };
-  try { await api(data.id ? 'PUT' : 'POST', '/api/cms/stats', data); closeModal('modalStatistik'); if (periodLabel === '_TEMPLATE_') loadGlobalStatsTab(); else loadStatistik(); } catch(ex) { uiAlert(ex); }
-});
-</script>
+<script src="/static/admin-common.js?v=1774970000"></script>
+<script src="/static/admin-global-stats.js?v=1774970000"></script>
 </body></html>

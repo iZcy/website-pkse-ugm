@@ -60,7 +60,8 @@ func proxyToWA(method, path string, body io.Reader) (*http.Response, error) {
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	return http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: 10 * time.Second}
+	return client.Do(req)
 }
 
 // ── WebSocket hub ────────────────────────────────────────────────────────────

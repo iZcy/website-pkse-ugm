@@ -8,6 +8,7 @@ async function loadStatistik() {
     // Load template statistik with Fillable=true
     const templatesResp = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
     const templates = templatesResp.items || templatesResp || [];
+    state.global_stats = templates;
     const fillableTemplates = templates.filter(t => t.fillable);
 
     // Load period statistik values

@@ -49,7 +49,7 @@ async function loadPeriode() {
         <div class="flex gap-2 flex-shrink-0 items-center">
           <button onclick="editPeriode('${p.label}')" class="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100">Edit</button>
           ${!p.is_active ? `<button onclick="activatePeriode('${p.label}')" class="bg-green-50 hover:bg-green-100 text-green-700 text-xs px-3 py-1.5 rounded-lg font-medium transition">Jadikan Aktif</button>` : ''}
-          ${!p.is_active ? `<button onclick="deletePeriode('${p.label}')" class="text-red-600 bg-red-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-100">Hapus</button>` : ''}
+          ${!p.is_active ? (p.has_data ? `<button disabled title="Periode ini memiliki data terkait" class="text-red-300 bg-red-50 px-3 py-1.5 rounded-lg text-xs font-medium cursor-not-allowed">Hapus</button>` : `<button onclick="deletePeriode('${p.label}')" class="text-red-600 bg-red-50 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-100">Hapus</button>`) : ''}
         </div>
       </div>`).join('');
     // also populate akun period selector

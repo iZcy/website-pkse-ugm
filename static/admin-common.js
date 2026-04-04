@@ -167,12 +167,24 @@ function pickerGetUrl(id) {
 
 // ── Quill instances ──────────────────────────────────────────────────────────
 const quills = {};
+
+// Register line-height as a custom format for Quill
+(function() {
+  const Parchment = Quill.import('parchment');
+  const LineHeightAttributor = new Parchment.Attributor.Style('lineheight', 'line-height', {
+    scope: Parchment.Scope.BLOCK,
+    whitelist: ['1', '1.2', '1.5', '1.8', '2', '2.5', '3']
+  });
+  Quill.register({ 'formats/lineheight': LineHeightAttributor }, true);
+})();
+
 const toolbarOptions = [
   [{ header: [1, 2, 3, false] }],
   ['bold', 'italic', 'underline', 'strike'],
   [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
   ['link', 'blockquote'],
   [{ align: [] }],
+  [{ lineheight: ['1', '1.2', '1.5', '1.8', '2', '2.5', '3'] }],
   ['clean']
 ];
 const toolbarFull = [
@@ -181,22 +193,43 @@ const toolbarFull = [
   [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
   ['link', 'blockquote'],
   [{ align: [] }],
+  [{ lineheight: ['1', '1.2', '1.5', '1.8', '2', '2.5', '3'] }],
   ['clean']
 ];
 
 function initQuill(id, toolbar) {
   if (quills[id]) return quills[id];
   if (!document.getElementById(id)) return null;
+  var tb = toolbar || toolbarOptions;
   quills[id] = new Quill('#' + id, {
     theme: 'snow',
     modules: {
-      toolbar: toolbar || toolbarOptions,
+      toolbar: {
+        container: tb,
+        handlers: {
+          image: function() {},
+          lineheight: function(value) {
+            var q = quills[id];
+            if (!q) return;
+            if (value && value !== 'false') {
+              q.format('lineheight', value);
+            } else {
+              q.format('lineheight', false);
+            }
+          }
+        }
+      },
       imageDrop: false,
       clipboard: { matchVisual: false }
     }
   });
-  // Disable Quill's built-in image handler that shows "please enter a URL" prompt
-  quills[id].getModule('toolbar').addHandler('image', function() {});
+  // Style the lineheight select in the toolbar
+  var lhEl = quills[id].container.parentNode.querySelector('.ql-lineheight');
+  if (lhEl && lhEl.tagName === 'SELECT') {
+    lhEl.title = 'Line Height';
+    // Add placeholder option styling
+    lhEl.style.width = '80px';
+  }
   return quills[id];
 }
 function quillGetHTML(id) {
@@ -928,6 +961,23 @@ function initDeptSortables() {
     });
     memberSortInstances.push(sortable);
   });
+
+  document.querySelectorAll('.dept-children').forEach(container => {
+    const sortable = Sortable.create(container, {
+      animation: 180,
+      handle: '.dept-drag',
+      draggable: '.dept-card',
+      onEnd: async () => {
+        try {
+          await persistDepartmentOrderFromDom();
+          await loadKementerian();
+        } catch (ex) {
+          uiAlert('Gagal menyimpan urutan deputi: ' + ex.message);
+        }
+      }
+    });
+    memberSortInstances.push(sortable);
+  });
 }
 
 function buildDeptTree(depts) {
@@ -947,7 +997,7 @@ function renderDeptCard(d, depth) {
   const borderColor = depth === 0 ? 'border-slate-200' : 'border-slate-100';
   const bgColor = depth === 0 ? 'bg-white' : 'bg-slate-50/60';
   const childrenHtml = d._children.length
-    ? `<div class="ml-6 mt-2 space-y-2 border-l-2 border-slate-200 pl-4">${d._children.map(c => renderDeptCard(c, depth + 1)).join('')}</div>`
+    ? `<div class="dept-children ml-6 mt-2 space-y-2 border-l-2 border-slate-200 pl-4">${d._children.map(c => renderDeptCard(c, depth + 1)).join('')}</div>`
     : '';
   return `
     <div class="dept-card ${bgColor} rounded-xl p-4 shadow-sm border ${borderColor} space-y-3" data-dept-id="${d.id}" data-dept-name="${escHtml(d.name)}" ${ml ? `style="margin-left:${ml}px"` : ''}>
