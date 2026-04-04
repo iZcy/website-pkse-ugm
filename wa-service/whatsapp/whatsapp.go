@@ -125,6 +125,11 @@ func SendBulk(numbers []string, message string) []SendResult {
 }
 
 func Disconnect() {
+	mu.Lock()
+	connected = false
+	qrReady = false
+	qrBytes = nil
+	mu.Unlock()
 	if client != nil {
 		client.Disconnect()
 	}

@@ -46,6 +46,7 @@ func main() {
 	mux.HandleFunc("/send", handleSend)
 	mux.HandleFunc("/send-bulk", handleSendBulk)
 	mux.HandleFunc("/job/", handleJobStatus)
+	mux.HandleFunc("/logout", handleLogout)
 
 	addr := fmt.Sprintf(":%s", port)
 	log.Printf("[WA-Service] Running on %s", addr)
@@ -184,4 +185,15 @@ func handleJobStatus(w http.ResponseWriter, r *http.Request) {
 func handleTest(w http.ResponseWriter, r *http.Request) {
 	// Simple echo endpoint for testing connectivity
 	io.WriteString(w, "wa-service is running")
+}
+
+func handleLogout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
+		return
+	}
+	wa.Disconnect()
+	// The event handler in handler.go auto-reconnects after 5s on Disconnected event,
+	// which will generate a new QR code.
+	writeJSON(w, 200, map[string]string{"status": "disconnected"})
 }

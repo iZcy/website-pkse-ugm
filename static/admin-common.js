@@ -2940,6 +2940,25 @@ async function loadWAQR() {
 async function disconnectWA() {
   if (!await uiConfirm('Disconnect WhatsApp?')) return;
   await api('POST', '/api/broadcast/disconnect');
+  // Retry status check a few times — wa-service may need a moment to restart
+  var dot = document.getElementById('wa-status-dot');
+  var txt = document.getElementById('wa-status-text');
+  if (txt) txt.textContent = 'Memutuskan...';
+  if (dot) dot.className = 'w-3 h-3 rounded-full bg-yellow-400';
+  for (var attempt = 0; attempt < 5; attempt++) {
+    await new Promise(function(r) { setTimeout(r, 1500); });
+    try {
+      var data = await api('GET', '/api/broadcast/status');
+      if (data && !data.connected) {
+        // Service is back and disconnected — now load QR
+        loadWAStatus();
+        return;
+      }
+    } catch(e) {
+      // Service not ready yet, keep retrying
+    }
+  }
+  // All retries exhausted — try once more
   loadWAStatus();
 }
 
