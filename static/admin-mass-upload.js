@@ -480,7 +480,11 @@ var MassUpload = (function () {
 
       resultsEl.innerHTML = html;
       resultsEl.classList.remove('hidden');
-      resultsEl.classList.add(data.failed > 0 ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50');
+      if (data.failed > 0) {
+        resultsEl.classList.add('border-red-200', 'bg-red-50');
+      } else {
+        resultsEl.classList.add('border-green-200', 'bg-green-50');
+      }
 
       _renderTable();
 
