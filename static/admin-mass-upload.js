@@ -88,6 +88,18 @@ var MassUpload = (function () {
       + '</div>'
       + '</div></div>';
     document.body.appendChild(div);
+    // Event delegation for drag selection on tbody
+    document.addEventListener('mousedown', function (e) {
+      if (!_config || !document.getElementById('modalMassUpload') || document.getElementById('modalMassUpload').classList.contains('hidden')) return;
+      var td = e.target.closest('td[data-mu-row][data-mu-col]');
+      if (td) _cellMouseDown(e, td);
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (!_config || !_mouseDownPos || !document.getElementById('modalMassUpload') || document.getElementById('modalMassUpload').classList.contains('hidden')) return;
+      if (!(e.buttons & 1)) return;
+      var td = e.target.closest('td[data-mu-row][data-mu-col]');
+      if (td) _cellMouseMove(e, td);
+    });
     // Global paste listener
     document.addEventListener('paste', function (e) {
       if (!_config || !document.getElementById('modalMassUpload') || document.getElementById('modalMassUpload').classList.contains('hidden')) return;
@@ -213,7 +225,7 @@ var MassUpload = (function () {
               return '<td class="px-2 py-1 border-r border-slate-100' + errorClass + '"><select data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onchange="MassUpload._onCellChange(' + ri + ',\'' + col.key + '\',this.value)" class="w-full border-0 bg-transparent text-xs py-1 focus:ring-0">' + opts + '</select></td>';
             }
             var borderErr = (!val && col.required && _submitted) ? ' border-red-300' : '';
-            return '<td class="px-1 py-0.5 border-r border-slate-100' + errorClass + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onmousedown="MassUpload._cellMouseDown(event,this)" onmousemove="MassUpload._cellMouseMove(event,this)"><input type="text" value="' + escHtml(String(val)) + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onblur="MassUpload._onCellChange(' + ri + ',\'' + col.key + '\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" class="w-full border-0 bg-transparent text-xs px-1 py-1.5 focus:ring-1 focus:ring-blue-400 focus:rounded' + borderErr + '"></td>';
+            return '<td class="px-1 py-0.5 border-r border-slate-100' + errorClass + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '"><input type="text" value="' + escHtml(String(val)) + '" data-mu-row="' + ri + '" data-mu-col="' + col.key + '" onblur="MassUpload._onCellChange(' + ri + ',\'' + col.key + '\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" class="w-full border-0 bg-transparent text-xs px-1 py-1.5 focus:ring-1 focus:ring-blue-400 focus:rounded' + borderErr + '"></td>';
           }).join('');
           return '<tr class="border-t border-slate-100 hover:bg-blue-50/30' + errorClass + '">'
             + '<td class="px-2 py-1 text-center"><input type="checkbox" ' + (row._selected ? 'checked' : '') + ' onchange="MassUpload._toggleRow(' + ri + ')" class="rounded"></td>'
@@ -574,9 +586,6 @@ var MassUpload = (function () {
       e.preventDefault();
     } else {
       _mouseDownPos = {x: e.clientX, y: e.clientY, ri: ri, ci: ci};
-      // Focus the input inside the cell for single clicks
-      var input = cell.querySelector('input');
-      if (input) { input.focus(); input.select(); }
     }
   }
 
@@ -587,6 +596,9 @@ var MassUpload = (function () {
     if (!_selecting) {
       _selecting = true;
       _selAnchor = {row: _mouseDownPos.ri, col: _mouseDownPos.ci};
+      // Blur any focused input to prevent text selection conflict
+      var active = document.activeElement;
+      if (active && active.tagName === 'INPUT') active.blur();
       document.addEventListener('mouseup', _cellMouseUpHandler);
       document.addEventListener('selectstart', _preventSelect);
     }
