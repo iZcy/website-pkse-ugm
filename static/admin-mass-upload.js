@@ -445,6 +445,17 @@ var MassUpload = (function () {
         }
         item[col.key] = val;
       });
+      // Inject period_label for period-scoped entities if not already set
+      if (_config.hasPeriod && !item.period_label) {
+        var pLabel = window.PERIOD || '';
+        // For FAQ, check active tab period
+        if (_config.entity === 'faqs') {
+          var activeTab = document.querySelector('.faq-tab-btn.active');
+          if (activeTab && activeTab.dataset.label) pLabel = activeTab.dataset.label;
+          else pLabel = 'GLOBAL';
+        }
+        item.period_label = pLabel;
+      }
       return item;
     });
 
@@ -452,42 +463,48 @@ var MassUpload = (function () {
       entity: _config.entity,
       items: items
     }).then(function (data) {
-      var resultsEl = document.getElementById('mu-results');
-      if (!resultsEl) return;
+      try {
+        var resultsEl = document.getElementById('mu-results');
 
-      // Mark errors on rows
-      (data.results || []).forEach(function (r) {
-        if (r.status === 'error' && _rows[r.row]) {
-          _rows[r.row]._error = r.error || 'Gagal';
-        }
-      });
-
-      var html = '<div class="flex items-center gap-3">'
-        + '<span class="text-lg font-bold text-green-600">' + (data.created || 0) + ' berhasil</span>'
-        + (data.failed > 0 ? '<span class="text-lg font-bold text-red-600">' + data.failed + ' gagal</span>' : '')
-        + '<span class="text-xs text-slate-400">dari ' + (data.total || 0) + ' baris</span>'
-        + '</div>';
-
-      if (data.failed > 0) {
-        html += '<div class="max-h-32 overflow-y-auto space-y-1 mt-2">';
+        // Mark errors on rows
         (data.results || []).forEach(function (r) {
-          if (r.status === 'error') {
-            html += '<div class="text-xs text-red-600">Baris ' + (r.row + 1) + ': ' + escHtml(r.error || 'Gagal') + '</div>';
+          if (r.status === 'error' && _rows[r.row]) {
+            _rows[r.row]._error = r.error || 'Gagal';
           }
         });
-        html += '</div>';
+
+        if (resultsEl) {
+          var html = '<div class="flex items-center gap-3">'
+            + '<span class="text-lg font-bold text-green-600">' + (data.created || 0) + ' berhasil</span>'
+            + (data.failed > 0 ? '<span class="text-lg font-bold text-red-600">' + data.failed + ' gagal</span>' : '')
+            + '<span class="text-xs text-slate-400">dari ' + (data.total || 0) + ' baris</span>'
+            + '</div>';
+
+          if (data.failed > 0) {
+            html += '<div class="max-h-32 overflow-y-auto space-y-1 mt-2">';
+            (data.results || []).forEach(function (r) {
+              if (r.status === 'error') {
+                html += '<div class="text-xs text-red-600">Baris ' + (r.row + 1) + ': ' + escHtml(r.error || 'Gagal') + '</div>';
+              }
+            });
+            html += '</div>';
+          }
+
+          resultsEl.innerHTML = html;
+          resultsEl.classList.remove('hidden');
+          if (data.failed > 0) {
+            resultsEl.classList.add('border-red-200', 'bg-red-50');
+          } else {
+            resultsEl.classList.add('border-green-200', 'bg-green-50');
+          }
+        }
+
+        _renderTable();
+      } catch(e) {
+        console.error('[MassUpload] render error:', e);
       }
 
-      resultsEl.innerHTML = html;
-      resultsEl.classList.remove('hidden');
-      if (data.failed > 0) {
-        resultsEl.classList.add('border-red-200', 'bg-red-50');
-      } else {
-        resultsEl.classList.add('border-green-200', 'bg-green-50');
-      }
-
-      _renderTable();
-
+      // Always update button and trigger callback regardless of render errors
       if (submitBtn) {
         submitBtn.textContent = 'Upload Data';
         if (data.failed === 0) {

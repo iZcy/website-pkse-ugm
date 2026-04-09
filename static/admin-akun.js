@@ -7,14 +7,16 @@ async function loadAkun() {
     if (!items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
+        <th class="px-4 py-3 bg-slate-50 font-semibold w-10">No.</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Username</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Role</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Periode</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
       <tbody class="divide-y divide-slate-100">
-        ${items.map(u => `
+        ${items.map((u, i) => `
         <tr class="bg-white hover:bg-slate-50">
+          <td class="px-4 py-3 text-slate-400 border-t border-slate-100 text-center">${i + 1}</td>
           <td class="px-4 py-3 font-medium text-slate-800 border-t border-slate-100">${escHtml(u.username)}</td>
           <td class="px-4 py-3 border-t border-slate-100"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'superadmin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${escHtml(u.role)}</span></td>
           <td class="px-4 py-3 text-slate-500 border-t border-slate-100">${escHtml(u.assigned_period || '—')}</td>

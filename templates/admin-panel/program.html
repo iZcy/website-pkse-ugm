@@ -93,7 +93,7 @@
     <div class="flex items-center gap-2"><label class="text-xs uppercase font-bold tracking-wider text-slate-500">Kementerian</label><select id="programDeptFilter" onchange="filterPrograms()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"><option value="">Semua</option></select></div>
     <div class="w-px h-6 bg-slate-200"></div>
     <div class="flex items-center gap-2"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><input id="programSearchInput" type="text" placeholder="Cari program..." oninput="filterPrograms()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48"></div></div></div>
-<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500"><tr><th class="p-4 text-left font-medium">Kementerian</th><th class="p-4 text-left font-medium">Judul Program</th><th class="p-4 text-left font-medium">Deskripsi</th><th class="p-4 text-right font-medium">Aksi</th></tr></thead><tbody id="program-tbody"></tbody></table></div>
+<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm"><thead class="bg-slate-50 border-b border-slate-200 text-slate-500"><tr><th class="p-4 text-left font-medium w-10">No.</th><th class="p-4 text-left font-medium">Kementerian</th><th class="p-4 text-left font-medium">Judul Program</th><th class="p-4 text-left font-medium">Deskripsi</th><th class="p-4 text-right font-medium">Aksi</th></tr></thead><tbody id="program-tbody"></tbody></table></div>
 </main></div>
 <div id="modalAction" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4"><div class="bg-white rounded-2xl shadow-xl w-full max-w-md"><div class="p-6 border-b border-slate-200"><h3 id="modalActionTitle" class="text-lg font-bold text-slate-800">Konfirmasi</h3></div><div class="p-6"><p id="modalActionMessage" class="text-sm text-slate-700 leading-relaxed"></p></div><div class="px-6 pb-6 flex justify-end gap-3"><button id="modalActionCancel" type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition">Batal</button><button id="modalActionOk" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">OK</button></div></div></div>
 <div id="modalProgram" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
@@ -108,6 +108,6 @@
       <div class="flex gap-3 pt-2"><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition flex-1">Simpan</button><button type="button" onclick="closeModal('modalProgram')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-lg text-sm font-medium transition">Batal</button></div></form></div></div>
 <script>window.PERIOD = "{{.SelectedPeriod}}"; window.ROLE = "{{.Role}}";</script>
 <script src="/static/admin-common.js?v=1774968421"></script>
-<script src="/static/admin-program.js?v=1774948393"></script>
-<script src="/static/admin-mass-upload.js"></script>
+<script src="/static/admin-program.js?v=1774948395"></script>
+<script src="/static/admin-mass-upload.js?v=3"></script>
 </body></html>

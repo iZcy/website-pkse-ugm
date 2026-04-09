@@ -1,6 +1,4 @@
 // ── PROGRAM ──────────────────────────────────────────────────────────────────
-let programCache = [];
-let programDeptCache = [];
 
 async function loadPrograms() {
   const tb = document.getElementById('program-tbody');
@@ -23,7 +21,7 @@ async function loadPrograms() {
 
     renderProgramTable();
   } catch (e) {
-    tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(e.message)}</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="5" class="p-6">${errHtml(e.message)}</td></tr>`;
   }
 }
 
@@ -40,12 +38,13 @@ function renderProgramTable() {
   });
 
   if (!filtered.length) {
-    tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada program yang cocok.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Tidak ada program yang cocok.</td></tr>';
     return;
   }
 
-  tb.innerHTML = filtered.map(p => `
+  tb.innerHTML = filtered.map((p, pi) => `
     <tr class="border-b border-slate-100 hover:bg-slate-50">
+      <td class="p-4 align-middle text-slate-400 text-center w-10">${pi + 1}</td>
       <td class="p-4 align-top text-slate-700">${escHtml(p.department || '-')}</td>
       <td class="p-4 align-top font-medium text-slate-800">
         <div class="flex items-center gap-2">

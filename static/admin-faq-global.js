@@ -35,8 +35,9 @@ async function loadFAQs(pLabel) {
     const resp = await api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel));
     const items = resp.items || resp || [];
     state.faqs = items;
-    tb.innerHTML = items.map(f => `
+    tb.innerHTML = items.map((f, fi) => `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
+        <td class="p-4 align-middle text-slate-400 text-center w-10">${fi + 1}</td>
         <td class="p-4 align-middle w-10 cursor-move faq-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
         <td class="p-4 align-middle font-medium">${escHtml((f.question||'').substring(0,30))}...</td>
         <td class="p-4 align-middle">${escHtml((f.answer||'').substring(0,30))}...</td>
@@ -47,7 +48,7 @@ async function loadFAQs(pLabel) {
       </tr>
     `).join('');
     initFAQSorable(pLabel);
-  } catch(e) { tb.innerHTML = `<tr><td colspan="3">${errHtml(e.message)}</td></tr>`; }
+  } catch(e) { tb.innerHTML = `<tr><td colspan="5">${errHtml(e.message)}</td></tr>`; }
 }
 function openFAQModal(pLabel) {
   document.getElementById('formFAQ').reset();

@@ -11,15 +11,16 @@ async function loadShortlinks() {
     const resp = await api('GET', '/api/cms/shortlinks');
     rows = resp.items || resp || [];
   } catch (ex) {
-    tb.innerHTML = `<tr><td colspan="4" class="p-6">${errHtml(toUiMessage(ex))}</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="5" class="p-6">${errHtml(toUiMessage(ex))}</td></tr>`;
     return;
   }
   if (!rows.length) {
-    tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>';
     return;
   }
-  tb.innerHTML = rows.map((row) => `
+  tb.innerHTML = rows.map((row, si) => `
     <tr class="border-b border-slate-100 hover:bg-slate-50">
+      <td class="p-4 align-middle text-slate-400 text-center w-10">${si + 1}</td>
       <td class="p-4 align-top font-medium text-slate-700">${escHtml(row.label || '-')}</td>
       <td class="p-4 align-top">
         <a href="${escHtml(shortlinkURL(row.code))}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">${escHtml(shortlinkURL(row.code))}</a>

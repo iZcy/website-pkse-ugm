@@ -309,6 +309,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
             <tr>
+              <th class="p-4 text-left font-medium w-10">No.</th>
               <th class="p-4 text-left font-medium">Kementerian</th>
               <th class="p-4 text-left font-medium">Judul Program</th>
               <th class="p-4 text-left font-medium">Deskripsi</th>
@@ -355,6 +356,7 @@
             <table class="w-full text-sm">
               <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
                 <tr>
+                  <th class="p-4 text-left font-medium w-10">No.</th>
                   <th class="p-4 text-left font-medium">Nama</th>
                   <th class="p-4 text-left font-medium">Short URL</th>
                   <th class="p-4 text-left font-medium">Target URL</th>
@@ -477,6 +479,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 text-slate-600 text-left uppercase text-xs tracking-wider">
             <tr>
+              <th class="p-4 font-semibold w-10">No.</th>
               <th class="p-4 font-semibold w-10"></th>
               <th class="p-4 font-semibold">Label/Nama Format</th>
               <th class="p-4 font-semibold">Deskripsi Format</th>
@@ -621,6 +624,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
             <tr>
+              <th class="p-4 text-left font-medium w-10">No.</th>
               <th class="p-4 text-left font-medium w-10"></th>
               <th class="p-4 text-left font-medium">Label</th>
               <th class="p-4 text-left font-medium">Input Nilai</th>
@@ -646,6 +650,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
             <tr>
+              <th class="p-4 text-left font-medium w-10">No.</th>
               <th class="p-4 text-left font-medium w-10"></th>
               <th class="p-4 text-left font-medium">Pertanyaan</th>
               <th class="p-4 text-left font-medium">Jawaban</th>
@@ -816,6 +821,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 text-slate-600 text-left uppercase text-xs tracking-wider">
             <tr>
+              <th class="p-4 font-semibold w-10">No.</th>
               <th class="p-4 font-semibold w-10"></th>
               <th class="p-4 font-semibold">Label/Nama Format</th>
               <th class="p-4 font-semibold">Deskripsi Format</th>
@@ -947,6 +953,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
             <tr>
+              <th class="p-4 text-left font-medium w-10">No.</th>
               <th class="p-4 text-left font-medium w-10"></th>
               <th class="p-4 text-left font-medium">Label</th>
               <th class="p-4 text-left font-medium">Input Nilai</th>
@@ -971,6 +978,7 @@
         <table class="w-full text-sm">
           <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
             <tr>
+              <th class="p-4 text-left font-medium w-10">No.</th>
               <th class="p-4 text-left font-medium w-10"></th>
               <th class="p-4 text-left font-medium">Pertanyaan</th>
               <th class="p-4 text-left font-medium">Jawaban</th>
@@ -2048,7 +2056,7 @@ function renderProgramTable(rows) {
   });
   var tb = document.getElementById('program-tbody');
   if (!filtered.length) { tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada program yang cocok.</td></tr>'; return; }
-  tb.innerHTML = filtered.map(function(r) { return '<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-4 font-medium text-slate-700">'+escHtml(r.department||'-')+'</td><td class="p-4">'+escHtml(r.title||'-')+'</td><td class="p-4 text-slate-500 max-w-xs truncate">'+escHtml((r.description||'').substring(0,80))+'</td><td class="p-4 text-right"><button onclick="editProgram(\''+r.id+'\')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button><button onclick="deleteProgram(\''+r.id+'\')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button></td></tr>'; }).join('');
+  tb.innerHTML = filtered.map(function(r,ri) { return '<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-4 text-slate-400 text-center">'+(ri+1)+'</td><td class="p-4 font-medium text-slate-700">'+escHtml(r.department||'-')+'</td><td class="p-4">'+escHtml(r.title||'-')+'</td><td class="p-4 text-slate-500 max-w-xs truncate">'+escHtml((r.description||'').substring(0,80))+'</td><td class="p-4 text-right"><button onclick="editProgram(\''+r.id+'\')" class="text-blue-600 p-1 bg-blue-50 border rounded mr-1">Edit</button><button onclick="deleteProgram(\''+r.id+'\')" class="text-red-600 p-1 bg-red-50 border rounded">Hapus</button></td></tr>'; }).join('');
 }
 function filterPrograms() { renderProgramTable(window._programRows || []); }
 
@@ -2063,11 +2071,12 @@ async function loadPrograms() {
     programCache = programs || [];
     programDeptCache = depts || [];
     if (!programCache.length) {
-      tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada program untuk periode ini.</td></tr>';
+      tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada program untuk periode ini.</td></tr>';
       return;
     }
-    tb.innerHTML = programCache.map(p => `
+    tb.innerHTML = programCache.map((p, pi) => `
       <tr class="border-b border-slate-100 hover:bg-slate-50">
+        <td class="p-4 align-top text-slate-400 text-center">${pi + 1}</td>
         <td class="p-4 align-top text-slate-700">${escHtml(p.department || '-')}</td>
         <td class="p-4 align-top font-medium text-slate-800">
           <div class="flex items-center gap-2">
@@ -2433,14 +2442,16 @@ async function loadAkun() {
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
+        <th class="px-4 py-3 bg-slate-50 font-semibold w-10">No.</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Username</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Role</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Periode</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
       <tbody class="divide-y divide-slate-100">
-        ${items.map(u => `
+        ${items.map((u, ui) => `
         <tr class="bg-white hover:bg-slate-50">
+          <td class="px-4 py-3 text-slate-400 border-t border-slate-100 text-center">${ui + 1}</td>
           <td class="px-4 py-3 font-medium text-slate-800 border-t border-slate-100">${escHtml(u.username)}</td>
           <td class="px-4 py-3 border-t border-slate-100"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'superadmin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role}</span></td>
           <td class="px-4 py-3 text-slate-500 border-t border-slate-100">${u.assigned_period || '—'}</td>
@@ -3027,8 +3038,9 @@ async function loadFAQs(pLabel) {
   try {
     const items = await api('GET', '/api/cms/faqs?period=' + encodeURIComponent(pLabel));
     state.faqs = items || [];
-    tb.innerHTML = (items||[]).map(f => `
+    tb.innerHTML = (items||[]).map((f, fi) => `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
+        <td class="p-4 align-middle text-slate-400 text-center w-10">${fi + 1}</td>
         <td class="p-4 align-middle w-10 cursor-move faq-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
         <td class="p-4 align-middle font-medium">${escHtml((f.question||'').substring(0,30))}...</td>
         <td class="p-4 align-middle">${escHtml((f.answer||'').substring(0,30))}...</td>
@@ -3039,7 +3051,7 @@ async function loadFAQs(pLabel) {
       </tr>
     `).join('');
     initFAQSorable(pLabel);
-  } catch(e) { tb.innerHTML = `<tr><td colspan="3">${errHtml(e.message)}</td></tr>`; }
+  } catch(e) { tb.innerHTML = `<tr><td colspan="5">${errHtml(e.message)}</td></tr>`; }
 }
 function openFAQModal(pLabel) {
   document.getElementById('formFAQ').reset();
@@ -3134,8 +3146,9 @@ async function loadGlobalStatsTab() {
     try {
         const items = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
         state.global_stats = items || [];
-        tb.innerHTML = (items||[]).map(s => `
+        tb.innerHTML = (items||[]).map((s, gsi) => `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${s.id}">
+            <td class="p-4 align-middle text-slate-400 text-center w-10">${gsi + 1}</td>
             <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
             <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
             <td class="p-4 align-middle text-slate-500">${escHtml(s.desc||'')}</td>
@@ -3148,10 +3161,10 @@ async function loadGlobalStatsTab() {
             </td>
           </tr>
         `).join('');
-        if(!items || !items.length) tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
+        if(!items || !items.length) tb.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
         initStatsSortable('global-stats-tbody');
     } catch(e) {
-        tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">${e}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">${e}</td></tr>`;
     }
 }
 function openStatModalGlobal() {
@@ -3223,7 +3236,7 @@ async function loadStatistik() {
       const templateId = s.template_id || s.id;
       statsMap[templateId] = s;
     });
-    tb.innerHTML = fillableTemplates.map(template => {
+    tb.innerHTML = fillableTemplates.map((template, sti) => {
       const stat = statsMap[template.id];
       const value = stat ? stat.value : '';
       return `
@@ -3244,9 +3257,9 @@ async function loadStatistik() {
       </tr>
     `}).join('');
     if(!fillableTemplates.length) {
-      tb.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
     }
-  } catch(e) { tb.innerHTML = `<tr><td colspan="6">${errHtml(e.message)}</td></tr>`; }
+  } catch(e) { tb.innerHTML = `<tr><td colspan="7">${errHtml(e.message)}</td></tr>`; }
 }
 // Display formatted stat value based on chart type  
 function statValueDisplay(value, chartType) {

@@ -296,10 +296,11 @@ function loadShortlinks(page, search) {
   if (!tb) return;
   api('GET', '/api/cms/shortlinks?page=' + page + '&per_page=20&search=' + encodeURIComponent(search)).then(function(data) {
     var rows = data.items || [];
-    if (!rows.length) { tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>'; }
+    if (!rows.length) { tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada short link.</td></tr>'; }
     else {
-      tb.innerHTML = rows.map(function(row) {
-        return '<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-4 align-top font-medium text-slate-700">' + escHtml(row.label || '-') + '</td><td class="p-4 align-top"><a href="' + escHtml(shortlinkURL(row.code)) + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">' + escHtml(shortlinkURL(row.code)) + '</a></td><td class="p-4 align-top text-slate-600 break-all">' + escHtml(row.target_url || '') + '</td><td class="p-4 align-top text-right whitespace-nowrap"><button onclick="copyShortlink(\'' + (shortlinkURL(row.code)).replace(/'/g, "&#39;") + '\')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded mr-1">Copy</button><button onclick="deleteShortlink(\'' + (row.id || '') + '\')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded">Hapus</button></td></tr>';
+      var slPage = page || 1;
+      tb.innerHTML = rows.map(function(row, si) {
+        return '<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-4 align-top text-slate-400 text-center">' + ((slPage - 1) * 20 + si + 1) + '</td><td class="p-4 align-top font-medium text-slate-700">' + escHtml(row.label || '-') + '</td><td class="p-4 align-top"><a href="' + escHtml(shortlinkURL(row.code)) + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">' + escHtml(shortlinkURL(row.code)) + '</a></td><td class="p-4 align-top text-slate-600 break-all">' + escHtml(row.target_url || '') + '</td><td class="p-4 align-top text-right whitespace-nowrap"><button onclick="copyShortlink(\'' + (shortlinkURL(row.code)).replace(/'/g, "&#39;") + '\')" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded mr-1">Copy</button><button onclick="deleteShortlink(\'' + (row.id || '') + '\')" class="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded">Hapus</button></td></tr>';
       }).join('');
     }
     var pagEl = document.getElementById('shortlink-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('shortlink', data.page, data.pages);
@@ -1211,12 +1212,13 @@ function renderProgramTable() {
   });
 
   if (!filtered.length) {
-    tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada program yang cocok.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Tidak ada program yang cocok.</td></tr>';
     return;
   }
 
-  tb.innerHTML = filtered.map(p => `
+  tb.innerHTML = filtered.map((p, pi) => `
     <tr class="border-b border-slate-100 hover:bg-slate-50">
+      <td class="p-4 align-top text-slate-400 text-center">${pi + 1}</td>
       <td class="p-4 align-top text-slate-700">${escHtml(p.department || '-')}</td>
       <td class="p-4 align-top font-medium text-slate-800">
         <div class="flex items-center gap-2">
@@ -1331,7 +1333,8 @@ function loadAnggota(page, search) {
     if (!items.length) { el.innerHTML = emptyHtml('Tidak ada data'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
-        <th class="px-4 py-3 bg-slate-50 font-semibold">Foto</th>
+        <th class="px-4 py-3 bg-slate-50 font-semibold w-10">No.</th>
+	        <th class="px-4 py-3 bg-slate-50 font-semibold">Foto</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Nama</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Profil</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Status Aktif</th>
@@ -1340,8 +1343,9 @@ function loadAnggota(page, search) {
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
       <tbody class="divide-y divide-slate-100">
-        ${items.map(m => `
+        ${items.map((m, mi) => `
         <tr class="bg-white hover:bg-slate-50">
+          <td class="px-4 py-3 text-slate-400 border-t border-slate-100 text-center">${(page - 1) * 20 + mi + 1}</td>
           <td class="px-4 py-3 border-t border-slate-100">
             ${m.photo_url
               ? `<img src="${m.photo_url}" class="w-10 h-10 rounded-full object-cover">`
@@ -1646,15 +1650,17 @@ function loadAkun(page, search) {
     if (!items || !items.length) { el.innerHTML = emptyHtml('Belum ada akun.'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
+        <th class="px-4 py-3 bg-slate-50 font-semibold w-10">No.</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Username</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Role</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Periode</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
       <tbody class="divide-y divide-slate-100">
-        ${items.map(u => `
+        ${items.map((u, ui) => `
         <tr class="bg-white hover:bg-slate-50">
-          <td class="px-4 py-3 font-medium text-slate-800 border-t border-slate-100">${escHtml(u.username)}</td>
+          <td class="px-4 py-3 text-slate-400 border-t border-slate-100 text-center">${(page - 1) * 20 + ui + 1}</td>
+	          <td class="px-4 py-3 font-medium text-slate-800 border-t border-slate-100">${escHtml(u.username)}</td>
           <td class="px-4 py-3 border-t border-slate-100"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'superadmin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role}</span></td>
           <td class="px-4 py-3 text-slate-500 border-t border-slate-100">${u.assigned_period || '—'}</td>
           <td class="px-4 py-3 border-t border-slate-100">
@@ -2183,10 +2189,12 @@ function loadFAQs(pLabel, page, search) {
     var items = data.items || [];
     state.faqs = items;
     if (!items.length) {
-      tb.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-slate-400">Tidak ada data</td></tr>';
+      tb.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-slate-400">Tidak ada data</td></tr>';
     } else {
-      tb.innerHTML = items.map(f => `
+      var faqPage = page || 1;
+      tb.innerHTML = items.map((f, fi) => `
         <tr class="border-b border-slate-100 hover:bg-slate-50 transition faq-row" data-id="${f.id}">
+          <td class="p-4 align-middle text-slate-400 text-center w-10">${(faqPage - 1) * 20 + fi + 1}</td>
           <td class="p-4 align-middle w-10 cursor-move faq-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
           <td class="p-4 align-middle font-medium">${escHtml((f.question||'').substring(0,30))}...</td>
           <td class="p-4 align-middle">${escHtml((f.answer||'').substring(0,30))}...</td>
@@ -2199,7 +2207,7 @@ function loadFAQs(pLabel, page, search) {
       initFAQSorable(pLabel);
     }
     var pagEl = document.getElementById('faq-pagination'); if (pagEl) pagEl.innerHTML = pagHTML('faq', data.page, data.pages);
-  }).catch(function(e) { tb.innerHTML = `<tr><td colspan="3">${errHtml(e.message)}</td></tr>`; });
+  }).catch(function(e) { tb.innerHTML = `<tr><td colspan="5">${errHtml(e.message)}</td></tr>`; });
 }
 window.faqGoPage = function(p) {
   var isGlobal = (document.getElementById('faq-global-tbody')?.querySelector('tr')) ? true : false;
@@ -2297,8 +2305,9 @@ async function loadGlobalStatsTab() {
     try {
         const items = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
         state.global_stats = items || [];
-        tb.innerHTML = (items||[]).map(s => `
+        tb.innerHTML = (items||[]).map((s, gsi) => `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${s.id}">
+            <td class="p-4 align-middle text-slate-400 text-center w-10">${gsi + 1}</td>
             <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
             <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
             <td class="p-4 align-middle text-slate-500">${escHtml(s.desc||'')}</td>
@@ -2311,10 +2320,10 @@ async function loadGlobalStatsTab() {
             </td>
           </tr>
         `).join('');
-        if(!items || !items.length) tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
+        if(!items || !items.length) tb.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
         initStatsSortable('global-stats-tbody');
     } catch(e) {
-        tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">${e}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">${e}</td></tr>`;
     }
 }
 
@@ -2393,11 +2402,12 @@ async function loadStatistik() {
       statsMap[templateId] = s;
     });
     
-    tb.innerHTML = fillableTemplates.map(template => {
+    tb.innerHTML = fillableTemplates.map((template, sti) => {
       const stat = statsMap[template.id];
       const value = stat ? stat.value : '';
       return `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${template.id}">
+        <td class="p-4 align-middle text-slate-400 text-center w-10">${sti + 1}</td>
         <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
         <td class="p-4 align-middle font-medium">${escHtml(template.label||'')}</td>
         <td class="p-4 align-middle">
@@ -2415,9 +2425,9 @@ async function loadStatistik() {
     `}).join('');
     
     if(!fillableTemplates.length) {
-      tb.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
     }
-  } catch(e) { tb.innerHTML = `<tr><td colspan="6">${errHtml(e.message)}</td></tr>`; }
+  } catch(e) { tb.innerHTML = `<tr><td colspan="7">${errHtml(e.message)}</td></tr>`; }
 }
 
 // Display formatted stat value based on chart type  

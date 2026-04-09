@@ -40,6 +40,7 @@ async function loadAnggota() {
     if (!items.length) { el.innerHTML = emptyHtml('Belum ada anggota.'); return; }
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
+        <th class="px-4 py-3 bg-slate-50 font-semibold w-10">No.</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Foto</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Nama</th>
         <th class="px-4 py-3 bg-slate-50 font-semibold">Profil</th>
@@ -49,8 +50,9 @@ async function loadAnggota() {
         <th class="px-4 py-3 bg-slate-50 font-semibold">Aksi</th>
       </tr></thead>
       <tbody class="divide-y divide-slate-100">
-        ${items.map(m => `
+        ${items.map((m, mi) => `
         <tr class="bg-white hover:bg-slate-50">
+          <td class="px-4 py-3 border-t border-slate-100 text-slate-400 text-center w-10">${mi + 1}</td>
           <td class="px-4 py-3 border-t border-slate-100">
             ${m.photo_url
               ? `<img src="${m.photo_url}" class="w-10 h-10 rounded-full object-cover">`

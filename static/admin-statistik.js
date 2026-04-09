@@ -23,11 +23,12 @@ async function loadStatistik() {
       statsMap[templateId] = s;
     });
 
-    tb.innerHTML = fillableTemplates.map(template => {
+    tb.innerHTML = fillableTemplates.map((template, sti) => {
       const stat = statsMap[template.id];
       const value = stat ? stat.value : '';
       return `
       <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${template.id}">
+        <td class="p-4 align-middle text-slate-400 text-center w-10">${sti + 1}</td>
         <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
         <td class="p-4 align-middle font-medium">${escHtml(template.label||'')}</td>
         <td class="p-4 align-middle">
@@ -45,9 +46,9 @@ async function loadStatistik() {
     `}).join('');
 
     if(!fillableTemplates.length) {
-      tb.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template statistik yang dapat diisi. Buat template di Template Statistik terlebih dahulu.</td></tr>`;
     }
-  } catch(e) { tb.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">${escHtml(e.message || e)}</td></tr>`; }
+  } catch(e) { tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">${escHtml(e.message || e)}</td></tr>`; }
 }
 
 function statValueDisplay(value, chartType) {

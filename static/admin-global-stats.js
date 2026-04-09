@@ -61,8 +61,9 @@ async function loadGlobalStatsTab() {
         const resp = await api('GET', '/api/cms/stats?period=_TEMPLATE_');
         const items = resp.items || resp || [];
         state.global_stats = items;
-        tb.innerHTML = items.map(s => `
+        tb.innerHTML = items.map((s, gsi) => `
           <tr class="border-b border-slate-100 hover:bg-slate-50 transition" data-id="${s.id}">
+            <td class="p-4 align-middle text-slate-400 text-center w-10">${gsi + 1}</td>
             <td class="p-4 align-middle w-10 cursor-move stat-drag text-slate-400 hover:text-slate-600"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/></svg></td>
             <td class="p-4 align-middle font-medium">${escHtml(s.label||'')}</td>
             <td class="p-4 align-middle text-slate-500">${escHtml(s.desc||'')}</td>
@@ -75,10 +76,10 @@ async function loadGlobalStatsTab() {
             </td>
           </tr>
         `).join('');
-        if(!items.length) tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
+        if(!items.length) tb.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">Belum ada template. Tambahkan metrik.</td></tr>`;
         initStatsSortable('global-stats-tbody');
     } catch(e) {
-        tb.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-red-500">${e}</td></tr>`;
+        tb.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">${e}</td></tr>`;
     }
 }
 
