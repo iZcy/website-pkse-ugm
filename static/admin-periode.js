@@ -1,6 +1,4 @@
 // ── MANAJEMEN PERIODE ────────────────────────────────────────────────────────
-let periodSubperiodDraft = [];
-let periodUsedSubperiods = new Set();
 
 function renderPeriodSubperiodEditor() {
   const list = document.getElementById('periode-subperiod-list');

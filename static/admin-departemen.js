@@ -1,8 +1,4 @@
 // ── DEPARTEMEN ───────────────────────────────────────────────────────────────
-let deptSortInstance = null;
-let memberSortInstances = [];
-let deptCache = [];
-let memberCache = [];
 
 function getMembersByDept(deptName) {
   return memberCache

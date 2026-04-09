@@ -30,14 +30,19 @@ function collectAnggotaActivation() {
   return { periods };
 }
 
-async function loadAnggota() {
+async function loadAnggota(page) {
+  page = page || 1;
   const el = document.getElementById('list-anggota');
   if (!el) return;
   try {
-    const resp = await api('GET', `/api/cms/members?period=${currentPeriod()}`);
+    const resp = await api('GET', `/api/cms/members?period=${currentPeriod()}&page=${page}&per_page=50`);
     const items = resp.items || resp || [];
+    const respPage = resp.page || page;
+    const respPages = resp.pages || 1;
+    const respTotal = resp.total || items.length;
     memberCache = Array.isArray(items) ? items : [];
     if (!items.length) { el.innerHTML = emptyHtml('Belum ada anggota.'); return; }
+    const noStart = (respPage - 1) * 50;
     el.innerHTML = `<div class="overflow-x-auto bg-white rounded-lg border border-slate-200"><table class="w-full text-sm">
       <thead><tr class="border-b border-slate-200 text-left text-slate-600 text-xs uppercase tracking-wider bg-slate-50">
         <th class="px-4 py-3 bg-slate-50 font-semibold w-10">No.</th>
@@ -52,7 +57,7 @@ async function loadAnggota() {
       <tbody class="divide-y divide-slate-100">
         ${items.map((m, mi) => `
         <tr class="bg-white hover:bg-slate-50">
-          <td class="px-4 py-3 border-t border-slate-100 text-slate-400 text-center w-10">${mi + 1}</td>
+          <td class="px-4 py-3 border-t border-slate-100 text-slate-400 text-center w-10">${noStart + mi + 1}</td>
           <td class="px-4 py-3 border-t border-slate-100">
             ${m.photo_url
               ? `<img src="${m.photo_url}" class="w-10 h-10 rounded-full object-cover">`
@@ -88,9 +93,11 @@ async function loadAnggota() {
           </td>
         </tr>`).join('')}
       </tbody>
-    </table></div>`;
+    </table></div>${pagHTML('anggota', respPage, respPages)}`;
   } catch (e) { el.innerHTML = errHtml(e.message); }
 }
+
+window.anggotaGoPage = function(p) { loadAnggota(p); };
 
 async function openAnggotaModal() {
   if (ROLE === 'superadmin' && (!state.periods || !state.periods.length)) {
@@ -103,11 +110,26 @@ async function openAnggotaModal() {
   document.getElementById('anggota-fakultas').value = '';
   document.getElementById('anggota-angkatan').value = '';
   document.getElementById('anggota-phone').value = '';
+  document.getElementById('anggota-position').value = '';
   document.getElementById('modalAnggotaTitle').textContent = 'Tambah Anggota';
+  await fillAnggotaDeptOptions();
   renderAnggotaActivationEditor({});
   createImagePicker('picker-anggota-photo');
   createImagePicker('picker-anggota-cover');
   openModal('modalAnggota');
+}
+
+async function fillAnggotaDeptOptions(selected) {
+  const sel = document.getElementById('anggota-department');
+  if (!sel) return;
+  let depts = deptCache || [];
+  if (!depts.length) {
+    try {
+      const resp = await api('GET', `/api/cms/departments?period=${currentPeriod()}`);
+      depts = resp.items || resp || [];
+    } catch (_) {}
+  }
+  sel.innerHTML = '<option value="">Belum ditempatkan</option>' + depts.map(d => `<option value="${escHtml(d.name)}" ${d.name === selected ? 'selected' : ''}>${escHtml(d.name)}</option>`).join('');
 }
 
 async function editAnggota(m) {
@@ -121,7 +143,9 @@ async function editAnggota(m) {
   document.getElementById('anggota-fakultas').value = m.fakultas || '';
   document.getElementById('anggota-angkatan').value = m.angkatan || '';
   document.getElementById('anggota-phone').value = m.phone || '';
+  document.getElementById('anggota-position').value = m.position || '';
   document.getElementById('modalAnggotaTitle').textContent = 'Edit Anggota';
+  await fillAnggotaDeptOptions(m.department || '');
   renderAnggotaActivationEditor(m.active_periods || {});
   createImagePicker('picker-anggota-photo', { initialUrl: m.photo_url || '' });
   createImagePicker('picker-anggota-cover', { initialUrl: m.cover_url || '' });
@@ -138,6 +162,8 @@ async function submitAnggota() {
     fakultas: document.getElementById('anggota-fakultas').value,
     angkatan: document.getElementById('anggota-angkatan').value,
     phone: document.getElementById('anggota-phone').value,
+    department: document.getElementById('anggota-department').value,
+    position: document.getElementById('anggota-position').value,
     active_periods: activation.periods,
     photo_url: pickerGetUrl('picker-anggota-photo'),
     cover_url: pickerGetUrl('picker-anggota-cover'),
@@ -158,6 +184,19 @@ async function deleteAnggota(id) {
   await api('DELETE', `/api/cms/members/${id}`);
   await loadAnggota();
   await loadKementerian();
+}
+
+async function openAnggotaMassUpload() {
+  try {
+    const deptsResp = await api('GET', `/api/cms/departments?period=${currentPeriod()}`);
+    const depts = (deptsResp.items || deptsResp || []).map(d => d.name);
+    const deptCol = anggotaMassUploadConfig.columns.find(c => c.key === 'department');
+    if (deptCol) {
+      deptCol.type = 'select';
+      deptCol.options = [''].concat(depts);
+    }
+  } catch (_) {}
+  MassUpload.open(anggotaMassUploadConfig);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
