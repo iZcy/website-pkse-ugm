@@ -33,5 +33,14 @@ services:
       mongo:
         condition: service_healthy
 
+  wa-service:
+    build:
+      context: ./wa-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - wa-session:/app/wa-session
+
 volumes:
   mongo-data:
+  wa-session:
