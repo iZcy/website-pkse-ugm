@@ -48,6 +48,10 @@ func requireSuperAdmin(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func proxyToWA(method, path string, body io.Reader) (*http.Response, error) {
+	return proxyToWAWithTimeout(method, path, body, 10*time.Second)
+}
+
+func proxyToWAWithTimeout(method, path string, body io.Reader, timeout time.Duration) (*http.Response, error) {
 	url := waServiceURL + path
 	var reqBody io.Reader
 	if body != nil {
@@ -60,7 +64,7 @@ func proxyToWA(method, path string, body io.Reader) (*http.Response, error) {
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: timeout}
 	return client.Do(req)
 }
 
@@ -295,7 +299,7 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		"total": len(contacts),
 	})
 
-	resp, err := proxyToWA(http.MethodPost, "/send-bulk", strings.NewReader(string(sendBody)))
+	resp, err := proxyToWAWithTimeout(http.MethodPost, "/send-bulk", strings.NewReader(string(sendBody)), 120*time.Second)
 	if err != nil {
 		now := time.Now()
 		db.UpdateBroadcastLog(blogID, map[string]any{
@@ -345,7 +349,7 @@ func sendPerContact(blogID primitive.ObjectID, phones []string, messages []strin
 			"to":      phone,
 			"message": msg,
 		})
-		resp, err := proxyToWA(http.MethodPost, "/send", strings.NewReader(string(singleBody)))
+		resp, err := proxyToWAWithTimeout(http.MethodPost, "/send", strings.NewReader(string(singleBody)), 60*time.Second)
 		status := "sent"
 		errMsg := ""
 		if err != nil {

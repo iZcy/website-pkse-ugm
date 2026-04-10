@@ -146,9 +146,9 @@
         </div>
         <span id="bc-contact-count" class="text-xs text-slate-400 sm:ml-auto"></span>
       </div>
-      <div id="bc-contacts-table-wrap" class="overflow-x-auto bg-white rounded-lg border border-slate-200">
+      <div id="bc-contacts-table-wrap" class="overflow-auto bg-white rounded-lg border border-slate-200" style="max-height: 55vh">
         <table id="bc-contacts-table" class="w-full text-sm">
-          <thead>
+          <thead class="sticky top-0 z-10">
             <tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase">
               <th class="px-3 py-2 w-8 text-center"><input type="checkbox" onchange="toggleAllBCRows(this.checked)" class="rounded" title="Pilih semua"></th>
             </tr>

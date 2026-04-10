@@ -78,8 +78,11 @@ function populatePeriodFilter() {
 async function loadBCContacts() {
   try {
     let period = document.getElementById('bc-contact-filter')?.value || window.PERIOD || '';
-    const contacts = await api('GET', '/api/broadcast/anggota-contacts?period=' + encodeURIComponent(period));
-    if (!contacts || !Array.isArray(contacts)) {
+    if (period === 'ALL') period = '';
+    // Use the same members API as anggota page for consistent data
+    const resp = await api('GET', '/api/cms/members?period=' + encodeURIComponent(period) + '&per_page=500');
+    const contacts = (resp.items || resp || []);
+    if (!Array.isArray(contacts)) {
       bcContactRows = [];
       renderBCContactsTable();
       return;
