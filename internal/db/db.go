@@ -492,6 +492,23 @@ func GetMembers(periodLabel string) ([]Member, error) {
 	return members, cur.All(ctx, &members)
 }
 
+func FindMemberByName(fullName, periodLabel string) (*Member, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{"full_name": fullName}
+	if periodLabel != "" {
+		filter["$or"] = []bson.M{
+			{"period_label": periodLabel},
+		}
+	}
+	var m Member
+	err := col("members").FindOne(ctx, filter).Decode(&m)
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
 func GetMemberByID(id string) (*Member, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -509,6 +526,17 @@ func GetMemberByID(id string) (*Member, error) {
 func CreateMember(m Member) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	// Prevent duplicate by full_name within the same period
+	if m.FullName != "" {
+		filter := bson.M{"full_name": m.FullName}
+		if m.PeriodLabel != "" {
+			filter["period_label"] = m.PeriodLabel
+		}
+		count, _ := col("members").CountDocuments(ctx, filter)
+		if count > 0 {
+			return fmt.Errorf("anggota '%s' sudah ada di periode ini", m.FullName)
+		}
+	}
 	_, err := col("members").InsertOne(ctx, m)
 	return err
 }

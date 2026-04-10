@@ -1612,6 +1612,39 @@ func bulkCreateOne(entity string, item map[string]any, role, username, assignedP
 			m.ActivePeriods = nil
 			m.ActivePositions = nil
 		}
+		// Upsert: if member with same name+period exists, merge empty fields
+		existing, _ := db.FindMemberByName(m.FullName, m.PeriodLabel)
+		if existing != nil {
+			updates := map[string]any{}
+			if m.Phone != "" && existing.Phone == "" {
+				updates["phone"] = m.Phone
+			}
+			if m.Department != "" && existing.Department == "" {
+				updates["department"] = m.Department
+			}
+			if m.Position != "" && existing.Position == "" {
+				updates["position"] = m.Position
+			}
+			if m.ProgramStudi != "" && existing.ProgramStudi == "" {
+				updates["program_studi"] = m.ProgramStudi
+			}
+			if m.Fakultas != "" && existing.Fakultas == "" {
+				updates["fakultas"] = m.Fakultas
+			}
+			if m.Angkatan != "" && existing.Angkatan == "" {
+				updates["angkatan"] = m.Angkatan
+			}
+			if m.Nickname != "" && existing.Nickname == "" {
+				updates["nickname"] = m.Nickname
+			}
+			if m.PhotoURL != "" && existing.PhotoURL == "" {
+				updates["photo_url"] = m.PhotoURL
+			}
+			if len(updates) > 0 {
+				return db.UpdateMember(existing.ID.Hex(), updates)
+			}
+			return nil // already complete, skip (not an error)
+		}
 		return db.CreateMember(m)
 
 	case "shortlinks":
