@@ -290,6 +290,14 @@ func Members(w http.ResponseWriter, r *http.Request) {
 			m.ActivePeriods = nil
 			m.ActivePositions = nil
 		}
+		if strings.TrimSpace(m.FullName) == "" {
+			writeJSON(w, 400, map[string]string{"error": "nama lengkap wajib diisi"})
+			return
+		}
+		if strings.TrimSpace(m.PeriodLabel) == "" {
+			writeJSON(w, 400, map[string]string{"error": "periode wajib diisi"})
+			return
+		}
 		if err := db.CreateMember(m); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
@@ -1612,7 +1620,9 @@ func bulkCreateOne(entity string, item map[string]any, role, username, assignedP
 			m.ActivePeriods = nil
 			m.ActivePositions = nil
 		}
-		// Upsert: if member with same name+period exists, merge empty fields
+		if strings.TrimSpace(m.PeriodLabel) == "" {
+			return fmt.Errorf("periode wajib diisi")
+		}
 		existing, _ := db.FindMemberByName(m.FullName, m.PeriodLabel)
 		if existing != nil {
 			updates := map[string]any{}

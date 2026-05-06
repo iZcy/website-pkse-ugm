@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aktivitas - PKSE UGM Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.sidebar-item{transition:background .15s,color .15s}.sidebar-item.active{background:#1e40af;color:#fff}.sidebar-item:not(.active):hover{background:#1e3a8a;color:#fff}
+.att-checkbox{accent-color:#2563eb;width:16px;height:16px;cursor:pointer}
+</style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden">
+<header class="bg-blue-900 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0 sticky top-0 z-50">
+<div class="flex items-center gap-3">{{if and .GlobalSetting .GlobalSetting.LogoURL}}
+<img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="h-8 w-8 rounded object-contain bg-white/10">{{end}}<span class="font-bold text-lg tracking-tight">PKSE Admin</span></div>
+<div class="flex items-center gap-4">
+<select id="period-select" onchange="switchPeriod(this.value)" class="bg-blue-800 border border-blue-600 text-white text-sm rounded-lg px-3 py-1.5">
+{{range .AccessiblePeriods}}<option value="{{.Label}}" {{if eq .Label $.SelectedPeriod}}selected{{end}}>{{.Label}}</option>{{end}}
+</select>
+<span class="text-blue-200 text-sm">{{.Username}}</span>
+<a href="/admin/logout" class="text-blue-300 hover:text-white text-sm">Logout</a>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<aside class="w-56 bg-blue-900 text-blue-100 flex-shrink-0 overflow-y-auto sticky top-0"><nav class="p-3 space-y-1">
+<div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider">Konten Periode</div>
+<a href="/admin/pengumuman?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Pengumuman</a>
+<a href="/admin/artikel?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Artikel</a>
+<a href="/admin/departemen?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Kementerian</a>
+<a href="/admin/program?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Program</a>
+<a href="/admin/tentang?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Tentang Periode</a>
+<a href="/admin/galeri?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Galeri</a>
+<a href="/admin/statistik?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Statistik</a>
+{{if eq .Role "superadmin"}}
+<div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-3">Superadmin</div>
+<a href="/admin/anggota?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Anggota</a>
+<a href="/admin/global?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Pengaturan Global</a>
+<a href="/admin/shortlink?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Shortlink</a>
+<a href="/admin/broadcast?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">WhatsApp Broadcast</a>
+<a href="/admin/faq-global?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">FAQ Global</a>
+<a href="/admin/global-stats?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Template Statistik</a>
+<a href="/admin/periode?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Manajemen Periode</a>
+<a href="/admin/akun?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Manajemen Akun</a>
+<a href="/admin/activities?period={{.SelectedPeriod}}" class="sidebar-item active w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Aktivitas</a>
+<a href="/admin/rapor?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Rapor Beswan</a>
+{{end}}
+</nav></aside>
+<main class="flex-1 overflow-y-auto p-6">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-slate-800">Aktivitas</h2>
+<button onclick="openActivityModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Tambah Aktivitas</button>
+</div>
+<div class="mb-4 flex gap-2">
+<button onclick="filterCategory('')" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-100 cat-filter active-cat" data-cat="">Semua</button>
+<button onclick="filterCategory('yayasan')" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-100 cat-filter" data-cat="yayasan">Yayasan</button>
+<button onclick="filterCategory('paguyuban')" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-100 cat-filter" data-cat="paguyuban">Paguyuban</button>
+<button onclick="filterCategory('lintas')" class="px-3 py-1.5 text-sm rounded-lg border border-slate-300 hover:bg-slate-100 cat-filter" data-cat="lintas">Lintas</button>
+</div>
+<div id="activities-list" class="space-y-3"><div class="text-slate-400 text-center py-8">Memuat...</div></div>
+</main></div>
+
+<div id="activity-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+<div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+<h3 id="activity-modal-title" class="text-lg font-bold text-slate-800 mb-4">Tambah Aktivitas</h3>
+<input type="hidden" id="activity-edit-id">
+<div class="space-y-3">
+<div><label class="text-sm font-medium text-slate-700">Nama Aktivitas</label>
+<input id="activity-name" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Rapat Pleno I"></div>
+<div><label class="text-sm font-medium text-slate-700">Kategori</label>
+<select id="activity-category" class="w-full border rounded-lg px-3 py-2 text-sm">
+<option value="yayasan">Yayasan</option><option value="paguyuban">Paguyuban</option><option value="lintas">Lintas</option>
+</select></div>
+<div><label class="text-sm font-medium text-slate-700">Tanggal</label>
+<input id="activity-date" type="date" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+</div>
+<div class="flex gap-2 mt-4 justify-end">
+<button onclick="closeActivityModal()" class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Batal</button>
+<button onclick="saveActivity()" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">Simpan</button>
+</div>
+</div>
+</div>
+
+<div id="attendance-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+<div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col p-6">
+<h3 id="attendance-modal-title" class="text-lg font-bold text-slate-800 mb-4">Kehadiran</h3>
+<input type="hidden" id="attendance-activity-id">
+<div id="attendance-list" class="overflow-y-auto flex-1 space-y-1 mb-4"></div>
+<div class="flex gap-2 justify-end">
+<button onclick="closeAttendanceModal()" class="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Tutup</button>
+<button onclick="saveAttendance()" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">Simpan Kehadiran</button>
+</div>
+</div>
+</div>
+
+<script>
+let currentPeriod = '{{.SelectedPeriod}}';
+let currentCatFilter = '';
+let allActivities = [];
+let allMembers = [];
+
+function switchPeriod(p){window.location.href='/admin/activities?period='+p}
+
+async function loadActivities(){
+  const r=await fetch('/api/cms/activities?period='+currentPeriod);
+  const d=await r.json();
+  allActivities=d.items||d||[];
+  renderActivities();
+}
+async function loadMembers(){
+  const r=await fetch('/api/cms/members?per_page=100&period='+currentPeriod);
+  const d=await r.json();
+  allMembers=d.items||d||[];
+}
+
+function renderActivities(){
+  let list=allActivities;
+  if(currentCatFilter)list=list.filter(a=>a.category===currentCatFilter);
+  const el=document.getElementById('activities-list');
+  if(!list.length){el.innerHTML='<div class="text-slate-400 text-center py-8">Belum ada aktivitas</div>';return}
+  el.innerHTML=list.map(a=>{
+    const catColors={yayasan:'bg-blue-100 text-blue-700',paguyuban:'bg-green-100 text-green-700',lintas:'bg-purple-100 text-purple-700'};
+    const catClass=catColors[a.category]||'bg-slate-100 text-slate-700';
+    const dateStr=a.date?new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'-';
+    const attCount=(a.attendee_ids||[]).length;
+    return `<div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium ${catClass}">${a.category}</span>
+        <div><div class="font-medium text-slate-800">${a.name}</div>
+        <div class="text-xs text-slate-500">${dateStr} &middot; ${attCount} hadir</div></div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="openAttendanceModal('${a.id}')" class="text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200">Kehadiran</button>
+        <button onclick="editActivity('${a.id}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200">Edit</button>
+        <button onclick="deleteActivity('${a.id}')" class="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">Hapus</button>
+      </div></div>`;
+  }).join('');
+}
+
+function filterCategory(c){
+  currentCatFilter=c;
+  document.querySelectorAll('.cat-filter').forEach(b=>{
+    b.classList.toggle('bg-blue-600',b.dataset.cat===c);
+    b.classList.toggle('text-white',b.dataset.cat===c);
+    b.classList.toggle('border-blue-600',b.dataset.cat===c);
+  });
+  renderActivities();
+}
+
+function openActivityModal(){
+  document.getElementById('activity-edit-id').value='';
+  document.getElementById('activity-name').value='';
+  document.getElementById('activity-category').value='yayasan';
+  document.getElementById('activity-date').value='';
+  document.getElementById('activity-modal-title').textContent='Tambah Aktivitas';
+  document.getElementById('activity-modal').classList.remove('hidden');
+}
+function closeActivityModal(){document.getElementById('activity-modal').classList.add('hidden')}
+
+function editActivity(id){
+  const a=allActivities.find(x=>x.id===id);if(!a)return;
+  document.getElementById('activity-edit-id').value=id;
+  document.getElementById('activity-name').value=a.name;
+  document.getElementById('activity-category').value=a.category;
+  document.getElementById('activity-date').value=a.date?a.date.substring(0,10):'';
+  document.getElementById('activity-modal-title').textContent='Edit Aktivitas';
+  document.getElementById('activity-modal').classList.remove('hidden');
+}
+
+async function saveActivity(){
+  const id=document.getElementById('activity-edit-id').value;
+  const body={
+    period_label:currentPeriod,
+    name:document.getElementById('activity-name').value,
+    category:document.getElementById('activity-category').value,
+    date:document.getElementById('activity-date').value+'T00:00:00Z',
+  };
+  const url=id?'/api/cms/activities/'+id:'/api/cms/activities';
+  const method=id?'PUT':'POST';
+  const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){closeActivityModal();loadActivities()}else{const e=await r.json();alert(e.error||'Gagal menyimpan')}
+}
+
+async function deleteActivity(id){
+  if(!confirm('Hapus aktivitas ini?'))return;
+  await fetch('/api/cms/activities/'+id,{method:'DELETE'});
+  loadActivities();
+}
+
+function openAttendanceModal(actId){
+  const act=allActivities.find(a=>a.id===actId);if(!act)return;
+  document.getElementById('attendance-activity-id').value=actId;
+  document.getElementById('attendance-modal-title').textContent='Kehadiran: '+act.name;
+  const attIds=new Set((act.attendee_ids||[]).map(id=>typeof id==='object'?id.$oid||id:id));
+  const el=document.getElementById('attendance-list');
+  if(!allMembers.length){el.innerHTML='<div class="text-slate-400 text-sm">Tidak ada anggota</div>';document.getElementById('attendance-modal').classList.remove('hidden');return}
+  el.innerHTML=allMembers.map(m=>{
+    const mid=typeof m.id==='object'?m.id.$oid||m.id:m.id;
+    const checked=attIds.has(mid)?'checked':'';
+    return `<label class="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer">
+      <input type="checkbox" class="att-checkbox" value="${mid}" ${checked}>
+      <span class="text-sm text-slate-700">${m.full_name}</span>
+      <span class="text-xs text-slate-400 ml-auto">${m.department||''}</span></label>`;
+  }).join('');
+  document.getElementById('attendance-modal').classList.remove('hidden');
+}
+function closeAttendanceModal(){document.getElementById('attendance-modal').classList.add('hidden')}
+
+async function saveAttendance(){
+  const actId=document.getElementById('attendance-activity-id').value;
+  const checked=[...document.querySelectorAll('.att-checkbox:checked')].map(c=>c.value);
+  await fetch('/api/cms/activities/'+actId+'/attendance',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({attendee_ids:checked})});
+  closeAttendanceModal();loadActivities();
+}
+
+loadActivities();loadMembers();
+</script>
+</body></html>

@@ -137,3 +137,5 @@ func FAQGlobal(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "faq-
 func GlobalStats(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "global-stats.html", "global-stats") }
 func Periode(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "periode.html", "periode") }
 func Akun(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "akun.html", "akun") }
+func Activities(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "activities.html", "activities") }
+func Rapor(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "rapor.html", "rapor") }

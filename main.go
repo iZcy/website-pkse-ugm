@@ -48,6 +48,8 @@ func main() {
 
 	h := handlers.New()
 
+	raporH := handlers.NewRaporHandler()
+
 	// Public pages
 	mux.HandleFunc("/", h.Home)
 	mux.HandleFunc("/tentang-kami", h.TentangKami)
@@ -65,6 +67,8 @@ func main() {
 	mux.HandleFunc("/alumni", h.Alumni)
 	mux.HandleFunc("/galeri", h.Galeri)
 	mux.HandleFunc("/l/", h.ShortLinkRedirect)
+	// Rapor public view
+	mux.HandleFunc("/rapor/t/", raporH.View)
 
 	// Public API
 
@@ -90,6 +94,8 @@ func main() {
 	mux.HandleFunc("/admin/global-stats", admin.GlobalStats)
 	mux.HandleFunc("/admin/periode", admin.Periode)
 	mux.HandleFunc("/admin/akun", admin.Akun)
+	mux.HandleFunc("/admin/activities", admin.Activities)
+	mux.HandleFunc("/admin/rapor", admin.Rapor)
 
 	// CMS API
 
@@ -122,6 +128,14 @@ func main() {
 	mux.HandleFunc("/api/cms/accounts", cms.Accounts)
 	mux.HandleFunc("/api/cms/accounts/", cms.Accounts)
 	mux.HandleFunc("/api/cms/upload", cms.Upload)
+
+	// Activities & Rapor API
+	mux.HandleFunc("/api/cms/activities", cms.Activities)
+	mux.HandleFunc("/api/cms/activities/", cms.Activities)
+	mux.HandleFunc("/api/cms/rapor-instances", cms.RaporInstances)
+	mux.HandleFunc("/api/cms/rapor-instances/", cms.RaporInstances)
+	mux.HandleFunc("/api/cms/rapor-entries", cms.RaporEntries)
+	mux.HandleFunc("/api/cms/rapor-entries/", cms.RaporEntries)
 
 	// Broadcast API
 	mux.HandleFunc("/api/broadcast/ws", broadcast.WebSocket)

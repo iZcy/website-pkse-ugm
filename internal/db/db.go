@@ -173,6 +173,7 @@ type Member struct {
 	Position        string             `bson:"position"      json:"position"`
 	Phone           string             `bson:"phone"         json:"phone"`
 	SortOrder       int                `bson:"sort_order"    json:"sort_order"`
+	NIM             string             `bson:"nim"            json:"nim"`
 }
 
 type Announcement struct {
@@ -497,9 +498,7 @@ func FindMemberByName(fullName, periodLabel string) (*Member, error) {
 	defer cancel()
 	filter := bson.M{"full_name": fullName}
 	if periodLabel != "" {
-		filter["$or"] = []bson.M{
-			{"period_label": periodLabel},
-		}
+		filter["period_label"] = periodLabel
 	}
 	var m Member
 	err := col("members").FindOne(ctx, filter).Decode(&m)
@@ -526,7 +525,6 @@ func GetMemberByID(id string) (*Member, error) {
 func CreateMember(m Member) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	// Prevent duplicate by full_name within the same period
 	if m.FullName != "" {
 		filter := bson.M{"full_name": m.FullName}
 		if m.PeriodLabel != "" {
@@ -743,6 +741,45 @@ type ShortLink struct {
 	UpdatedAt time.Time          `bson:"updated_at"    json:"updated_at"`
 }
 
+
+type Activity struct {
+	ID          primitive.ObjectID   `bson:"_id,omitempty"  json:"id"`
+	PeriodLabel string               `bson:"period_label"   json:"period_label"`
+	Category    string               `bson:"category"       json:"category"`
+	Name        string               `bson:"name"           json:"name"`
+	Date        time.Time            `bson:"date"           json:"date"`
+	AttendeeIDs []primitive.ObjectID `bson:"attendee_ids"   json:"attendee_ids"`
+	CreatedAt   time.Time            `bson:"created_at"     json:"created_at"`
+}
+
+type RaporInstance struct {
+	ID            primitive.ObjectID `bson:"_id,omitempty"   json:"id"`
+	PeriodLabel   string             `bson:"period_label"    json:"period_label"`
+	Title         string             `bson:"title"           json:"title"`
+	ActivityStart time.Time          `bson:"activity_start"  json:"activity_start"`
+	ActivityEnd   time.Time          `bson:"activity_end"    json:"activity_end"`
+	Published     bool               `bson:"published"       json:"published"`
+	CreatedAt     time.Time          `bson:"created_at"      json:"created_at"`
+}
+
+type RaporScoreItem struct {
+	Aspect string `json:"aspect"`
+	Desc   string `json:"desc"`
+	Score  int    `json:"score"`
+}
+
+type RaporEntry struct {
+	ID          primitive.ObjectID `bson:"_id,omitempty"   json:"id"`
+	InstanceID  primitive.ObjectID `bson:"instance_id"     json:"instance_id"`
+	MemberID    primitive.ObjectID `bson:"member_id"       json:"member_id"`
+	PeriodLabel string             `bson:"period_label"    json:"period_label"`
+	Scores      []int              `bson:"scores"          json:"scores"`
+	Feedback    string             `bson:"feedback"        json:"feedback"`
+	Token       string             `bson:"token"           json:"token"`
+	Published   bool               `bson:"published"       json:"published"`
+	CreatedAt   time.Time          `bson:"created_at"      json:"created_at"`
+	UpdatedAt   time.Time          `bson:"updated_at"      json:"updated_at"`
+}
 type StatData struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	PeriodLabel string             `bson:"period_label"  json:"period_label"`

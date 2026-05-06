@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"html/template"
 	"net/http"
@@ -24,6 +25,7 @@ type PeriodDepartmentGroup struct {
 func New() *Handler {
 	funcMap := template.FuncMap{
 		"add": func(a, b int) int { return a + b },
+		"mul": func(a, b int) int { return a * b },
 		"sub": func(a, b int) int { return a - b },
 		"mod": func(a, b int) int { return a % b },
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
@@ -119,9 +121,12 @@ func (h *Handler) activePeriodLabel() string {
 
 func (h *Handler) render(w http.ResponseWriter, name string, data map[string]any) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := h.tmpl.ExecuteTemplate(w, name, data); err != nil {
+	var buf bytes.Buffer
+	if err := h.tmpl.ExecuteTemplate(&buf, name, data); err != nil {
 		http.Error(w, "Template error: "+err.Error(), 500)
+		return
 	}
+	buf.WriteTo(w)
 }
 
 func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
