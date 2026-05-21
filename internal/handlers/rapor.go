@@ -29,11 +29,6 @@ func NewRaporHandler() *RaporHandler {
 }
 
 func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	token := strings.TrimPrefix(r.URL.Path, "/rapor/t/")
 	if token == "" {
 		http.Error(w, "token required", http.StatusBadRequest)
@@ -42,96 +37,131 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 
 	entry, err := db.GetRaporEntryByToken(token)
 	if err != nil {
-		http.Error(w, "Rapor tidak ditemukan", http.StatusNotFound)
+		rh.renderError(w, "Rapor tidak ditemukan atau belum dipublikasikan.")
 		return
 	}
-
 	if !entry.Published {
-		http.Error(w, "Rapor belum dipublikasikan", http.StatusForbidden)
+		rh.renderError(w, "Rapor belum dipublikasikan.")
 		return
 	}
 
 	instance, err := db.GetRaporInstanceByID(entry.InstanceID.Hex())
 	if err != nil {
-		http.Error(w, "Instance tidak ditemukan", http.StatusInternalServerError)
+		rh.renderError(w, "Data rapor tidak lengkap.")
 		return
 	}
 
 	member, err := db.GetMemberByID(entry.MemberID.Hex())
 	if err != nil {
-		http.Error(w, "Member tidak ditemukan", http.StatusInternalServerError)
+		rh.renderError(w, "Data member tidak ditemukan.")
 		return
 	}
 
+	gs, _ := db.GetGlobalSetting()
+	orgName := "PKSE UGM"
+	if gs != nil && gs.OrgName != "" {
+		orgName = gs.OrgName
+	}
+
 	allEntries, _ := db.GetRaporEntriesForMember(entry.MemberID.Hex(), entry.PeriodLabel)
-	type tabInstance struct {
+	type tabItem struct {
 		Title  string
 		Token  string
 		Active bool
 	}
-	var tabs []tabInstance
+	var allInstances []tabItem
 	for _, e := range allEntries {
-		inst, err := db.GetRaporInstanceByID(e.InstanceID.Hex())
-		if err != nil || !e.Published {
+		inst, err2 := db.GetRaporInstanceByID(e.InstanceID.Hex())
+		if err2 != nil || !e.Published {
 			continue
 		}
-		tabs = append(tabs, tabInstance{
+		allInstances = append(allInstances, tabItem{
 			Title:  inst.Title,
 			Token:  e.Token,
 			Active: e.Token == token,
 		})
 	}
 
-	scoreAspects := []struct {
+	type scoreItem struct {
+		Aspect string
+		Desc   string
+		Score  int
+	}
+	aspects := []struct {
 		Index int
 		Label string
 		Desc  string
 	}{
-		{0, "Kedisiplinan", "Kehadiran dan keteraturan mengikuti kegiatan"},
+		{0, "Kedisiplinan & Komitmen", "Kehadiran dan keteraturan mengikuti kegiatan"},
 		{1, "Keaktifan", "Partisipasi aktif dalam kegiatan organisasi"},
 		{2, "Tanggung Jawab", "Pemenuhan tugas dan kewajiban"},
 		{3, "Kerjasama", "Kemampuan bekerja dalam tim"},
 		{4, "Inisiatif", "Proaktif dalam kontribusi dan ide"},
 	}
-
-	type scoreRow struct {
-		Aspect string
-		Desc   string
-		Score  int
-	}
-	var scores []scoreRow
-	for _, sa := range scoreAspects {
+	var scoreItems []scoreItem
+	for _, sa := range aspects {
 		s := 0
 		if sa.Index < len(entry.Scores) {
 			s = entry.Scores[sa.Index]
 		}
-		scores = append(scores, scoreRow{Aspect: sa.Label, Desc: sa.Desc, Score: s})
+		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s})
 	}
 
-	yayasanAtt, _ := db.GetMemberAttendanceCount(entry.MemberID.Hex(), entry.PeriodLabel, "yayasan", instance.ActivityStart, instance.ActivityEnd)
-	yayasanTotal, _ := db.GetActivityCount(entry.PeriodLabel, "yayasan", instance.ActivityStart, instance.ActivityEnd)
-	paguyubanAtt, _ := db.GetMemberAttendanceCount(entry.MemberID.Hex(), entry.PeriodLabel, "paguyuban", instance.ActivityStart, instance.ActivityEnd)
-	paguyubanTotal, _ := db.GetActivityCount(entry.PeriodLabel, "paguyuban", instance.ActivityStart, instance.ActivityEnd)
-	lintasAtt, _ := db.GetMemberAttendanceCount(entry.MemberID.Hex(), entry.PeriodLabel, "lintas", instance.ActivityStart, instance.ActivityEnd)
-	lintasTotal, _ := db.GetActivityCount(entry.PeriodLabel, "lintas", instance.ActivityStart, instance.ActivityEnd)
+	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", instance.ActivityStart, instance.ActivityEnd)
+	type actItem struct {
+		Name     string
+		Attended bool
+	}
+	catActs := map[string][]actItem{}
+	present := 0
+	total := 0
+	for _, a := range activities {
+		attended := false
+		for _, aid := range a.AttendeeIDs {
+			if aid == entry.MemberID {
+				attended = true
+				break
+			}
+		}
+		cat := a.Category
+		if cat == "" {
+			cat = "Lainnya"
+		}
+		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended})
+		total++
+		if attended {
+			present++
+		}
+	}
+	absent := total - present
+	pct := 0
+	if total > 0 {
+		pct = present * 100 / total
+	}
 
 	data := map[string]any{
-		"Member":     member,
-		"Instance":   instance,
-		"Entry":      entry,
-		"Tabs":       tabs,
-		"Scores":     scores,
-		"Feedback":   entry.Feedback,
-		"YayasanAtt": yayasanAtt,
-		"YayasanTot": yayasanTotal,
-		"PaguyAtt":   paguyubanAtt,
-		"PaguyTot":   paguyubanTotal,
-		"LintasAtt":  lintasAtt,
-		"LintasTot":  lintasTotal,
+		"OrgName":   orgName,
+		"Member":    member,
+		"Instance":  instance,
+		"Entry":     entry,
+		"AllInstances": allInstances,
+		"ScoreItems": scoreItems,
+		"AttendanceSummary": map[string]any{
+			"Present":    present,
+			"Absent":     absent,
+			"Total":      total,
+			"Percentage": pct,
+		},
+		"ActivitiesByCategory": catActs,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := rh.tmpl.ExecuteTemplate(w, "rapor.html", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (rh *RaporHandler) renderError(w http.ResponseWriter, msg string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	rh.tmpl.ExecuteTemplate(w, "rapor.html", map[string]any{"Error": msg})
 }
