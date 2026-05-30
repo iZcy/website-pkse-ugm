@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"strconv"
 	"html/template"
 	"net/http"
 	"strings"
@@ -202,7 +203,13 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 	var scoreItems []scoreItem
 	for _, sa := range aspectList {
 		s := 0
-		if sa.Index < len(entry.Scores) { switch v := entry.Scores[sa.Index].(type) { case float64: s = int(v); case int: s = v; default: s = 0 } }
+		if sa.Index < len(entry.Scores) { switch v := entry.Scores[sa.Index].(type) {
+case float64: s = int(v)
+case int: s = v
+case string:
+    if n, err := strconv.Atoi(v); err == nil { s = n } else { s = 0 }
+default: s = 0
+} }
 		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s})
 	}
 	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", instance.ActivityStart, instance.ActivityEnd)

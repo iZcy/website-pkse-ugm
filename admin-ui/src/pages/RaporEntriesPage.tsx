@@ -156,9 +156,10 @@ export default function RaporEntriesPage() {
 
   async function saveAll() {
     const rows = document.querySelectorAll('[data-row]')
-    let saved = 0
+    let saved = 0, failed = 0
     for (const row of rows) {
       const memberId = (row as HTMLElement).dataset.row || ''
+      if (!memberId) continue
       try {
         const scores = aspects.map((a, i) => {
           const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
@@ -169,9 +170,9 @@ export default function RaporEntriesPage() {
           scores, published: false,
         })
         saved++
-      } catch { /* skip */ }
+      } catch (e: any) { failed++; console.error('saveAll failed for', memberId, e.message) }
     }
-    setStatus(`Tersimpan ${saved} dari ${rows.length}`)
+    setStatus(`Tersimpan ${saved}${failed > 0 ? ', gagal ' + failed : ''} dari ${rows.length}`)
     setTimeout(() => setStatus(''), 3000)
     load()
   }
