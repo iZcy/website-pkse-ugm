@@ -22,6 +22,7 @@ export default function RaporEntriesPage() {
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [savingAll, setSavingAll] = useState(false)
   const [status, setStatus] = useState('')
   const [aspectEditing, setAspectEditing] = useState(false)
   const [aspects, setAspects] = useState<any[]>(DEFAULT_ASPECTS)
@@ -155,6 +156,8 @@ export default function RaporEntriesPage() {
   }
 
   async function saveAll() {
+    setSavingAll(true)
+    setStatus('')
     const rows = document.querySelectorAll('[data-row]')
     let saved = 0, failed = 0
     for (const row of rows) {
@@ -170,9 +173,11 @@ export default function RaporEntriesPage() {
           scores, published: false,
         })
         saved++
+        setStatus(`Menyimpan... ${saved}/${rows.length}`)
       } catch (e: any) { failed++; console.error('saveAll failed for', memberId, e.message) }
     }
     setStatus(`Tersimpan ${saved}${failed > 0 ? ', gagal ' + failed : ''} dari ${rows.length}`)
+    setSavingAll(false)
     setTimeout(() => setStatus(''), 3000)
     load()
   }
@@ -212,7 +217,7 @@ export default function RaporEntriesPage() {
         </div>
         <div className="flex gap-2 items-center">
           <button onClick={() => setAspectEditing(true)} className="text-xs text-blue-600 hover:underline">{aspects.length} aspek</button>
-          <button onClick={saveAll} className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"><Save className="w-4 h-4" /> Simpan Semua</button>
+          <button onClick={saveAll} disabled={savingAll} className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">{savingAll ? '⏳ Menyimpan...' : <><Save className="w-4 h-4" /> Simpan Semua</>}</button>
         </div>
       </div>
 

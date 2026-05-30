@@ -64,6 +64,12 @@ export default function RaporPage() {
     load()
   }
 
+  async function unpublish(id: string) {
+    if (!confirm('Batalkan publish rapor ini?')) return
+    await apiPut(`/api/cms/rapor-instances/${id}/unpublish`)
+    load()
+  }
+
   async function remove(id: string) {
     if (!confirm('Hapus rapor ini beserta semua entri nilai?')) return
     await apiDelete(`/api/cms/rapor-instances/${id}`)
@@ -94,7 +100,11 @@ export default function RaporPage() {
               <Link to={`/rapor/entries?period=${period}&instance_id=${inst.id}`} className="px-3 py-1.5 text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 text-nowrap">
                 <Eye className="w-3.5 h-3.5 inline mr-1" /> Isi Nilai
               </Link>
-              {!inst.published && (
+              {inst.published ? (
+                <button onClick={() => unpublish(inst.id)} className="px-3 py-1.5 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 text-nowrap">
+                  Unpublish
+                </button>
+              ) : (
                 <button onClick={() => publish(inst.id)} className="px-3 py-1.5 text-sm bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 text-nowrap">
                   <Send className="w-3.5 h-3.5 inline mr-1" /> Publish
                 </button>
