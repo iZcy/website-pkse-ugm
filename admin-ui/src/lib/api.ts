@@ -15,7 +15,7 @@ export async function apiGet(url: string) {
   return res.json()
 }
 
-export async function apiPost(url: string, body: Record<string, unknown>) {
+export async function apiPost(url: string, body: any) {
   const res = await request(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -28,7 +28,7 @@ export async function apiPost(url: string, body: Record<string, unknown>) {
   return res.json()
 }
 
-export async function apiPut(url: string, body?: Record<string, unknown>) {
+export async function apiPut(url: string, body?: any) {
   const res = await request(url, {
     method: 'PUT',
     headers: body ? { 'Content-Type': 'application/json' } : {},
