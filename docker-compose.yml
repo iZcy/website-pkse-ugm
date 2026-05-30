@@ -25,7 +25,7 @@ services:
       MONGO_DB: webapp
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
-      GOMEMLIMIT: 120MiB
+      GOMEMLIMIT: 80MiB
     volumes:
       - ./templates:/app/templates
       - ./webapp-prod:/app/webapp-prod
