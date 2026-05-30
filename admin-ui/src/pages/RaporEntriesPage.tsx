@@ -25,6 +25,7 @@ export default function RaporEntriesPage() {
   const [status, setStatus] = useState('')
   const [aspectEditing, setAspectEditing] = useState(false)
   const [aspects, setAspects] = useState<any[]>(DEFAULT_ASPECTS)
+  const [sliderVals, setSliderVals] = useState<Record<string,number>>({})
   const [activeDept, setActiveDept] = useState('__all__')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -263,8 +264,10 @@ export default function RaporEntriesPage() {
                         <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">{a.label}</label>
                         {a.kind === 'numeric' ? (
                           <div className="flex items-center gap-2">
-                            <input type="range" data-idx={i} defaultValue={scores[i] || a.min || 0} min={a.min ?? 0} max={a.max ?? 5} className="flex-1 h-1.5 accent-blue-600" />
-                            <span className="text-xs font-bold text-slate-600 w-6 text-right">{scores[i] || a.min || 0}</span>
+                            <input type="range" data-idx={i} defaultValue={scores[i] || a.min || 0} min={a.min ?? 0} max={a.max ?? 5}
+                              onChange={e => { const v = parseInt(e.target.value); setSliderVals(prev => ({ ...prev, [`${mid}-${i}`]: v })) }}
+                              className="flex-1 h-1.5 accent-blue-600" />
+                            <span className="text-xs font-bold text-slate-600 w-6 text-right">{sliderVals[`${mid}-${i}`] ?? scores[i] ?? a.min ?? 0}</span>
                           </div>
                         ) : (
                           <textarea data-idx={i} defaultValue={scores[i] || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none" rows={2} placeholder="Tulis penilaian..."/>
