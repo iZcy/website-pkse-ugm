@@ -92,13 +92,17 @@ func DeleteRaporInstance(id string) error {
 
 
 func PublishRaporInstance(id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = col("rapor_instances").UpdateByID(ctx, oid, bson.M{"": bson.M{"published": true}})
+	_, err = col("rapor_instances").UpdateByID(ctx, oid, bson.M{"$set": bson.M{"published": true}})
+	if err != nil {
+		return err
+	}
+	_, err = col("rapor_entries").UpdateMany(ctx, bson.M{"instance_id": oid}, bson.M{"$set": bson.M{"published": true}})
 	return err
 }
 
@@ -209,27 +213,25 @@ func UpsertRaporEntry(e RaporEntry) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	now := time.Now()
-	if e.ID.IsZero() {
+	e.UpdatedAt = now
+	filter := bson.M{"instance_id": e.InstanceID, "member_id": e.MemberID}
+	var existing RaporEntry
+	err := col("rapor_entries").FindOne(ctx, filter).Decode(&existing)
+	if err != nil {
 		e.CreatedAt = now
-		e.UpdatedAt = now
 		if e.Token == "" {
 			e.Token = GenerateToken()
 		}
-		res, err := col("rapor_entries").InsertOne(ctx, e)
-		if err != nil {
-			return err
-		}
-		e.ID = res.InsertedID.(primitive.ObjectID)
-		return nil
+		_, err := col("rapor_entries").InsertOne(ctx, e)
+		return err
 	}
-	e.UpdatedAt = now
-	opts := options.Update().SetUpsert(true)
-	_, err := col("rapor_entries").UpdateOne(
-		ctx,
-		bson.M{"_id": e.ID},
-		bson.M{"$set": e},
-		opts,
-	)
+	update := bson.M{"$set": bson.M{
+		"scores":    e.Scores,
+		"feedback":  e.Feedback,
+		"published": e.Published,
+		"updated_at": now,
+	}}
+	_, err = col("rapor_entries").UpdateOne(ctx, filter, update)
 	return err
 }
 
@@ -305,4 +307,15 @@ func GetAttendanceStats(memberID primitive.ObjectID, start, end time.Time, perio
 		result = append(result, *ac)
 	}
 	return result, detailMap
+}
+
+func GetRaporEntry(instanceID, memberID primitive.ObjectID) (*RaporEntry, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var e RaporEntry
+	err := col("rapor_entries").FindOne(ctx, bson.M{"instance_id": instanceID, "member_id": memberID}).Decode(&e)
+	if err != nil {
+		return nil, err
+	}
+	return &e, nil
 }

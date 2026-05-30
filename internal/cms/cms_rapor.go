@@ -228,20 +228,48 @@ func RaporEntries(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]string{"error": "instance_id or member_id+period required"})
 
 	case http.MethodPost:
-		var entry db.RaporEntry
-		if err := json.NewDecoder(r.Body).Decode(&entry); err != nil {
+		var body struct {
+			InstanceID  string `json:"instance_id"`
+			MemberID    string `json:"member_id"`
+			PeriodLabel string `json:"period_label"`
+			Scores      []int  `json:"scores"`
+			Feedback    string `json:"feedback"`
+			Published   bool   `json:"published"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
 			return
 		}
-		entry.UpdatedAt = time.Now()
-		if entry.CreatedAt.IsZero() {
-			entry.CreatedAt = time.Now()
+		instOID, err := primitive.ObjectIDFromHex(body.InstanceID)
+		if err != nil {
+			writeJSON(w, 400, map[string]string{"error": "invalid instance_id"})
+			return
+		}
+		memOID, err := primitive.ObjectIDFromHex(body.MemberID)
+		if err != nil {
+			writeJSON(w, 400, map[string]string{"error": "invalid member_id"})
+			return
+		}
+		entry := db.RaporEntry{
+			InstanceID:  instOID,
+			MemberID:    memOID,
+			PeriodLabel: body.PeriodLabel,
+			Scores:      body.Scores,
+			Feedback:    body.Feedback,
+			Published:   body.Published,
+			UpdatedAt:   time.Now(),
+			CreatedAt:   time.Now(),
 		}
 		if err := db.UpsertRaporEntry(entry); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
-		writeJSON(w, 200, entry)
+		savedEntry, err := db.GetRaporEntry(entry.InstanceID, entry.MemberID)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": err.Error()})
+			return
+		}
+		writeJSON(w, 200, savedEntry)
 
 	case http.MethodDelete:
 		if idSegment == "" {

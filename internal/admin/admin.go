@@ -139,3 +139,4 @@ func Periode(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "period
 func Akun(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "akun.html", "akun") }
 func Activities(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "activities.html", "activities") }
 func Rapor(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "rapor.html", "rapor") }
+func RaporEntries(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "rapor-entries.html", "rapor") }

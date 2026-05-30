@@ -96,6 +96,7 @@ func main() {
 	mux.HandleFunc("/admin/akun", admin.Akun)
 	mux.HandleFunc("/admin/activities", admin.Activities)
 	mux.HandleFunc("/admin/rapor", admin.Rapor)
+	mux.HandleFunc("/admin/rapor/entries", admin.RaporEntries)
 
 	// CMS API
 

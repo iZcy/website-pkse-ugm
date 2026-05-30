@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Isi Nilai Rapor - PKSE UGM Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>.sidebar-item{transition:background .15s,color .15s}.sidebar-item.active{background:#1e40af;color:#fff}.sidebar-item:not(.active):hover{background:#1e3a8a;color:#fff}.score-input{width:48px;text-align:center;border:1px solid #cbd5e1;border-radius:6px;padding:4px;font-size:13px}</style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col overflow-hidden">
+<header class="bg-blue-900 text-white px-6 py-3 flex items-center justify-between shadow-lg flex-shrink-0 sticky top-0 z-50">
+<div class="flex items-center gap-3">{{if and .GlobalSetting .GlobalSetting.LogoURL}}<img src="{{.GlobalSetting.LogoURL}}" alt="Logo" class="w-8 h-8 rounded-full object-cover">{{end}}<span class="font-bold text-lg">PKSE UGM Admin</span></div>
+<div class="flex items-center gap-4">
+<span class="text-sm text-blue-200">{{.Username}} <span class="text-xs bg-blue-800 px-2 py-0.5 rounded-full">{{.Role}}</span></span>
+<a href="/admin/logout" class="text-sm text-blue-300 hover:text-white transition">Logout</a>
+</div>
+</header>
+<div class="flex items-center gap-4 px-6 py-2 bg-blue-800 text-white text-sm">
+<span>Periode: <strong>{{.SelectedPeriod}}</strong></span>
+{{if eq .Role "superadmin"}}<span class="ml-auto text-blue-300 text-xs">Superadmin dapat mengakses semua periode</span>{{end}}</div>
+<div class="flex flex-1 overflow-hidden"><aside class="w-56 bg-blue-900 text-blue-100 flex-shrink-0 overflow-y-auto sticky top-0"><nav class="p-3 space-y-1">
+<div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider">Konten Periode</div>
+<a href="/admin/pengumuman?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Pengumuman</a>
+<a href="/admin/artikel?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Artikel</a>
+<a href="/admin/departemen?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Kementerian</a>
+<a href="/admin/program?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Program</a>
+<a href="/admin/tentang?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Tentang Periode</a>
+<a href="/admin/galeri?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Galeri</a>
+<a href="/admin/statistik?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Statistik</a>
+{{if eq .Role "superadmin"}}
+<div class="px-3 py-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mt-3">Superadmin</div>
+<a href="/admin/anggota?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Anggota</a>
+<a href="/admin/activities?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Kegiatan & Absensi</a>
+<a href="/admin/rapor?period={{.SelectedPeriod}}" class="sidebar-item active w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Rapor Beswan</a>
+<a href="/admin/global?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Pengaturan Global</a>
+<a href="/admin/shortlink?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Shortlink</a>
+<a href="/admin/broadcast?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">WhatsApp Broadcast</a>
+<a href="/admin/faq-global?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">FAQ Global</a>
+<a href="/admin/global-stats?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Template Statistik</a>
+<a href="/admin/periode?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Manajemen Periode</a>
+<a href="/admin/akun?period={{.SelectedPeriod}}" class="sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2">Manajemen Akun</a>
+{{end}}
+</nav></aside>
+<main class="flex-1 overflow-y-auto p-6">
+<div class="flex items-center justify-between mb-4">
+  <div>
+    <a href="/admin/rapor?period={{.SelectedPeriod}}" class="text-blue-600 text-sm hover:underline mb-1 inline-block">&larr; Kembali ke daftar rapor</a>
+    <h2 class="text-2xl font-bold text-slate-800">Isi Nilai Rapor</h2>
+  </div>
+  <div id="instance-info" class="text-sm text-slate-500"></div>
+</div>
+
+<div id="save-status" class="hidden mb-3 px-4 py-2 rounded-lg text-sm"></div>
+
+<div id="entries-section">
+  <div class="text-slate-400 text-center py-8">Memuat data...</div>
+</div>
+
+</main></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const period = params.get('period') || '{{.SelectedPeriod}}';
+const instanceId = params.get('instance_id');
+
+const aspects = ['Kedisiplinan','Keaktifan','Tanggung Jawab','Kerjasama','Inisiatif'];
+let members = [];
+let entries = [];
+let instance = null;
+
+function authHeaders() { return { 'Content-Type': 'application/json' }; }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) : '-'; }
+
+async function loadData() {
+  if (!instanceId) { document.getElementById('entries-section').innerHTML = '<div class="text-red-500 text-center py-8">instance_id tidak ditemukan di URL</div>'; return; }
+  try {
+    const [instRes, memRes, entRes] = await Promise.all([
+      fetch('/api/cms/rapor-instances/' + instanceId, { headers: authHeaders() }),
+      fetch('/api/cms/members?period=' + period + '&per_page=200', { headers: authHeaders() }),
+      fetch('/api/cms/rapor-entries?instance_id=' + instanceId, { headers: authHeaders() }),
+    ]);
+    instance = await instRes.json();
+    const memData = await memRes.json();
+    members = memData.items || memData || [];
+    const entData = await entRes.json();
+    entries = entData.items || entData || [];
+    document.getElementById('instance-info').textContent = instance.title + ' \u00b7 ' + fmtDate(instance.activity_start) + ' \u2014 ' + fmtDate(instance.activity_end);
+    renderEntries();
+  } catch(e) {
+    document.getElementById('entries-section').innerHTML = '<div class="text-red-500 text-center py-8">Gagal memuat data</div>';
+  }
+}
+
+function getMemberIdStr(m) {
+  return typeof m.id === 'object' ? (m.id.$oid || m.id) : m.id;
+}
+
+function getEntry(memberId) {
+  return entries.find(e => {
+    const mid = typeof e.member_id === 'object' ? (e.member_id.$oid || e.member_id) : e.member_id;
+    return mid === memberId;
+  });
+}
+
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function renderEntries() {
+  const el = document.getElementById('entries-section');
+  if (!members.length) { el.innerHTML = '<div class="text-slate-400 text-center py-8">Tidak ada anggota untuk periode ini</div>'; return; }
+
+  el.innerHTML = members.map(m => {
+    const mid = getMemberIdStr(m);
+    const ent = getEntry(mid);
+    const scores = ent ? ent.scores : [0,0,0,0,0];
+    const feedback = ent ? (ent.feedback || '') : '';
+    const token = ent ? (ent.token || '') : '';
+    const published = ent ? ent.published : false;
+
+    const scoreInputs = aspects.map((a,i) =>
+      '<div class="flex items-center gap-1">' +
+        '<span class="text-xs text-slate-400 w-20 truncate">' + esc(a) + '</span>' +
+        '<input type="number" class="score-input" data-member="' + mid + '" data-idx="' + i + '" value="' + scores[i] + '" min="0" max="5">' +
+      '</div>'
+    ).join('');
+
+    const pubBadge = published
+      ? '<span class="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Published</span>'
+      : '<span class="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Draft</span>';
+
+    const tokenLink = token
+      ? '<div class="text-xs text-slate-400 mt-2">Link: <input type="text" value="https://pkseugm.web.id/rapor/t/' + token + '" class="text-blue-500 bg-slate-50 border-none px-1 w-72 text-xs" readonly onclick="this.select()"></div>'
+      : '';
+
+    return '<div class="bg-white rounded-xl border border-slate-200 p-4 mb-3" data-member-row="' + mid + '">' +
+      '<div class="flex items-center justify-between mb-3">' +
+        '<div class="flex items-center gap-3">' +
+          (m.photo_url ? '<img src="' + esc(m.photo_url) + '" class="w-10 h-10 rounded-full object-cover bg-slate-100">' : '<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-bold">' + esc((m.full_name||'?')[0]) + '</div>') +
+          '<div><div class="font-medium text-slate-800">' + esc(m.full_name || '-') + '</div>' +
+          '<div class="text-xs text-slate-500">' + esc(m.department || '-') + (m.nim ? ' \u00b7 ' + esc(m.nim) : '') + '</div></div>' +
+        '</div>' + pubBadge +
+      '</div>' +
+      '<div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">' + scoreInputs + '</div>' +
+      '<div class="flex gap-2">' +
+        '<input type="text" class="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm" placeholder="Feedback / catatan..." value="' + esc(feedback) + '" data-member="' + mid + '" data-field="feedback">' +
+        '<button onclick="saveEntry(\'' + mid + '\')" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Simpan</button>' +
+      '</div>' + tokenLink +
+    '</div>';
+  }).join('');
+}
+
+async function saveEntry(memberId) {
+  const row = document.querySelector('[data-member-row="' + memberId + '"]');
+  const scores = [];
+  for (let i = 0; i < 5; i++) {
+    const inp = row.querySelector('[data-member="' + memberId + '"][data-idx="' + i + '"]');
+    scores.push(parseInt(inp.value) || 0);
+  }
+  const feedbackInp = row.querySelector('[data-member="' + memberId + '"][data-field="feedback"]');
+  const body = {
+    instance_id: instanceId,
+    member_id: memberId,
+    period_label: period,
+    scores: scores,
+    feedback: feedbackInp.value,
+    published: false,
+  };
+  try {
+    const r = await fetch('/api/cms/rapor-entries', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+    const result = await r.json();
+    if (r.ok) {
+      const statusEl = document.getElementById('save-status');
+      statusEl.className = 'mb-3 px-4 py-2 rounded-lg text-sm bg-green-50 text-green-700';
+      statusEl.textContent = 'Tersimpan';
+      statusEl.classList.remove('hidden');
+      setTimeout(function(){ statusEl.classList.add('hidden'); }, 2000);
+      const existingIdx = entries.findIndex(function(e) {
+        const mid = typeof e.member_id === 'object' ? (e.member_id.$oid || e.member_id) : e.member_id;
+        return mid === memberId;
+      });
+      if (existingIdx >= 0) { entries[existingIdx] = result; }
+      else { entries.push(result); }
+      renderEntries();
+    } else { alert('Gagal: ' + (result.error || 'unknown')); }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+loadData();
+</script>
+</body>
+</html>
