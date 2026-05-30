@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
+import ReactQuill from 'react-quill-new'
+import 'react-quill-new/dist/quill.snow.css'
 
 interface Announcement {
   id: string
@@ -109,7 +111,7 @@ export default function PengumumanPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 p-6">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">{editId ? 'Edit' : 'Tambah'} Pengumuman</h3>
             <div className="space-y-4">
               <div>
@@ -118,7 +120,7 @@ export default function PengumumanPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Konten (HTML)</label>
-                <textarea rows={5} value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+                <ReactQuill value={form.content} onChange={(val: string) => setForm({ ...form, content: val })} theme="snow" className="bg-white rounded-lg" modules={{ toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'clean']] }} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Image URL</label>

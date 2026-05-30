@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPut } from '../lib/api'
 import { Save, Plus, Trash2 } from 'lucide-react'
+import ReactQuill from 'react-quill-new'
+import 'react-quill-new/dist/quill.snow.css'
 
 export default function TentangPage() {
   const { period } = usePeriod()
@@ -47,15 +49,15 @@ export default function TentangPage() {
       <div className="space-y-4">
         <div className="bg-white rounded-xl border p-6">
           <label className="text-sm font-medium text-slate-700 block mb-2">Tentang (HTML)</label>
-          <textarea value={data.tentang || ''} onChange={e => setData({ ...data, tentang: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm font-mono h-32" placeholder="<p>...</p>" />
+          <ReactQuill value={data.tentang || ''} onChange={(val: string) => setData({ ...data, tentang: val })} theme="snow" className="bg-white rounded-lg" modules={{ toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'clean']] }} />
         </div>
         <div className="bg-white rounded-xl border p-6">
           <label className="text-sm font-medium text-slate-700 block mb-2">Visi</label>
-          <textarea value={data.visi || ''} onChange={e => setData({ ...data, visi: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm h-20" />
+          <ReactQuill value={data.visi || ''} onChange={(val: string) => setData({ ...data, visi: val })} theme="snow" className="bg-white rounded-lg" modules={{ toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'clean']] }} />
         </div>
         <div className="bg-white rounded-xl border p-6">
           <label className="text-sm font-medium text-slate-700 block mb-2">Misi</label>
-          <textarea value={data.misi || ''} onChange={e => setData({ ...data, misi: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm h-20" />
+          <ReactQuill value={data.misi || ''} onChange={(val: string) => setData({ ...data, misi: val })} theme="snow" className="bg-white rounded-lg" modules={{ toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'clean']] }} />
         </div>
 
         <div className="bg-white rounded-xl border p-6">
