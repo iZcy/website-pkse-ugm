@@ -22,28 +22,28 @@ const navSections = [
   {
     label: 'Konten Periode',
     items: [
-      { label: 'Pengumuman', href: '/admin/pengumuman', icon: '11' },
-      { label: 'Artikel', href: '/admin/artikel', icon: '12' },
-      { label: 'Kementerian', href: '/admin/departemen', icon: '17' },
-      { label: 'Program', href: '/admin/program', icon: '13' },
-      { label: 'Tentang Periode', href: '/admin/tentang', icon: '21' },
-      { label: 'Galeri', href: '/admin/galeri', icon: '14' },
-      { label: 'Statistik', href: '/admin/statistik', icon: '15' },
+      { label: 'Pengumuman', href: 'pengumuman', icon: '11' },
+      { label: 'Artikel', href: 'artikel', icon: '12' },
+      { label: 'Kementerian', href: 'departemen', icon: '17' },
+      { label: 'Program', href: 'program', icon: '13' },
+      { label: 'Tentang Periode', href: 'tentang', icon: '21' },
+      { label: 'Galeri', href: 'galeri', icon: '14' },
+      { label: 'Statistik', href: 'statistik', icon: '15' },
     ],
   },
   {
     label: 'Superadmin',
     items: [
-      { label: 'Anggota', href: '/admin/anggota', icon: '16' },
-      { label: 'Kegiatan & Absensi', href: '/admin/activities', icon: 'checklist' },
-      { label: 'Rapor Beswan', href: '/admin/rapor', icon: 'file' },
-      { label: 'Pengaturan Global', href: '/admin/global', icon: '18' },
-      { label: 'Shorten Link', href: '/admin/shortlink', icon: '19' },
-      { label: 'WhatsApp Broadcast', href: '/admin/broadcast', icon: '20' },
-      { label: 'FAQ Global', href: '/admin/faq-global', icon: '21' },
-      { label: 'Template Statistik', href: '/admin/global-stats', icon: '22' },
-      { label: 'Manajemen Periode', href: '/admin/periode', icon: '23' },
-      { label: 'Manajemen Akun', href: '/admin/akun', icon: '24' },
+      { label: 'Anggota', href: 'anggota', icon: '16' },
+      { label: 'Kegiatan & Absensi', href: 'activities', icon: 'checklist' },
+      { label: 'Rapor Beswan', href: 'rapor', icon: 'file' },
+      { label: 'Pengaturan Global', href: 'global', icon: '18' },
+      { label: 'Shorten Link', href: 'shortlink', icon: '19' },
+      { label: 'WhatsApp Broadcast', href: 'broadcast', icon: '20' },
+      { label: 'FAQ Global', href: 'faq-global', icon: '21' },
+      { label: 'Template Statistik', href: 'global-stats', icon: '22' },
+      { label: 'Manajemen Periode', href: 'periode', icon: '23' },
+      { label: 'Manajemen Akun', href: 'akun', icon: '24' },
     ],
   },
 ]
@@ -89,11 +89,10 @@ export default function AdminLayout() {
   }, [])
 
   function isActive(href: string) {
-    const path = location.pathname
-    // Match exact or prefix (for nested routes like /admin/rapor/entries)
-    if (href === '/admin/rapor') return path.startsWith('/admin/rapor')
-    if (href === '/admin/activities') return path === '/admin/activities'
-    return path === href
+    const path = location.pathname.replace(/^\/admin/, '') || '/'
+    if (href === 'rapor') return path.startsWith('/rapor')
+    if (href === 'activities') return path === '/activities'
+    return path === '/' + href || (path === '/' && href === 'pengumuman')
   }
 
   return (
@@ -138,7 +137,7 @@ export default function AdminLayout() {
                   {section.items.map((item, ii) => (
                     <Link
                       key={ii}
-                      to={`${item.href}?period=${period}`}
+                      to={`/${item.href}?period=${period}`}
                       className={`sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${isActive(item.href) ? 'active' : ''}`}
                     >
                       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
