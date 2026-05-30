@@ -1373,3 +1373,15 @@ func GetFileFromGridFS(filename string) ([]byte, string, error) {
 	}
 	return buf.Bytes(), ct, nil
 }
+
+func FindMemberByNIM(nim, fullName string) (*Member, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{"nim": nim, "full_name": fullName}
+	var m Member
+	err := col("members").FindOne(ctx, filter).Decode(&m)
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}

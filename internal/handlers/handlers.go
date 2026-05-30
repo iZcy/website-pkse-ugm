@@ -41,7 +41,7 @@ func New() *Handler {
 			return string(runes[start:end])
 		},
 	}
-	tmpl := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
+	tmpl := template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/alumni.html", "templates/anggota.html", "templates/artikel-detail.html", "templates/artikel.html", "templates/faq.html", "templates/galeri.html", "templates/index.html", "templates/layout.html", "templates/pengumuman.html", "templates/periode-detail.html", "templates/periode.html", "templates/program.html", "templates/statistik.html", "templates/tentang-kami.html"))
 	return &Handler{tmpl: tmpl}
 }
 

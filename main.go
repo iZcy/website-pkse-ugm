@@ -69,6 +69,8 @@ func main() {
 	mux.HandleFunc("/l/", h.ShortLinkRedirect)
 	// Rapor public view
 	mux.HandleFunc("/rapor/t/", raporH.View)
+	mux.HandleFunc("/rapor/m/", raporH.Member)
+	mux.HandleFunc("/rapor", raporH.Login)
 
 	// Public API
 

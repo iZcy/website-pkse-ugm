@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapor Saya — PKSE UGM</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300..800&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdf4 100%);min-height:100vh}
+.card-shadow{box-shadow:0 4px 24px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+.score-bar{height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:4px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease}
+</style>
+</head>
+<body class="pb-16">
+<div class="max-w-2xl mx-auto px-4 pt-8">
+  <div class="text-center mb-8 fade-in">
+    <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur rounded-full px-4 py-2 text-sm text-green-700 font-medium card-shadow mb-4">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/></svg>
+      {{.OrgName}}
+    </div>
+    <h1 class="text-2xl font-bold text-green-900">Rapor Saya</h1>
+  </div>
+
+  <div class="bg-white rounded-2xl p-6 card-shadow fade-in mb-6">
+    <div class="flex items-center gap-4">
+      {{if .Member.PhotoURL}}<img src="{{.Member.PhotoURL}}" class="w-14 h-14 rounded-full object-cover border-2 border-green-200">{{else}}<div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl font-bold border-2 border-green-200">{{substr .Member.FullName 0 1}}</div>{{end}}
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">{{.Member.FullName}}</h2>
+        <p class="text-sm text-gray-500">{{.Member.Department}} · {{.Member.ProgramStudi}}</p>
+        {{if .Member.NIM}}<p class="text-xs text-gray-400 mt-0.5">NIM: {{.Member.NIM}}</p>{{end}}
+      </div>
+    </div>
+  </div>
+
+  {{if .Entries}}
+  <h3 class="font-bold text-gray-700 mb-3 fade-in">Daftar Rapor</h3>
+  <div class="space-y-3">
+    {{range .Entries}}
+    <a href="/rapor/t/{{.Token}}" class="block bg-white rounded-2xl p-5 card-shadow fade-in hover:shadow-md transition-shadow border border-gray-100">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h4 class="font-bold text-gray-900">{{.InstanceTitle}}</h4>
+          <p class="text-xs text-gray-500">{{.PeriodLabel}}</p>
+        </div>
+        <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">Lihat Detail &rarr;</span>
+      </div>
+      <div class="flex gap-1">
+        {{range .Scores}}
+        <div class="score-bar flex-1">
+          <div class="score-bar-fill {{if ge . 4}}bg-green-500{{else if ge . 3}}bg-yellow-400{{else}}bg-red-400{{end}}" style="height:24px;width:100%">
+            <span class="text-xs text-white font-bold flex items-center justify-center h-full">{{.}}</span>
+          </div>
+        </div>
+        {{end}}
+      </div>
+      {{if .Feedback}}
+      <p class="text-xs text-gray-400 mt-3 line-clamp-2">{{.Feedback}}</p>
+      {{end}}
+    </a>
+    {{end}}
+  </div>
+  {{else}}
+  <div class="bg-white rounded-2xl p-8 card-shadow text-center fade-in">
+    <h3 class="text-lg font-bold text-gray-700 mb-1">Belum Ada Rapor</h3>
+    <p class="text-sm text-gray-500">Rapor Anda belum tersedia. Silakan cek kembali nanti.</p>
+  </div>
+  {{end}}
+
+  <div class="text-center mt-8">
+    <a href="/rapor" class="text-sm text-green-600 hover:underline">&larr; Cari anggota lain</a>
+  </div>
+</div>
+</body>
+</html>

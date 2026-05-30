@@ -36,7 +36,7 @@ func pagParams(r *http.Request) (page, perPage int, search string) {
 		page = 1
 	}
 	perPage, _ = strconv.Atoi(r.URL.Query().Get("per_page"))
-	if perPage < 1 || perPage > 100 {
+	if perPage < 1 || perPage > 1000 {
 		perPage = 20
 	}
 	search = strings.TrimSpace(r.URL.Query().Get("search"))
