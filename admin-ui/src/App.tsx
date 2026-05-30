@@ -13,6 +13,7 @@ import StatistikPage from './pages/StatistikPage'
 import AnggotaPage from './pages/AnggotaPage'
 import GlobalPage from './pages/GlobalPage'
 import ShortlinkPage from './pages/ShortlinkPage'
+import BroadcastPage from './pages/BroadcastPage'
 import FAQPage from './pages/FAQPage'
 import GlobalStatsPage from './pages/GlobalStatsPage'
 import PeriodePage from './pages/PeriodePage'
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="rapor/entries" element={<RaporEntriesPage />} />
           <Route path="global" element={<GlobalPage />} />
           <Route path="shortlink" element={<ShortlinkPage />} />
+          <Route path="broadcast" element={<BroadcastPage />} />
           <Route path="faq-global" element={<FAQPage />} />
           <Route path="global-stats" element={<GlobalStatsPage />} />
           <Route path="periode" element={<PeriodePage />} />
