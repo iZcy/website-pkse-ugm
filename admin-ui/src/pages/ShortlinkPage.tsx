@@ -1,146 +1,122 @@
 import { useState, useEffect, useCallback } from 'react'
-import { usePeriod } from '../components/AdminLayout'
-import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Pencil, Trash2, Copy, Check } from 'lucide-react'
-
-interface Shortlink {
-  id: string
-  short_code: string
-  target_url: string
-  title: string
-}
-
-const empty = (): Shortlink => ({ id: '', short_code: '', target_url: '', title: '' })
+import { apiGet, apiPost, apiDelete } from '../lib/api'
+import { Plus, Trash2, Copy, Check } from 'lucide-react'
 
 export default function ShortlinkPage() {
-  const { period } = usePeriod()
-  const [items, setItems] = useState<Shortlink[]>([])
-  const [loading, setLoading] = useState(true)
+
+  const [items, setItems] = useState<any[]>([])
+
   const [showModal, setShowModal] = useState(false)
-  const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState<Shortlink>(empty())
-  const [copied, setCopied] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [form, setForm] = useState({ target_url: '', label: '', code: '' })
+  const [copied, setCopied] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const data = await apiGet(`/api/cms/shortlinks?period=${period}`)
-      setItems(data.items || data || [])
+      const data = await apiGet(`/api/cms/shortlinks?page=${page}&per_page=20&search=${encodeURIComponent(search)}`)
+      setItems(data.items || [])
+      setTotalPages(data.pages || 1)
     } catch { setItems([]) }
-    setLoading(false)
-  }, [period])
+  }, [page, search])
 
   useEffect(() => { load() }, [load])
 
-  const handleEdit = (item: Shortlink) => {
-    setEditId(item.id)
-    setForm({ ...item })
-    setShowModal(true)
-  }
+  function openAdd() { setForm({ target_url: '', label: '', code: '' }); setShowModal(true) }
 
-  const handleSave = async () => {
+  async function save() {
+    if (!form.target_url) return alert('Target URL wajib diisi')
     setSaving(true)
     try {
-      if (editId) {
-        await apiPut(`/api/cms/shortlinks/${editId}`, form)
-      } else {
-        await apiPost('/api/cms/shortlinks', form)
-      }
-      setShowModal(false)
-      load()
-    } catch { /* handled */ }
+      await apiPost('/api/cms/shortlinks', form)
+      setShowModal(false); setPage(1); load()
+    } catch (e: any) { alert(e.message) }
     setSaving(false)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin hapus?')) return
-    try {
-      await apiDelete(`/api/cms/shortlinks/${id}`)
-      load()
-    } catch { /* handled */ }
+  async function remove(id: string) {
+    if (!confirm('Hapus shortlink ini?')) return
+    await apiDelete(`/api/cms/shortlinks/${id}`); load()
   }
 
-  const handleCopy = async (code: string) => {
-    const url = `${window.location.origin}/s/${code}`
-    try {
-      await navigator.clipboard.writeText(url)
-      setCopied(code)
-      setTimeout(() => setCopied(null), 2000)
-    } catch { /* handled */ }
+  async function copyCode(code: string) {
+    const url = `https://pkseugm.web.id/l/${code}`
+    await navigator.clipboard.writeText(url)
+    setCopied(code)
+    setTimeout(() => setCopied(''), 2000)
   }
 
-  if (loading) return <div className="p-6 text-slate-500">Loading...</div>
+  function shortlinkURL(code: string) { return `https://pkseugm.web.id/l/${code}` }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-slate-800">Shortlink</h2>
-        <button onClick={() => { setEditId(''); setForm(empty()); setShowModal(true) }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Tambah
-        </button>
+        <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Shortlink</button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="mb-4">
+        <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="Cari shortlink..." className="border rounded-lg px-3 py-2 text-sm w-64" />
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600 text-left">
+          <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-5 py-3 font-medium">Short Code</th>
-              <th className="px-5 py-3 font-medium">Target URL</th>
-              <th className="px-5 py-3 font-medium">Judul</th>
-              <th className="px-5 py-3 font-medium w-32"></th>
+              <th className="text-left px-4 py-2 w-12">#</th>
+              <th className="text-left px-4 py-2">Label</th>
+              <th className="text-left px-4 py-2">Short URL</th>
+              <th className="text-left px-4 py-2">Target URL</th>
+              <th className="px-4 py-2 w-28"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {items.length === 0 ? (
-              <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-400">Belum ada data</td></tr>
-            ) : items.map((item) => (
-              <tr key={item.id} className="hover:bg-slate-50">
-                <td className="px-5 py-3 text-slate-800 font-mono font-medium">{item.short_code}</td>
-                <td className="px-5 py-3 text-slate-500 truncate max-w-xs">{item.target_url}</td>
-                <td className="px-5 py-3 text-slate-700">{item.title}</td>
-                <td className="px-5 py-3">
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleCopy(item.short_code)} className="p-1.5 rounded hover:bg-slate-100 text-slate-500" title="Copy URL">
-                      {copied === item.short_code ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                    <button onClick={() => handleEdit(item)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600" title="Edit">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500" title="Hapus">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+          <tbody>
+            {items.map((it: any, i: number) => {
+              const url = shortlinkURL(it.code || it.short_code)
+              return (
+                <tr key={it.id} className="border-t border-slate-100 hover:bg-slate-50">
+                  <td className="px-4 py-3 text-slate-400 text-center">{(page - 1) * 20 + i + 1}</td>
+                  <td className="px-4 py-3 font-medium text-slate-700">{it.label || '-'}</td>
+                  <td className="px-4 py-3">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{url}</a>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 break-all max-w-xs">{it.target_url || ''}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1">
+                      <button onClick={() => copyCode(it.code || it.short_code)} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center gap-1">
+                        {copied === (it.code || it.short_code) ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
+                      </button>
+                      <button onClick={() => remove(it.id)} className="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-2 py-1 rounded"><Trash2 className="w-3 h-3" /></button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
+        {items.length === 0 && <div className="text-center py-8 text-slate-400">Belum ada shortlink.</div>}
       </div>
 
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button key={i} onClick={() => setPage(i + 1)} className={`px-3 py-1 text-sm rounded-lg ${page === i + 1 ? 'bg-blue-600 text-white' : 'border hover:bg-slate-100'}`}>{i + 1}</button>
+          ))}
+        </div>
+      )}
+
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">{editId ? 'Edit' : 'Tambah'} Shortlink</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Short Code</label>
-                <input value={form.short_code} onChange={e => setForm({ ...form, short_code: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Target URL</label>
-                <input value={form.target_url} onChange={e => setForm({ ...form, target_url: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Judul</label>
-                <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-              </div>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
+            <h3 className="text-lg font-bold p-6 pb-0 flex-shrink-0">Tambah Shortlink</h3>
+            <div className="overflow-y-auto flex-1 p-6 space-y-3">
+              <div><label className="text-sm font-medium">Target URL</label><input value={form.target_url} onChange={e => setForm({...form, target_url: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." /></div>
+              <div><label className="text-sm font-medium">Label</label><input value={form.label} onChange={e => setForm({...form, label: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+              <div><label className="text-sm font-medium">Custom Code (opsional)</label><input value={form.code} onChange={e => setForm({...form, code: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Batal</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                {saving ? 'Menyimpan...' : 'Simpan'}
-              </button>
-            </div>
+            <div className="flex gap-2 justify-end p-6 pt-0 flex-shrink-0"><button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button><button onClick={save} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">{saving ? '...' : 'Simpan'}</button></div>
           </div>
         </div>
       )}

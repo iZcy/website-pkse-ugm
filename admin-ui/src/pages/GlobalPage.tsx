@@ -1,112 +1,110 @@
 import { useState, useEffect, useCallback } from 'react'
-import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPut } from '../lib/api'
-import { Pencil } from 'lucide-react'
+import { Save } from 'lucide-react'
 import ImageUpload from '../components/ImageUpload'
+import ReactQuill from 'react-quill-new'
+import 'react-quill-new/dist/quill.snow.css'
 
-interface GlobalSetting {
-  org_name: string
-  logo_url: string
-  logo_university_url: string
-  logo_yayasan_url: string
-  footer_text: string
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'clean'],
+  ],
 }
 
-const empty = (): GlobalSetting => ({ org_name: '', logo_url: '', logo_university_url: '', logo_yayasan_url: '', footer_text: '' })
-
 export default function GlobalPage() {
-  const { period } = usePeriod()
-  const [data, setData] = useState<GlobalSetting>(empty())
+  const [data, setData] = useState<any>({})
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState<GlobalSetting>(empty())
+  const [msg, setMsg] = useState('')
 
   const load = useCallback(async () => {
-    try {
-      const res = await apiGet(`/api/cms/global-setting?period=${period}`)
-      setData(res || empty())
-    } catch { setData(empty()) }
+    try { const d = await apiGet('/api/cms/global-setting'); setData(d || {}) } catch { setData({}) }
     setLoading(false)
-  }, [period])
-
+  }, [])
   useEffect(() => { load() }, [load])
 
-  const handleSave = async () => {
+  function setF(f: string, v: any) { setData({ ...data, [f]: v }) }
+
+  async function save() {
     setSaving(true)
-    try {
-      await apiPut('/api/cms/global-setting', form)
-      setData({ ...form })
-      setShowModal(false)
-    } catch { /* handled */ }
+    try { await apiPut('/api/cms/global-setting', data); setMsg('Tersimpan!'); setTimeout(() => setMsg(''), 2000) }
+    catch (e: any) { alert(e.message) }
     setSaving(false)
   }
 
-  const urlFields = new Set(['logo_url', 'logo_university_url', 'logo_yayasan_url'])
-
-  const fields: { key: keyof GlobalSetting; label: string }[] = [
-    { key: 'org_name', label: 'Nama Organisasi' },
-    { key: 'logo_url', label: 'Logo URL' },
-    { key: 'logo_university_url', label: 'Logo Universitas URL' },
-    { key: 'logo_yayasan_url', label: 'Logo Yayasan URL' },
-    { key: 'footer_text', label: 'Footer Text' },
-  ]
-
-  if (loading) return <div className="p-6 text-slate-500">Loading...</div>
+  if (loading) return <div className="text-slate-400 text-center py-8">Memuat...</div>
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 sticky top-0 bg-slate-100 z-10 py-2">
         <h2 className="text-2xl font-bold text-slate-800">Pengaturan Global</h2>
-        <button onClick={() => { setForm({ ...data }); setShowModal(true) }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
-          <Pencil className="w-4 h-4" /> Edit
-        </button>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600 text-left">
-            <tr>
-              <th className="px-5 py-3 font-medium">Key</th>
-              <th className="px-5 py-3 font-medium">Value</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {fields.map(({ key, label }) => (
-              <tr key={key} className="hover:bg-slate-50">
-                <td className="px-5 py-3 text-slate-500 font-medium">{label}</td>
-                <td className="px-5 py-3 text-slate-800 break-all">{data[key] || '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-            <h3 className="text-lg font-bold text-slate-800 p-6 pb-0 flex-shrink-0">Edit Pengaturan Global</h3>
-            <div className="overflow-y-auto flex-1 p-6 space-y-3">
-              {fields.map(({ key, label }) => (
-                <div key={key}>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">{label}</label>
-                  {urlFields.has(key) ? (
-                    <ImageUpload value={form[key] || ''} onChange={(url) => setForm({ ...form, [key]: url })} />
-                  ) : (
-                    <input value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2 justify-end p-6 pt-0 flex-shrink-0">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
-              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50">
-                {saving ? 'Menyimpan...' : 'Simpan'}
-              </button>
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          {msg && <span className="text-sm text-green-600">{msg}</span>}
+          <button onClick={save} disabled={saving} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Save className="w-4 h-4" /> Simpan</button>
         </div>
-      )}
+      </div>
+
+      <div className="space-y-4 max-w-3xl">
+        {/* Organization */}
+        <Section title="Organisasi">
+          <Field label="Nama Organisasi"><input value={data.org_name || ''} onChange={e => setF('org_name', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Tentang (HTML)"><ReactQuill value={data.about_html || ''} onChange={v => setF('about_html', v)} theme="snow" modules={quillModules} className="bg-white" /></Field>
+        </Section>
+
+        {/* Logos */}
+        <Section title="Logo">
+          <Field label="Logo Utama"><ImageUpload value={data.logo_url || ''} onChange={url => setF('logo_url', url)} /></Field>
+          <Field label="Logo Universitas"><ImageUpload value={data.logo_university_url || ''} onChange={url => setF('logo_university_url', url)} /></Field>
+          <Field label="Logo Yayasan"><ImageUpload value={data.logo_yayasan_url || ''} onChange={url => setF('logo_yayasan_url', url)} /></Field>
+        </Section>
+
+        {/* Hero / Header */}
+        <Section title="Header & Hero">
+          <Field label="Header Title"><input value={data.header_title || ''} onChange={e => setF('header_title', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Header Subtitle"><input value={data.header_subtitle || ''} onChange={e => setF('header_subtitle', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Hero Badge"><input value={data.hero_badge || ''} onChange={e => setF('hero_badge', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Hero Title Main"><input value={data.hero_title_main || ''} onChange={e => setF('hero_title_main', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Hero Title Accent"><input value={data.hero_title_accent || ''} onChange={e => setF('hero_title_accent', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+        </Section>
+
+        {/* Footer */}
+        <Section title="Footer">
+          <Field label="Footer Title"><input value={data.footer_title || ''} onChange={e => setF('footer_title', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Footer Copy"><input value={data.footer_copy || ''} onChange={e => setF('footer_copy', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Footer Text"><textarea value={data.footer_text || ''} onChange={e => setF('footer_text', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm h-20" /></Field>
+        </Section>
+
+        {/* Social Media */}
+        <Section title="Social Media">
+          <Field label="Instagram"><input value={data.instagram || ''} onChange={e => setF('instagram', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="@paguyubankseugm" /></Field>
+          <Field label="Twitter / X"><input value={data.twitter || ''} onChange={e => setF('twitter', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Facebook"><input value={data.facebook || ''} onChange={e => setF('facebook', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="YouTube"><input value={data.youtube || ''} onChange={e => setF('youtube', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="LinkedIn"><input value={data.linkedin || ''} onChange={e => setF('linkedin', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="TikTok"><input value={data.tiktok || ''} onChange={e => setF('tiktok', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+        </Section>
+      </div>
+    </div>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl border p-6">
+      <h3 className="font-semibold text-slate-700 mb-3">{title}</h3>
+      <div className="space-y-3">{children}</div>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-sm font-medium text-slate-600 mb-1 block">{label}</label>
+      {children}
     </div>
   )
 }
