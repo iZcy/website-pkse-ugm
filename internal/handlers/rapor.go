@@ -202,7 +202,7 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 	var scoreItems []scoreItem
 	for _, sa := range aspectList {
 		s := 0
-		if sa.Index < len(entry.Scores) { s = entry.Scores[sa.Index] }
+		if sa.Index < len(entry.Scores) { switch v := entry.Scores[sa.Index].(type) { case float64: s = int(v); case int: s = v; default: s = 0 } }
 		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s})
 	}
 	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", instance.ActivityStart, instance.ActivityEnd)

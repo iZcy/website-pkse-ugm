@@ -774,7 +774,7 @@ type RaporEntry struct {
 	InstanceID  primitive.ObjectID `bson:"instance_id"     json:"instance_id"`
 	MemberID    primitive.ObjectID `bson:"member_id"       json:"member_id"`
 	PeriodLabel string             `bson:"period_label"    json:"period_label"`
-	Scores      []int              `bson:"scores"          json:"scores"`
+	Scores      []interface{}              `bson:"scores"          json:"scores"`
 	Feedback    string             `bson:"feedback"        json:"feedback"`
 	Token       string             `bson:"token"           json:"token"`
 	Published   bool               `bson:"published"       json:"published"`
