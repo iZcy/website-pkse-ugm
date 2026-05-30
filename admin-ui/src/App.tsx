@@ -43,6 +43,7 @@ export default function App() {
           <Route path="global-stats" element={<GlobalStatsPage />} />
           <Route path="periode" element={<PeriodePage />} />
           <Route path="akun" element={<AkunPage />} />
+          <Route path="*" element={<Navigate to="pengumuman" replace />} />
         </Route>
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
