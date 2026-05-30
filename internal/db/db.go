@@ -759,6 +759,7 @@ type RaporInstance struct {
 	ActivityStart time.Time          `bson:"activity_start"  json:"activity_start"`
 	ActivityEnd   time.Time          `bson:"activity_end"    json:"activity_end"`
 	Published     bool               `bson:"published"       json:"published"`
+	ScoreAspects  []RaporScoreItem  `bson:"score_aspects,omitempty" json:"score_aspects,omitempty"`
 	CreatedAt     time.Time          `bson:"created_at"      json:"created_at"`
 }
 

@@ -185,15 +185,22 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 		Desc   string
 		Score  int
 	}
-	aspects := []struct{ Index int; Label string; Desc string }{
-		{0, "Kedisiplinan & Komitmen", "Kehadiran dan keteraturan mengikuti kegiatan"},
-		{1, "Keaktifan", "Partisipasi aktif dalam kegiatan organisasi"},
-		{2, "Tanggung Jawab", "Pemenuhan tugas dan kewajiban"},
-		{3, "Kerjasama", "Kemampuan bekerja dalam tim"},
-		{4, "Inisiatif", "Proaktif dalam kontribusi dan ide"},
+	var aspectList []struct{ Index int; Label string; Desc string }
+	if len(instance.ScoreAspects) > 0 {
+		for i, sa := range instance.ScoreAspects {
+			aspectList = append(aspectList, struct{ Index int; Label string; Desc string }{i, sa.Aspect, sa.Desc})
+		}
+	} else {
+		aspectList = []struct{ Index int; Label string; Desc string }{
+			{0, "Kedisiplinan & Komitmen", "Kehadiran dan keteraturan mengikuti kegiatan"},
+			{1, "Keaktifan", "Partisipasi aktif dalam kegiatan organisasi"},
+			{2, "Tanggung Jawab", "Pemenuhan tugas dan kewajiban"},
+			{3, "Kerjasama", "Kemampuan bekerja dalam tim"},
+			{4, "Inisiatif", "Proaktif dalam kontribusi dan ide"},
+		}
 	}
 	var scoreItems []scoreItem
-	for _, sa := range aspects {
+	for _, sa := range aspectList {
 		s := 0
 		if sa.Index < len(entry.Scores) { s = entry.Scores[sa.Index] }
 		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s})
