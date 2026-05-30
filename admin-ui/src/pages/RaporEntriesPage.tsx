@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost } from '../lib/api'
-import { Save, ArrowLeft } from 'lucide-react'
+import { Save, ArrowLeft, Search } from 'lucide-react'
 
 const DEFAULT_ASPECTS = [
-  { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan mengikuti kegiatan', kind: 'numeric' },
-  { label: 'Keaktifan', desc: 'Partisipasi aktif dalam kegiatan organisasi', kind: 'numeric' },
-  { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas dan kewajiban', kind: 'numeric' },
+  { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric' },
+  { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric' },
+  { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric' },
   { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric' },
-  { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi dan ide', kind: 'descriptive' },
+  { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive' },
 ]
 
 export default function RaporEntriesPage() {
@@ -18,32 +18,35 @@ export default function RaporEntriesPage() {
   const instanceId = searchParams.get('instance_id') || ''
   const [_instance, setInstance] = useState<any>(null)
   const [members, setMembers] = useState<any[]>([])
+  const [departments, setDepartments] = useState<any[]>([])
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [status, setStatus] = useState('')
   const [aspectEditing, setAspectEditing] = useState(false)
   const [aspects, setAspects] = useState<any[]>(DEFAULT_ASPECTS)
+  const [activeDept, setActiveDept] = useState('__all__')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const load = useCallback(async () => {
     if (!instanceId) { setLoading(false); return }
     try {
-      const [inst, mem, ent] = await Promise.all([
+      const [inst, mem, ent, depts] = await Promise.all([
         apiGet(`/api/cms/rapor-instances/${instanceId}`),
-        apiGet(`/api/cms/members?period=${period}&per_page=1000`),
+        apiGet(`/api/cms/members?period=${period}&per_page=200`),
         apiGet(`/api/cms/rapor-entries?instance_id=${instanceId}`),
+        apiGet(`/api/cms/departments?period=${period}`),
       ])
       setInstance(inst)
       setMembers(Array.isArray(mem?.items) ? mem.items : Array.isArray(mem) ? mem : [])
       setEntries(Array.isArray(ent?.items) ? ent.items : Array.isArray(ent) ? ent : [])
+      setDepartments(Array.isArray(depts) ? depts : [])
       if (inst?.score_aspects?.length > 0) {
         setAspects(inst.score_aspects.map((a: any) => ({
-          label: a.aspect || a.label || '',
-          desc: a.desc || '',
-          kind: a.kind || 'numeric'
+          label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric'
         })))
       }
-    } catch { setMembers([]); setEntries([]) }
+    } catch { setMembers([]); setEntries([]); setDepartments([]) }
     setLoading(false)
   }, [instanceId, period])
   useEffect(() => { load() }, [load])
@@ -59,14 +62,49 @@ export default function RaporEntriesPage() {
     return typeof m.id === 'object' ? ((m.id as any).$oid || m.id as string) : m.id
   }
 
+  // Group members by period departments (case-insensitive match)
+  const deptMembers = new Map<string, any[]>()
+  for (const d of departments) {
+    deptMembers.set(d.name, members.filter((m: any) =>
+      (m.department || '').toLowerCase() === (d.name || '').toLowerCase()
+    ))
+  }
+  // Unassigned members (department doesn't match any period department)
+  const deptNamesLower = departments.map((d: any) => d.name.toLowerCase())
+  const unassigned = members.filter((m: any) =>
+    !m.department || !deptNamesLower.includes(m.department.toLowerCase())
+  )
+  if (unassigned.length > 0) deptMembers.set('Belum Ditempatkan', unassigned)
+
+  // Filter by search
+  function filterMembers(list: any[]) {
+    if (!searchQuery) return list
+    const q = searchQuery.toLowerCase()
+    return list.filter((m: any) => (m.full_name || '').toLowerCase().includes(q))
+  }
+
+  // Get visible members
+  let visibleMembers: { dept: string; members: any[] }[] = []
+  if (activeDept === '__all__') {
+    for (const [dept, mems] of deptMembers) {
+      const filtered = filterMembers(mems)
+      if (filtered.length > 0 || activeDept !== '__all__') {
+        visibleMembers.push({ dept, members: filtered })
+      }
+    }
+  } else {
+    const mems = deptMembers.get(activeDept) || []
+    visibleMembers = [{ dept: activeDept, members: filterMembers(mems) }]
+  }
+
   async function saveEntry(memberId: string) {
     setSaving(memberId)
     const row = document.querySelector(`[data-member="${memberId}"]`)?.closest('[data-row]') as HTMLElement
     if (!row) { setSaving(null); return }
     try {
-      const scores = aspects.map((_, i) => {
+      const scores = aspects.map((a, i) => {
         const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
-        return inp?.value || (aspects[i].kind === 'numeric' ? '0' : '')
+        return inp?.value || (a.kind === 'numeric' ? '0' : '')
       })
       const fb = row.querySelector('[data-field="feedback"]') as HTMLInputElement
       const result = await apiPost('/api/cms/rapor-entries', {
@@ -124,19 +162,20 @@ export default function RaporEntriesPage() {
     } catch (e: any) { alert(e.message) }
   }
 
-  const deptMembers = new Map<string, any[]>()
-  for (const m of (Array.isArray(members) ? members : [])) {
-    const dept = m.department || 'Tanpa Kementerian'
-    if (!deptMembers.has(dept)) deptMembers.set(dept, [])
-    deptMembers.get(dept)!.push(m)
-  }
+  const totalMembers = members.length
+  const deptTabs = [
+    { key: '__all__', label: `Semua (${totalMembers})` },
+    ...Array.from(deptMembers.entries()).map(([name, mems]) => ({
+      key: name, label: `${name} (${mems.length})`
+    }))
+  ]
 
   if (loading) return <div className="text-slate-400 text-center py-8">Memuat...</div>
   if (!instanceId) return <div className="text-red-500 text-center py-8">instance_id tidak ditemukan</div>
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <div>
           <Link to={`/rapor?period=${period}`} className="text-blue-600 text-sm hover:underline mb-1 inline-block"><ArrowLeft className="w-3.5 h-3.5 inline mr-1" /> Kembali</Link>
           <h2 className="text-2xl font-bold text-slate-800">Isi Nilai Rapor</h2>
@@ -149,10 +188,31 @@ export default function RaporEntriesPage() {
 
       {status && <div className="mb-3 px-4 py-2 rounded-lg text-sm bg-green-50 text-green-700">{status}</div>}
 
-      {[...deptMembers.entries()].map(([dept, deptMems]) => (
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
+        {deptTabs.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveDept(tab.key)}
+            className={`whitespace-nowrap px-3 py-1.5 text-xs rounded-lg border transition ${activeDept === tab.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-3 max-w-xs">
+        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 pr-3 py-1.5 border rounded-lg text-xs w-full" placeholder="Cari anggota..." />
+      </div>
+
+      {/* Member rows by department */}
+      {visibleMembers.map(({ dept, members: deptMems }) => (
         <div key={dept} className="mb-4">
           <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2 px-1">{dept} ({deptMems.length})</h3>
           <div className="space-y-2">
+            {deptMems.length === 0 && <div className="text-xs text-slate-400 py-4 text-center">Tidak ada anggota di kementerian ini.</div>}
             {deptMems.map((m: any) => {
               const mid = memberIdStr(m)
               const ent = getEntry(mid)
