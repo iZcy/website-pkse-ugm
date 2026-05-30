@@ -190,13 +190,13 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 		Max    int
 		TextVal string
 	}
-	var aspectList []struct{ Index int; Label string; Desc string }
+	var aspectList []struct{ Index int; Label string; Desc string; Kind string; Min int; Max int }
 	if len(instance.ScoreAspects) > 0 {
 		for i, sa := range instance.ScoreAspects {
-			aspectList = append(aspectList, struct{ Index int; Label string; Desc string }{i, sa.Aspect, sa.Desc})
+			aspectList = append(aspectList, struct{ Index int; Label string; Desc string; Kind string; Min int; Max int }{i, sa.Aspect, sa.Desc, sa.Kind, sa.Min, sa.Max})
 		}
 	} else {
-		aspectList = []struct{ Index int; Label string; Desc string }{
+		aspectList = []struct{ Index int; Label string; Desc string; Kind string; Min int; Max int }{
 			{0, "Kedisiplinan & Komitmen", "Kehadiran dan keteraturan mengikuti kegiatan", "numeric", 0, 5},
 			{1, "Keaktifan", "Partisipasi aktif dalam kegiatan organisasi", "numeric", 0, 5},
 			{2, "Tanggung Jawab", "Pemenuhan tugas dan kewajiban", "numeric", 0, 5},

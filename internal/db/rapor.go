@@ -99,11 +99,11 @@ func UnpublishRaporInstance(id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = col("rapor_instances").UpdateByID(ctx, oid, bson.M{"": bson.M{"published": false}})
+	_, err = col("rapor_instances").UpdateByID(ctx, oid, bson.M{"$set": bson.M{"published": false}})
 	if err != nil {
 		return err
 	}
-	_, err = col("rapor_entries").UpdateMany(ctx, bson.M{"instance_id": oid}, bson.M{"": bson.M{"published": false}})
+	_, err = col("rapor_entries").UpdateMany(ctx, bson.M{"instance_id": oid}, bson.M{"$set": bson.M{"published": false}})
 	return err
 }
 func PublishRaporInstance(id string) error {
