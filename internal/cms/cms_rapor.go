@@ -85,6 +85,15 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 200, map[string]string{"ok": "true"})
 			return
 		}
+		if strings.HasSuffix(idSegment, "/unpublish") {
+			instanceID := strings.TrimSuffix(idSegment, "/unpublish")
+			if err := db.UnpublishRaporInstance(instanceID); err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+			writeJSON(w, 200, map[string]string{"ok": "true"})
+			return
+		}
 		var body map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
@@ -161,6 +170,15 @@ func RaporInstances(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(idSegment, "/publish") {
 			instanceID := strings.TrimSuffix(idSegment, "/publish")
 			if err := db.PublishRaporInstance(instanceID); err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+			writeJSON(w, 200, map[string]string{"ok": "true"})
+			return
+		}
+		if strings.HasSuffix(idSegment, "/unpublish") {
+			instanceID := strings.TrimSuffix(idSegment, "/unpublish")
+			if err := db.UnpublishRaporInstance(instanceID); err != nil {
 				writeJSON(w, 500, map[string]string{"error": err.Error()})
 				return
 			}
