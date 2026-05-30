@@ -1,27 +1,62 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost } from '../lib/api'
-import { Send, Users } from 'lucide-react'
+import { Send, Search, Users, CheckCircle, Loader2, Smartphone, RefreshCw, Copy, History } from 'lucide-react'
 
 export default function BroadcastPage() {
   const { period } = usePeriod()
+  const [tab, setTab] = useState('broadcast')
+  const [step, setStep] = useState(1)
   const [contacts, setContacts] = useState<any[]>([])
-  const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [message, setMessage] = useState('')
-  const [sending, setSending] = useState(false)
-  const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
-  const [filterDept, setFilterDept] = useState('')
+  const [search, setSearch] = useState('')
+  const [deptFilter, setDeptFilter] = useState('')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [message, setMessage] = useState('Halo {{nama}},\n\n')
+  const [delayMs, setDelayMs] = useState(3000)
+  const [sending, setSending] = useState(false)
+  const [progress, setProgress] = useState({ sent: 0, total: 0, failed: 0 })
+  const [status, setStatus] = useState('')
+  const [waConnected, setWaConnected] = useState(false)
+  const [qrCode, setQrCode] = useState('')
+  const [history, setHistory] = useState<any[]>([])
 
-  const load = useCallback(async () => {
-    try { const d = await apiGet(`/api/broadcast/anggota-contacts?period=${period}`); setContacts(d.contacts || d || []) } catch { setContacts([]) }
+  const loadContacts = useCallback(async () => {
+    try {
+      const data = await apiGet(`/api/broadcast/anggota-contacts?period=${period}`)
+      setContacts(data.contacts || data || [])
+    } catch { setContacts([]) }
     setLoading(false)
   }, [period])
-  useEffect(() => { load() }, [load])
+  useEffect(() => { loadContacts() }, [loadContacts])
 
-  function toggleAll() {
-    if (selected.size === filtered.length) setSelected(new Set())
-    else setSelected(new Set(filtered.map((c: any) => c.id)))
+  useEffect(() => {
+    apiGet('/api/broadcast/status').then(d => {
+      if (d.connected) setWaConnected(true)
+      else loadQR()
+    }).catch(() => {})
+  }, [])
+
+  async function loadQR() {
+    try {
+      const r = await fetch('/api/broadcast/qr', { credentials: 'same-origin' })
+      if (r.ok) {
+        const blob = await r.blob()
+        setQrCode(URL.createObjectURL(blob))
+      }
+    } catch { }
+  }
+
+  function toggleAll(filtered: any[]) {
+    if (selected.size >= filtered.length) {
+      const next = new Set(selected)
+      filtered.forEach((c: any) => next.delete(c.id))
+      setSelected(next)
+    } else {
+      const next = new Set(selected)
+      filtered.forEach((c: any) => next.add(c.id))
+      setSelected(next)
+    }
   }
 
   function toggle(id: string) {
@@ -30,19 +65,30 @@ export default function BroadcastPage() {
     setSelected(next)
   }
 
-  const departments = [...new Set(contacts.map((c: any) => c.department).filter(Boolean))]
-  const filtered = filterDept ? contacts.filter((c: any) => c.department === filterDept) : contacts
-
   async function send() {
-    if (!message) return alert('Tulis pesan terlebih dahulu')
-    if (selected.size === 0) return alert('Pilih setidaknya satu kontak')
+    if (!message || selected.size === 0) return
     setSending(true)
+    setProgress({ sent: 0, total: selected.size, failed: 0 })
     try {
-      await apiPost('/api/broadcast/send', { message, contact_ids: [...selected], period_label: period })
-      setStatus(`Berhasil mengirim ke ${selected.size} kontak`)
-    } catch (e: any) { setStatus(`Gagal: ${e.message}`) }
+      const res = await apiPost('/api/broadcast/send', {
+        message, phones: [...selected],
+        delay_ms: delayMs, period_label: period,
+      })
+      setStatus('Berhasil dikirim!')
+      setStep(4)
+    } catch (e: any) {
+      setStatus('Gagal: ' + e.message)
+    }
     setSending(false)
   }
+
+  const departments = [...new Set(contacts.map((c: any) => c.department).filter(Boolean))]
+  const filtered = contacts.filter((c: any) => {
+    const matchDept = !deptFilter || c.department === deptFilter
+    const s = search.toLowerCase()
+    const matchSearch = !s || (c.full_name || '').toLowerCase().includes(s) || (c.phone || '').includes(s)
+    return matchDept && matchSearch
+  })
 
   if (loading) return <div className="text-slate-400 text-center py-8">Memuat...</div>
 
@@ -50,37 +96,129 @@ export default function BroadcastPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-slate-800">WhatsApp Broadcast</h2>
-        <div className="text-sm text-slate-500"><Users className="w-4 h-4 inline mr-1" />{contacts.length} kontak</div>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1.5 text-sm">
+            <span className={`w-2.5 h-2.5 rounded-full ${waConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            {waConnected ? 'Terhubung' : 'Tidak terhubung'}
+          </span>
+          {!waConnected && <button onClick={loadQR} className="text-xs text-blue-600 hover:underline"><RefreshCw className="w-3 h-3 inline" /> QR</button>}
+        </div>
       </div>
 
-      <div className="mb-4 flex gap-2">
-        <button onClick={() => setFilterDept('')} className={`px-3 py-1.5 text-sm rounded-lg border ${!filterDept ? 'bg-blue-600 text-white' : 'hover:bg-slate-100'}`}>Semua</button>
-        {departments.map((d: any) => (
-          <button key={d} onClick={() => setFilterDept(d)} className={`px-3 py-1.5 text-sm rounded-lg border ${filterDept === d ? 'bg-blue-600 text-white' : 'hover:bg-slate-100'}`}>{d}</button>
-        ))}
-      </div>
+      {qrCode && !waConnected && (
+        <div className="mb-4 bg-white rounded-xl border p-4 flex gap-4 items-center">
+          <img src={qrCode} className="w-40 h-40 border rounded-lg" alt="QR Code" />
+          <div className="text-sm text-slate-600">
+            <p className="font-semibold mb-1">Scan QR Code</p>
+            <p>Buka WhatsApp → Perangkat Tertaut → Scan kode</p>
+            <button onClick={loadQR} className="mt-2 text-xs text-blue-600 hover:underline flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Refresh QR</button>
+          </div>
+        </div>
+      )}
 
-      <div className="flex gap-4 mb-4">
-        <div className="flex-1">
-          <textarea value={message} onChange={e => setMessage(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm h-32" placeholder="Tulis pesan WhatsApp..." />
-          <button onClick={send} disabled={sending} className="mt-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
-            <Send className="w-4 h-4" /> {sending ? 'Mengirim...' : `Kirim ke ${selected.size} kontak`}
+      {/* Step tabs */}
+      <div className="flex gap-2 mb-4 border-b pb-2">
+        {['Pilih Kontak', 'Tulis Pesan', 'Konfirmasi'].map((label, i) => (
+          <button key={i} onClick={() => setStep(i + 1)} className={`px-4 py-2 rounded-t-lg text-sm font-medium transition ${step === i + 1 ? 'bg-white text-blue-700 shadow-sm border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700'}`}>
+            {i + 1}. {label}
           </button>
-          {status && <div className={`mt-2 text-sm ${status.includes('Gagal') ? 'text-red-600' : 'text-green-600'}`}>{status}</div>}
-        </div>
-        <div className="w-72 bg-white rounded-xl border border-slate-200 max-h-96 overflow-y-auto">
-          <label className="flex items-center gap-2 px-3 py-2 border-b bg-slate-50 cursor-pointer text-sm font-medium">
-            <input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /> Pilih Semua ({filtered.length})
-          </label>
-          {filtered.map((c: any) => (
-            <label key={c.id} className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer text-sm">
-              <input type="checkbox" checked={selected.has(c.id)} onChange={() => toggle(c.id)} />
-              <span>{c.full_name || c.name}</span>
-              <span className="text-xs text-slate-400 ml-auto">{c.phone}</span>
-            </label>
-          ))}
-        </div>
+        ))}
+        {status && <span className="ml-auto text-sm text-green-600 self-center">{status}</span>}
       </div>
+
+      {step === 1 && (
+        <div>
+          <div className="flex gap-3 mb-3 flex-wrap">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg text-sm w-56" placeholder="Cari kontak..." />
+            </div>
+            <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
+              <option value="">Semua Departemen</option>
+              {departments.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+            <div className="flex-1" />
+            <span className="text-sm text-slate-500 self-center">{selected.size} dari {contacts.length} terpilih</span>
+          </div>
+
+          <div className="bg-white rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto">
+            <label className="flex items-center gap-2 px-3 py-2 border-b bg-slate-50 cursor-pointer text-sm font-medium sticky top-0">
+              <input type="checkbox" checked={selected.size >= filtered.length && filtered.length > 0} onChange={() => toggleAll(filtered)} />
+              Pilih Semua ({filtered.length})
+            </label>
+            {filtered.map(c => (
+              <label key={c.id} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm border-b border-slate-50">
+                <input type="checkbox" checked={selected.has(c.id)} onChange={() => toggle(c.id)} />
+                <span className="flex-1">{c.full_name || c.name}</span>
+                <span className="text-xs text-slate-400">{c.department}</span>
+                <span className="text-xs text-slate-400 font-mono">{c.phone}</span>
+              </label>
+            ))}
+            {filtered.length === 0 && <div className="p-6 text-center text-slate-400">Tidak ada kontak</div>}
+          </div>
+          <div className="flex justify-end mt-4">
+            <button onClick={() => setStep(2)} disabled={selected.size === 0} className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50">Lanjut →</button>
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div>
+          <div className="bg-white rounded-xl border p-4 space-y-3">
+            <textarea value={message} onChange={e => setMessage(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm h-40 resize-none" placeholder="Tulis pesan..." />
+            <div className="flex items-center gap-4 text-xs text-slate-500">
+              <span>{message.length} karakter</span>
+              <button onClick={() => setMessage(m => m + '{{nama}}')} className="text-blue-600 hover:underline">+ Nama</button>
+              <button onClick={() => setMessage(m => m + '{{nim}}')} className="text-blue-600 hover:underline">+ NIM</button>
+              <button onClick={() => setMessage(m => m + '{{departemen}}')} className="text-blue-600 hover:underline">+ Departemen</button>
+              <button onClick={() => setMessage(m => m + '{{rapor_link}}')} className="text-blue-600 hover:underline">+ Link Rapor</button>
+              <button onClick={() => setMessage(m => m + '\\n')} className="text-blue-600 hover:underline">+ Baris baru</button>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-slate-600">Delay:</label>
+              <select value={delayMs} onChange={e => setDelayMs(parseInt(e.target.value))} className="border rounded px-2 py-1 text-sm">
+                <option value={1000}>1 detik</option>
+                <option value={3000}>3 detik</option>
+                <option value={5000}>5 detik</option>
+                <option value={10000}>10 detik</option>
+              </select>
+              <span className="text-xs text-slate-400">antar pesan</span>
+            </div>
+          </div>
+          <div className="flex justify-between mt-4">
+            <button onClick={() => setStep(1)} className="px-4 py-2 border rounded-lg text-sm">← Kembali</button>
+            <button onClick={() => setStep(3)} className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm">Review →</button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div>
+          <div className="bg-white rounded-xl border p-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <Users className="w-4 h-4" />
+              <span>{selected.size} penerima</span>
+            </div>
+            <div className="bg-slate-50 rounded-lg p-3 text-sm whitespace-pre-wrap">{message}</div>
+            <div className="text-xs text-slate-500">Delay: {delayMs / 1000}s antar pesan</div>
+          </div>
+          <div className="flex justify-between mt-4">
+            <button onClick={() => setStep(2)} className="px-4 py-2 border rounded-lg text-sm">← Edit Pesan</button>
+            <button onClick={send} disabled={sending} className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm flex items-center gap-2">
+              {sending ? <><Loader2 className="w-4 h-4 animate-spin" /> Mengirim...</> : <><Send className="w-4 h-4" /> Kirim Broadcast</>}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 4 && (
+        <div className="bg-green-50 rounded-xl border border-green-200 p-8 text-center">
+          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+          <h3 className="text-lg font-bold text-green-800">Broadcast Terkirim!</h3>
+          <p className="text-sm text-green-600 mt-1">{selected.size} pesan sedang diproses</p>
+          <button onClick={() => { setStep(1); setSelected(new Set()); setMessage('Halo {{nama}},\\n\\n'); setStatus('') }} className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg text-sm">Broadcast Baru</button>
+        </div>
+      )}
     </div>
   )
 }
