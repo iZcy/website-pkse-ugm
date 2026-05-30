@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"webapp/internal/db"
 )
@@ -28,6 +32,32 @@ func NewRaporHandler() *RaporHandler {
 	return &RaporHandler{tmpl: tmpl}
 }
 
+var raporSecret = []byte("pkse-rapor-secret-key-2026")
+
+func generateRaporToken(memberID string) string {
+	expiry := time.Now().Add(24 * time.Hour).Format(time.RFC3339)
+	payload := memberID + ":" + expiry
+	mac := hmac.New(sha256.New, raporSecret)
+	mac.Write([]byte(payload))
+	sig := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	return base64.RawURLEncoding.EncodeToString([]byte(payload)) + "." + sig
+}
+
+func verifyRaporToken(token, memberID string) bool {
+	parts := strings.SplitN(token, ".", 2)
+	if len(parts) != 2 { return false }
+	payload, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil { return false }
+	parts2 := strings.SplitN(string(payload), ":", 2)
+	if len(parts2) != 2 || parts2[0] != memberID { return false }
+	expiry, err := time.Parse(time.RFC3339, parts2[1])
+	if err != nil || time.Now().After(expiry) { return false }
+	mac := hmac.New(sha256.New, raporSecret)
+	mac.Write(payload)
+	expected := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	return hmac.Equal([]byte(parts[1]), []byte(expected))
+}
+
 func (rh *RaporHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -46,6 +76,11 @@ func (rh *RaporHandler) Login(w http.ResponseWriter, r *http.Request) {
 			rh.tmpl.ExecuteTemplate(w, "rapor-login.html", map[string]string{"Error": "Data tidak ditemukan. Periksa kembali nama dan NIM."})
 			return
 		}
+		token := generateRaporToken(member.ID.Hex())
+		http.SetCookie(w, &http.Cookie{
+			Name: "rapor_auth", Value: token, Path: "/rapor",
+			HttpOnly: true, SameSite: http.SameSiteStrictMode,
+		})
 		http.Redirect(w, r, "/rapor/m/"+member.ID.Hex(), http.StatusFound)
 		return
 	}
@@ -56,6 +91,11 @@ func (rh *RaporHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 	memberID := strings.TrimPrefix(r.URL.Path, "/rapor/m/")
 	if memberID == "" {
+		http.Redirect(w, r, "/rapor", http.StatusFound)
+		return
+	}
+	cookie, err := r.Cookie("rapor_auth")
+	if err != nil || !verifyRaporToken(cookie.Value, memberID) {
 		http.Redirect(w, r, "/rapor", http.StatusFound)
 		return
 	}
