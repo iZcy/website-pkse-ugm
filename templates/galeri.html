@@ -40,7 +40,7 @@
           {{range .Gallery}}
           <div class="group cursor-pointer" onclick="openLightbox(this)">
             <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100">
-              <img src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+              <img loading="lazy" src="{{.ImageURL}}" alt="{{.Title}}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
             </div>
             {{if .Title}}<p class="mt-2 font-semibold text-gray-900 text-sm">{{.Title}}</p>{{end}}
             {{if .Caption}}<p class="text-xs text-gray-500">{{.Caption}}</p>{{end}}

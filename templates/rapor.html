@@ -66,7 +66,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
 
   <div class="bg-white rounded-2xl p-6 card-shadow fade-in mb-4">
     <div class="flex items-center gap-4 mb-4">
-      {{if .Member.PhotoURL}}<img src="{{.Member.PhotoURL}}" class="w-14 h-14 rounded-full object-cover border-2 border-rapor-200">{{else}}<div class="w-14 h-14 rounded-full bg-rapor-100 flex items-center justify-center text-rapor-600 text-xl font-bold border-2 border-rapor-200">{{substr .Member.FullName 0 1}}</div>{{end}}
+      {{if .Member.PhotoURL}}<img loading="lazy" src="{{.Member.PhotoURL}}" class="w-14 h-14 rounded-full object-cover border-2 border-rapor-200">{{else}}<div class="w-14 h-14 rounded-full bg-rapor-100 flex items-center justify-center text-rapor-600 text-xl font-bold border-2 border-rapor-200">{{substr .Member.FullName 0 1}}</div>{{end}}
       <div>
         <h2 class="text-lg font-bold text-gray-900">{{.Member.FullName}}</h2>
         <p class="text-sm text-gray-500">{{.Member.Department}} · {{.Member.ProgramStudi}}</p>

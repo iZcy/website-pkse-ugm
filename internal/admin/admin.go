@@ -103,7 +103,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		auth.SetSession(w, u.Username, u.Role)
-		http.Redirect(w, r, "/admin/pengumuman", http.StatusFound)
+		allPeriods, _ := db.GetPeriods()
+		selPeriod := ""
+		for _, p := range allPeriods {
+			if p.IsActive { selPeriod = p.Label; break }
+		}
+		if selPeriod == "" && len(allPeriods) > 0 {
+			selPeriod = allPeriods[0].Label
+		}
+		http.Redirect(w, r, "/admin/pengumuman?period="+selPeriod, http.StatusFound)
 		return
 	}
 

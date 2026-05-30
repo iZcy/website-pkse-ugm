@@ -5,7 +5,7 @@ import { Menu, GraduationCap } from 'lucide-react'
 export interface AdminContextType {
   period: string
   setPeriod: (p: string) => void
-  periods: { Label: string; DisplayName: string; IsActive: boolean }[]
+  periods: any[]
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -69,7 +69,7 @@ const iconPaths: Record<string, string> = {
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [periods, setPeriods] = useState<{ Label: string; DisplayName: string; IsActive: boolean }[]>([])
+  const [periods, setPeriods] = useState<any[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
   const period = searchParams.get('period') || ''
@@ -81,8 +81,8 @@ export default function AdminLayout() {
         const items = data.items || data || []
         setPeriods(items)
         if (!period && items.length) {
-          const active = items.find((p: { IsActive: boolean }) => p.IsActive)
-          setSearchParams({ period: active?.Label || items[0].Label })
+          const active = items.find((p: any) => p.is_active)
+          setSearchParams({ period: active?.label || items[0]?.label })
         }
       })
       .catch(() => {})
@@ -123,7 +123,7 @@ export default function AdminLayout() {
             className="px-3 py-1.5 rounded-md text-sm font-medium bg-white text-blue-900 border border-blue-300"
           >
             {periods.map(p => (
-              <option key={p.Label} value={p.Label}>{p.DisplayName}{p.IsActive ? ' \u2606' : ''}</option>
+              <option key={p.label} value={p.label}>{p.display_name}{p.is_active ? ' \u2606' : ''}</option>
             ))}
           </select>
         </div>
