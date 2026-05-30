@@ -62,39 +62,68 @@ export default function RaporEntriesPage() {
     return typeof m.id === 'object' ? ((m.id as any).$oid || m.id as string) : m.id
   }
 
-  // Group members by period departments (case-insensitive match)
-  const deptMembers = new Map<string, any[]>()
+  // Build department tree (parent_id → children)
+  const deptMap: Record<string, any> = {}
+  const topDepts: any[] = []
+  for (const d of departments) { deptMap[d.id] = { ...d, children: [], members: [] }; }
   for (const d of departments) {
-    deptMembers.set(d.name, members.filter((m: any) =>
-      (m.department || '').toLowerCase() === (d.name || '').toLowerCase()
-    ))
+    const node = deptMap[d.id]
+    if (d.parent_id && deptMap[d.parent_id]) deptMap[d.parent_id].children.push(node)
+    else topDepts.push(node)
   }
-  // Unassigned members (department doesn't match any period department)
+  // Assign members to matching departments (case-insensitive)
+  for (const m of members) {
+    for (const d of departments) {
+      if ((m.department || '').toLowerCase() === (d.name || '').toLowerCase()) {
+        deptMap[d.id].members.push(m); break
+      }
+    }
+  }
   const deptNamesLower = departments.map((d: any) => d.name.toLowerCase())
-  const unassigned = members.filter((m: any) =>
-    !m.department || !deptNamesLower.includes(m.department.toLowerCase())
-  )
-  if (unassigned.length > 0) deptMembers.set('Belum Ditempatkan', unassigned)
+  const unassigned = members.filter((m: any) => !m.department || !deptNamesLower.includes(m.department.toLowerCase()))
 
-  // Filter by search
   function filterMembers(list: any[]) {
     if (!searchQuery) return list
     const q = searchQuery.toLowerCase()
     return list.filter((m: any) => (m.full_name || '').toLowerCase().includes(q))
   }
 
-  // Get visible members
-  let visibleMembers: { dept: string; members: any[] }[] = []
-  if (activeDept === '__all__') {
-    for (const [dept, mems] of deptMembers) {
-      const filtered = filterMembers(mems)
-      if (filtered.length > 0 || activeDept !== '__all__') {
-        visibleMembers.push({ dept, members: filtered })
+  // Get visible members respecting the tree
+  type Section = { dept: string; members: any[]; children: Section[] }
+  function getSections(node: any): Section {
+    const filtered = filterMembers(node.members || [])
+    const childSections = (node.children || []).map(getSections)
+    return { dept: node.name, members: filtered, children: childSections }
+  }
+  function flattenSections(sections: Section[]): { dept: string; members: any[]; isSub: boolean }[] {
+    const out: any[] = []
+    for (const s of sections) {
+      out.push({ dept: s.dept, members: s.members, isSub: false })
+      for (const c of s.children) {
+        if (c.members.length > 0 || activeDept !== '__all__') out.push({ dept: c.dept, members: c.members, isSub: true })
       }
     }
+    return out
+  }
+
+  let visibleMembers: { dept: string; members: any[]; isSub: boolean }[] = []
+  if (activeDept === '__all__') {
+    flattenSections(topDepts.map(getSections)).forEach(s => {
+      if (s.members.length > 0) visibleMembers.push(s)
+    })
+    if (unassigned.length > 0) visibleMembers.push({ dept: 'Belum Ditempatkan', members: filterMembers(unassigned), isSub: false })
   } else {
-    const mems = deptMembers.get(activeDept) || []
-    visibleMembers = [{ dept: activeDept, members: filterMembers(mems) }]
+    // Find the matching department and show it + its sub-departments
+    const found = departments.find((d: any) => d.name === activeDept)
+    if (found && deptMap[found.id]) {
+      const section = getSections(deptMap[found.id])
+      if (section.members.length > 0) visibleMembers.push({ dept: section.dept, members: section.members, isSub: false })
+      for (const c of section.children) {
+        visibleMembers.push({ dept: '— ' + c.dept, members: c.members, isSub: true })
+      }
+    } else if (activeDept === 'Belum Ditempatkan') {
+      visibleMembers.push({ dept: 'Belum Ditempatkan', members: filterMembers(unassigned), isSub: false })
+    }
   }
 
   async function saveEntry(memberId: string) {
@@ -165,10 +194,11 @@ export default function RaporEntriesPage() {
   const totalMembers = members.length
   const deptTabs = [
     { key: '__all__', label: `Semua (${totalMembers})` },
-    ...Array.from(deptMembers.entries()).map(([name, mems]) => ({
-      key: name, label: `${name} (${mems.length})`
+    ...topDepts.map((d: any) => ({
+      key: d.name, label: `${d.name} (${d.members.length + d.children.reduce((s: number, c: any) => s + (c.members?.length || 0), 0)})`
     }))
   ]
+  if (unassigned.length > 0) deptTabs.push({ key: 'Belum Ditempatkan', label: `Belum Ditempatkan (${unassigned.length})` })
 
   if (loading) return <div className="text-slate-400 text-center py-8">Memuat...</div>
   if (!instanceId) return <div className="text-red-500 text-center py-8">instance_id tidak ditemukan</div>
@@ -208,11 +238,12 @@ export default function RaporEntriesPage() {
       </div>
 
       {/* Member rows by department */}
-      {visibleMembers.map(({ dept, members: deptMems }) => (
-        <div key={dept} className="mb-4">
-          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2 px-1">{dept} ({deptMems.length})</h3>
-          <div className="space-y-2">
+      {visibleMembers.map(({ dept, members: deptMems, isSub }) => (
+        <div key={dept} className={`mb-4 ${isSub ? 'ml-4 border-l-2 border-slate-200 pl-3' : ''}`}>
+          <h3 className={`text-xs font-bold mb-2 px-1 ${isSub ? 'text-slate-400' : 'text-slate-500 uppercase tracking-wide text-sm'}`}>{dept} ({deptMems.length})</h3>
+          <div>
             {deptMems.length === 0 && <div className="text-xs text-slate-400 py-4 text-center">Tidak ada anggota di kementerian ini.</div>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {deptMems.map((m: any) => {
               const mid = memberIdStr(m)
               const ent = getEntry(mid)
@@ -220,31 +251,28 @@ export default function RaporEntriesPage() {
               const feedback = ent?.feedback || ''
               const token = ent?.token || ''
               return (
-                <div key={mid} data-row={mid} className="bg-white rounded-xl border border-slate-200 p-3">
-                  <div className="flex items-center gap-3 mb-2">
-                    {m.photo_url ? <img src={m.photo_url} className="w-7 h-7 rounded-full object-cover flex-shrink-0" alt="" /> : <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">{(m.full_name || '?')[0]}</div>}
-                    <div className="text-sm font-medium text-slate-800">{m.full_name}</div>
+                <div key={mid} data-row={mid} className="bg-white rounded-lg border border-slate-200 p-2 space-y-1">
+                  <div className="flex items-center gap-2">
+                    {m.photo_url ? <img src={m.photo_url} className="w-6 h-6 rounded-full object-cover flex-shrink-0" alt="" /> : <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">{(m.full_name || '?')[0]}</div>}
+                    <div className="text-xs font-medium text-slate-800 truncate">{m.full_name}</div>
+                    <button onClick={() => saveEntry(mid)} disabled={saving === mid} className="ml-auto px-2 py-0.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex-shrink-0">{saving === mid ? '...' : 'Simpan'}</button>
                   </div>
-                  <div className="space-y-2">
-                    {aspects.map((a, i) => (
-                      <div key={i} className="flex items-start gap-2">
-                        <label className="text-xs text-slate-500 w-32 flex-shrink-0 pt-1">{a.label}</label>
-                        {a.kind === 'numeric' ? (
-                          <input type="number" data-idx={i} defaultValue={scores[i] || 0} min={0} max={5} className="score-input flex-shrink-0" />
-                        ) : (
-                          <textarea data-idx={i} defaultValue={scores[i] || ''} className="flex-1 border rounded px-2 py-1 text-xs" rows={2} placeholder="Feedback..."/>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <input type="text" data-field="feedback" defaultValue={feedback} className="flex-1 border border-slate-200 rounded px-2 py-1 text-xs" placeholder="Catatan tambahan..." />
-                    <button onClick={() => saveEntry(mid)} disabled={saving === mid} className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">{saving === mid ? '...' : 'Simpan'}</button>
-                  </div>
-                  {token && <div className="text-xs text-slate-400 mt-1">Link: <input type="text" value={`https://pkseugm.web.id/rapor/t/${token}`} className="text-blue-500 bg-slate-50 border-none px-1 w-56 text-xs" readOnly onFocus={e => e.target.select()} /></div>}
+                  {aspects.map((a, i) => (
+                    <div key={i} className="flex items-center gap-1">
+                      <label className="text-[10px] text-slate-400 w-16 flex-shrink-0 truncate" title={a.label}>{a.label}</label>
+                      {a.kind === 'numeric' ? (
+                        <input type="number" data-idx={i} defaultValue={scores[i] || 0} min={0} max={5} className="w-10 border rounded px-1 py-0.5 text-xs text-center" />
+                      ) : (
+                        <textarea data-idx={i} defaultValue={scores[i] || ''} className="flex-1 border rounded px-1 py-0.5 text-[10px]" rows={1} placeholder="..."/>
+                      )}
+                    </div>
+                  ))}
+                  <input type="text" data-field="feedback" defaultValue={feedback} className="w-full border border-slate-200 rounded px-1 py-0.5 text-[10px]" placeholder="Catatan..." />
+                  {token && <div className="text-[10px] text-slate-400 truncate">Link: /t/{token}</div>}
                 </div>
               )
             })}
+            </div>
           </div>
         </div>
       ))}
