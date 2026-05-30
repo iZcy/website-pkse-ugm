@@ -13,6 +13,13 @@ export default function RaporPage() {
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [saving, setSaving] = useState(false)
+  const [aspects, setAspects] = useState<any[]>([
+    { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric' },
+    { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric' },
+    { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric' },
+    { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric' },
+    { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive' },
+  ])
 
   const load = useCallback(async () => {
     try {
@@ -21,7 +28,6 @@ export default function RaporPage() {
     } catch { setInstances([]) }
     setLoading(false)
   }, [period])
-
   useEffect(() => { load() }, [load])
 
   function fmtDate(d: string) {
@@ -36,9 +42,17 @@ export default function RaporPage() {
         period_label: period, title,
         activity_start: start + 'T00:00:00Z',
         activity_end: end + 'T23:59:59Z',
+        score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind })),
       })
       setShowCreate(false)
       setTitle(''); setStart(''); setEnd('')
+      setAspects([
+        { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric' },
+        { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric' },
+        { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric' },
+        { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric' },
+        { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive' },
+      ])
       load()
     } catch (e: unknown) { alert((e as Error).message) }
     setSaving(false)
@@ -74,9 +88,7 @@ export default function RaporPage() {
             <div>
               <h3 className="font-semibold text-slate-800">{inst.title}</h3>
               <p className="text-sm text-slate-500 mt-1">Absensi: {fmtDate(inst.activity_start)} — {fmtDate(inst.activity_end)}</p>
-              <p className={`text-xs mt-1 ${inst.published ? 'text-green-600' : 'text-amber-600'}`}>
-                {inst.published ? '✓ Sudah dipublikasi' : '⏳ Draft'}
-              </p>
+              <p className={`text-xs mt-1 ${inst.published ? 'text-green-600' : 'text-amber-600'}`}>{inst.published ? '✓ Sudah dipublikasi' : '⏳ Draft'}</p>
             </div>
             <div className="flex items-center gap-2">
               <Link to={`/rapor/entries?period=${period}&instance_id=${inst.id}`} className="px-3 py-1.5 text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 text-nowrap">
@@ -96,21 +108,39 @@ export default function RaporPage() {
       </div>
 
       {showCreate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={e => e.target === e.currentTarget && setShowCreate(false)}>
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-            <h3 className="text-lg font-bold text-slate-800 mb-4">Buat Rapor Baru</h3>
-            <div className="space-y-3">
-              <div><label className="block text-sm font-medium text-slate-700 mb-1">Judul Rapor</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Evaluasi Tengah Semester" /></div>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowCreate(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <h3 className="text-lg font-bold p-6 pb-0 flex-shrink-0">Buat Rapor Baru</h3>
+            <div className="overflow-y-auto flex-1 p-6 space-y-4">
+              <div><label className="block text-sm font-medium text-slate-700 mb-1">Judul Rapor</label><input value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">Mulai Absensi</label>
-                  <input type="date" value={start} onChange={e => setStart(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
-                <div><label className="block text-sm font-medium text-slate-700 mb-1">Akhir Absensi</label>
-                  <input type="date" value={end} onChange={e => setEnd(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">Mulai Absensi</label><input type="date" value={start} onChange={e => setStart(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+                <div><label className="block text-sm font-medium text-slate-700 mb-1">Akhir Absensi</label><input type="date" value={end} onChange={e => setEnd(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Aspek Penilaian</label>
+                <div className="space-y-2">
+                  {aspects.map((a, i) => (
+                    <div key={i} className="flex gap-2 items-start bg-slate-50 rounded-lg p-2">
+                      <span className="text-xs text-slate-400 pt-2">{i + 1}</span>
+                      <div className="flex-1 space-y-1">
+                        <input value={a.label} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], label: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-sm" placeholder="Nama aspek" />
+                        <input value={a.desc} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], desc: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-xs" placeholder="Deskripsi" />
+                      </div>
+                      <select value={a.kind || 'numeric'} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], kind: e.target.value }; setAspects(n) }} className="text-xs border rounded px-1 py-1">
+                        <option value="numeric">Angka</option>
+                        <option value="descriptive">Teks</option>
+                      </select>
+                      {aspects.length > 1 && <button onClick={() => setAspects(aspects.filter((_, j) => j !== i))} className="text-red-400 text-xs pt-2">✕</button>}
+                    </div>
+                  ))}
+                  <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric' }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-2 mt-5">
-              <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm text-slate-600 border rounded-lg hover:bg-slate-50">Batal</button>
+            <div className="flex justify-end gap-2 p-6 pt-0 flex-shrink-0">
+              <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50">Batal</button>
               <button onClick={create} disabled={saving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">{saving ? 'Membuat...' : 'Buat'}</button>
             </div>
           </div>
