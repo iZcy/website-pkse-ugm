@@ -79,7 +79,7 @@ export default function RaporPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Link to={`/admin/rapor/entries?period=${period}&instance_id=${inst.id}`} className="px-3 py-1.5 text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 text-nowrap">
+              <Link to={`/rapor/entries?period=${period}&instance_id=${inst.id}`} className="px-3 py-1.5 text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 text-nowrap">
                 <Eye className="w-3.5 h-3.5 inline mr-1" /> Isi Nilai
               </Link>
               {!inst.published && (

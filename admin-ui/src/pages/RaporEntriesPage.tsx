@@ -22,7 +22,7 @@ export default function RaporEntriesPage() {
     try {
       const [inst, mem, ent] = await Promise.all([
         apiGet(`/api/cms/rapor-instances/${instanceId}`),
-        apiGet(`/api/cms/members?period=${period}&per_page=200`),
+        apiGet(`/api/cms/members?period=${period}&per_page=1000`),
         apiGet(`/api/cms/rapor-entries?instance_id=${instanceId}`),
       ])
       setInstance(inst)
@@ -115,7 +115,7 @@ export default function RaporEntriesPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <Link to={`/admin/rapor?period=${period}`} className="text-blue-600 text-sm hover:underline mb-1 inline-block">
+          <Link to={`/rapor?period=${period}`} className="text-blue-600 text-sm hover:underline mb-1 inline-block">
             <ArrowLeft className="w-3.5 h-3.5 inline mr-1" /> Kembali ke daftar rapor
           </Link>
           <h2 className="text-2xl font-bold text-slate-800">Isi Nilai Rapor</h2>
