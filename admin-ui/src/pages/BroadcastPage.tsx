@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost } from '../lib/api'
-import { Send, Search, Users, CheckCircle, Loader2, Smartphone, RefreshCw, Copy } from 'lucide-react'
+import { Send, Search, Users, CheckCircle, Loader2, Smartphone, RefreshCw } from 'lucide-react'
 
 export default function BroadcastPage() {
   const { period } = usePeriod()
@@ -14,6 +14,7 @@ export default function BroadcastPage() {
   const [message, setMessage] = useState('Halo {{nama}},\n\n')
   const [delayMs, setDelayMs] = useState(3000)
   const [sending, setSending] = useState(false)
+  const [progress, setProgress] = useState({ sent: 0, total: 0, failed: 0 })
   const [status, setStatus] = useState('')
   const [waConnected, setWaConnected] = useState(false)
   const [qrCode, setQrCode] = useState('')
