@@ -302,7 +302,7 @@ export default function RaporEntriesPage() {
                     <input value={a.label} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], label: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-sm" placeholder="Nama aspek" />
                     <input value={a.desc} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], desc: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-xs" placeholder="Deskripsi" />
                     <select value={a.kind || 'numeric'} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], kind: e.target.value }; setAspects(n) }} className="text-xs border rounded px-2 py-1">
-                      <option value="numeric">Angka (0-5)</option>
+                      <option value="numeric">Angka</option>
                       <option value="descriptive">Deskriptif (teks)</option>
                     </select>
                     {a.kind !== 'descriptive' && (

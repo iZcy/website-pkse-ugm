@@ -185,6 +185,10 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 		Aspect string
 		Desc   string
 		Score  int
+		Kind   string
+		Min    int
+		Max    int
+		TextVal string
 	}
 	var aspectList []struct{ Index int; Label string; Desc string }
 	if len(instance.ScoreAspects) > 0 {
@@ -193,24 +197,25 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		aspectList = []struct{ Index int; Label string; Desc string }{
-			{0, "Kedisiplinan & Komitmen", "Kehadiran dan keteraturan mengikuti kegiatan"},
-			{1, "Keaktifan", "Partisipasi aktif dalam kegiatan organisasi"},
-			{2, "Tanggung Jawab", "Pemenuhan tugas dan kewajiban"},
-			{3, "Kerjasama", "Kemampuan bekerja dalam tim"},
-			{4, "Inisiatif", "Proaktif dalam kontribusi dan ide"},
+			{0, "Kedisiplinan & Komitmen", "Kehadiran dan keteraturan mengikuti kegiatan", "numeric", 0, 5},
+			{1, "Keaktifan", "Partisipasi aktif dalam kegiatan organisasi", "numeric", 0, 5},
+			{2, "Tanggung Jawab", "Pemenuhan tugas dan kewajiban", "numeric", 0, 5},
+			{3, "Kerjasama", "Kemampuan bekerja dalam tim", "numeric", 0, 5},
+			{4, "Inisiatif", "Proaktif dalam kontribusi dan ide", "descriptive", 0, 5},
 		}
 	}
 	var scoreItems []scoreItem
+	textVal := ""
 	for _, sa := range aspectList {
 		s := 0
 		if sa.Index < len(entry.Scores) { switch v := entry.Scores[sa.Index].(type) {
 case float64: s = int(v)
 case int: s = v
 case string:
-    if n, err := strconv.Atoi(v); err == nil { s = n } else { s = 0 }
+    if n, err := strconv.Atoi(v); err == nil { s = n } else { s = 0; textVal = v }
 default: s = 0
 } }
-		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s})
+		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s, Kind: sa.Kind, Min: sa.Min, Max: sa.Max, TextVal: textVal})
 	}
 	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", instance.ActivityStart, instance.ActivityEnd)
 	type actItem struct {
