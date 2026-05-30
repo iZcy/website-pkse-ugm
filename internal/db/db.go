@@ -764,9 +764,12 @@ type RaporInstance struct {
 }
 
 type RaporScoreItem struct {
-	Aspect string `json:"aspect"`
-	Desc   string `json:"desc"`
-	Score  int    `json:"score"`
+	Aspect string      `json:"aspect"`
+	Desc   string      `json:"desc"`
+	Score  int         `json:"score,omitempty"`
+	Kind   string      `json:"kind,omitempty"`
+	Min    int         `json:"min,omitempty"`
+	Max    int         `json:"max,omitempty"`
 }
 
 type RaporEntry struct {

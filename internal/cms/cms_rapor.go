@@ -232,7 +232,7 @@ func RaporEntries(w http.ResponseWriter, r *http.Request) {
 			InstanceID  string `json:"instance_id"`
 			MemberID    string `json:"member_id"`
 			PeriodLabel string `json:"period_label"`
-			Scores      []int  `json:"scores"`
+			Scores      []interface{}  `json:"scores"`
 			Feedback    string `json:"feedback"`
 			Published   bool   `json:"published"`
 		}
