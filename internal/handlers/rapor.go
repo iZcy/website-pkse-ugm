@@ -110,7 +110,7 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 		InstanceTitle string
 		PeriodLabel   string
 		Token         string
-		Scores        []int
+		Scores        []interface{}
 		Feedback      string
 		Published     bool
 	}
