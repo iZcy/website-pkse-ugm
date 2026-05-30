@@ -135,10 +135,9 @@ export default function RaporEntriesPage() {
         const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
         return inp?.value || (a.kind === 'numeric' ? '0' : '')
       })
-      const fb = row.querySelector('[data-field="feedback"]') as HTMLInputElement
       const result = await apiPost('/api/cms/rapor-entries', {
         instance_id: instanceId, member_id: memberId, period_label: period,
-        scores, feedback: fb?.value || '', published: false,
+        scores, published: false,
       })
       const idx = entries.findIndex((e: any) => {
         const mid = typeof e.member_id === 'object' ? (e.member_id.$oid || e.member_id) : e.member_id
@@ -164,10 +163,9 @@ export default function RaporEntriesPage() {
           const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
           return inp?.value || (a.kind === 'numeric' ? '0' : '')
         })
-        const fb = row.querySelector('[data-field="feedback"]') as HTMLInputElement
         await apiPost('/api/cms/rapor-entries', {
           instance_id: instanceId, member_id: memberId, period_label: period,
-          scores, feedback: fb?.value || '', published: false,
+          scores, published: false,
         })
         saved++
       } catch { /* skip */ }
@@ -243,32 +241,38 @@ export default function RaporEntriesPage() {
           <h3 className={`text-xs font-bold mb-2 px-1 ${isSub ? 'text-slate-400' : 'text-slate-500 uppercase tracking-wide text-sm'}`}>{dept} ({deptMems.length})</h3>
           <div>
             {deptMems.length === 0 && <div className="text-xs text-slate-400 py-4 text-center">Tidak ada anggota di kementerian ini.</div>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {deptMems.map((m: any) => {
               const mid = memberIdStr(m)
               const ent = getEntry(mid)
               const scores: any[] = ent?.scores || []
-              const feedback = ent?.feedback || ''
               const token = ent?.token || ''
               return (
-                <div key={mid} data-row={mid} className="bg-white rounded-lg border border-slate-200 p-2 space-y-1">
-                  <div className="flex items-center gap-2">
-                    {m.photo_url ? <img src={m.photo_url} className="w-6 h-6 rounded-full object-cover flex-shrink-0" alt="" /> : <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold flex-shrink-0">{(m.full_name || '?')[0]}</div>}
-                    <div className="text-xs font-medium text-slate-800 truncate">{m.full_name}</div>
-                    <button onClick={() => saveEntry(mid)} disabled={saving === mid} className="ml-auto px-2 py-0.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex-shrink-0">{saving === mid ? '...' : 'Simpan'}</button>
-                  </div>
-                  {aspects.map((a, i) => (
-                    <div key={i} className="flex items-center gap-1">
-                      <label className="text-[10px] text-slate-400 w-16 flex-shrink-0 truncate" title={a.label}>{a.label}</label>
-                      {a.kind === 'numeric' ? (
-                        <input type="number" data-idx={i} defaultValue={scores[i] || 0} min={0} max={5} className="w-10 border rounded px-1 py-0.5 text-xs text-center" />
-                      ) : (
-                        <textarea data-idx={i} defaultValue={scores[i] || ''} className="flex-1 border rounded px-1 py-0.5 text-[10px]" rows={1} placeholder="..."/>
-                      )}
+                <div key={mid} data-row={mid} data-member={mid} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    {m.photo_url ? <img src={m.photo_url} className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100 flex-shrink-0" alt="" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{(m.full_name || '?')[0]}</div>}
+                    <div>
+                      <div className="text-sm font-semibold text-slate-800 leading-tight">{m.full_name}</div>
+                      {m.nim && <div className="text-[10px] text-slate-400">{m.nim}</div>}
                     </div>
-                  ))}
-                  <input type="text" data-field="feedback" defaultValue={feedback} className="w-full border border-slate-200 rounded px-1 py-0.5 text-[10px]" placeholder="Catatan..." />
-                  {token && <div className="text-[10px] text-slate-400 truncate">Link: /t/{token}</div>}
+                    <button onClick={() => saveEntry(mid)} disabled={saving === mid} className="ml-auto px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex-shrink-0 transition-colors">{saving === mid ? '...' : 'Simpan'}</button>
+                  </div>
+                  <div className="space-y-2">
+                    {aspects.map((a, i) => (
+                      <div key={i} className="group">
+                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">{a.label}</label>
+                        {a.kind === 'numeric' ? (
+                          <div className="flex items-center gap-2">
+                            <input type="range" data-idx={i} defaultValue={scores[i] || 0} min={0} max={5} className="flex-1 h-1.5 accent-blue-600" />
+                            <span className="text-xs font-bold text-slate-600 w-5 text-right">{scores[i] || 0}</span>
+                          </div>
+                        ) : (
+                          <textarea data-idx={i} defaultValue={scores[i] || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none" rows={2} placeholder="Tulis penilaian..."/>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {token && <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400 truncate">🔗 /t/{token}</div>}
                 </div>
               )
             })}
