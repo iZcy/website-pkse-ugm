@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
 import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import ImageUpload from '../components/ImageUpload'
 
 export default function AnggotaPage() {
   const { period } = usePeriod()
@@ -93,19 +94,23 @@ export default function AnggotaPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-4 flex-shrink-0">{editId ? 'Edit Anggota' : 'Tambah Anggota'}</h3>
-            <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <h3 className="text-lg font-bold text-slate-800 p-6 pb-0 flex-shrink-0">{editId ? 'Edit Anggota' : 'Tambah Anggota'}</h3>
+            <div className="overflow-y-auto flex-1 p-6 space-y-3">
               {fields.map(f => (
                 <div key={f}><label className="text-sm font-medium text-slate-700">{labels[f]}</label>
-                  <input value={form[f] || ''} onChange={e => setForm({...form, [f]: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={labels[f]} />
+                  {f === 'photo_url' ? (
+                    <ImageUpload value={form[f] || ''} onChange={(url) => setForm({...form, [f]: url})} />
+                  ) : (
+                    <input value={form[f] || ''} onChange={e => setForm({...form, [f]: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={labels[f]} />
+                  )}
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 mt-4 justify-end flex-shrink-0">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Batal</button>
-              <button onClick={save} disabled={saving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">{saving ? 'Menyimpan...' : 'Simpan'}</button>
+            <div className="flex gap-2 justify-end p-6 pt-0 flex-shrink-0">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
+              <button onClick={save} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50">{saving ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>

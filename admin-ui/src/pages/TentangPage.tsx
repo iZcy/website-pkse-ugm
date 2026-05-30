@@ -4,6 +4,7 @@ import { apiGet, apiPut } from '../lib/api'
 import { Save, Plus, Trash2 } from 'lucide-react'
 import ReactQuill from 'react-quill-new'
 import 'react-quill-new/dist/quill.snow.css'
+import ImageUpload from '../components/ImageUpload'
 
 export default function TentangPage() {
   const { period } = usePeriod()
@@ -70,9 +71,9 @@ export default function TentangPage() {
               <div key={i} className="flex gap-2 items-start bg-slate-50 rounded-lg p-3">
                 {item.image_url && <img src={item.image_url} className="w-16 h-16 rounded object-cover" alt="" />}
                 <div className="flex-1 space-y-2">
-                  <input value={item.title || ''} onChange={e => updateGallery(i, 'title', e.target.value)} placeholder="Judul" className="w-full border rounded px-2 py-1 text-sm" />
-                  <input value={item.image_url || ''} onChange={e => updateGallery(i, 'image_url', e.target.value)} placeholder="URL Gambar" className="w-full border rounded px-2 py-1 text-sm" />
-                  <input value={item.caption || ''} onChange={e => updateGallery(i, 'caption', e.target.value)} placeholder="Caption" className="w-full border rounded px-2 py-1 text-sm" />
+                   <input value={item.title || ''} onChange={e => updateGallery(i, 'title', e.target.value)} placeholder="Judul" className="w-full border rounded px-2 py-1 text-sm" />
+                   <ImageUpload value={item.image_url || ''} onChange={(url) => updateGallery(i, 'image_url', url)} />
+                   <input value={item.caption || ''} onChange={e => updateGallery(i, 'caption', e.target.value)} placeholder="Caption" className="w-full border rounded px-2 py-1 text-sm" />
                 </div>
                 <button onClick={() => removeGallery(i)} className="p-1 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
               </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPut } from '../lib/api'
-import { Save, Plus, Trash2, ImageIcon } from 'lucide-react'
+import { Save, Plus, Trash2, ImageIcon, ChevronUp, ChevronDown } from 'lucide-react'
+import ImageUpload from '../components/ImageUpload'
 
 export default function GaleriPage() {
   const { period } = usePeriod()
@@ -23,6 +24,11 @@ export default function GaleriPage() {
   function remove(i: number) { setGallery(gallery.filter((_: any, j: number) => j !== i)) }
   function update(i: number, f: string, v: string) {
     const g = [...gallery]; g[i] = { ...g[i], [f]: v }; setGallery(g)
+  }
+  function moveGalleryItem(i: number, dir: number) {
+    const newIdx = i + dir
+    if (newIdx < 0 || newIdx >= gallery.length) return
+    const g = [...gallery]; [g[i], g[newIdx]] = [g[newIdx], g[i]]; setGallery(g)
   }
 
   async function save() {
@@ -58,8 +64,14 @@ export default function GaleriPage() {
               <div className="w-full h-40 bg-slate-100 flex items-center justify-center text-slate-300"><ImageIcon className="w-8 h-8" /></div>
             )}
             <div className="p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex gap-0.5">
+                  <button onClick={() => moveGalleryItem(i, -1)} className="p-1 rounded hover:bg-slate-100" title="Naik"><ChevronUp className="w-3 h-3" /></button>
+                  <button onClick={() => moveGalleryItem(i, 1)} className="p-1 rounded hover:bg-slate-100" title="Turun"><ChevronDown className="w-3 h-3" /></button>
+                </div>
+              </div>
               <input value={item.title || ''} onChange={e => update(i, 'title', e.target.value)} placeholder="Judul foto" className="w-full border rounded px-2 py-1 text-sm" />
-              <input value={item.image_url || ''} onChange={e => update(i, 'image_url', e.target.value)} placeholder="URL Gambar" className="w-full border rounded px-2 py-1 text-sm" />
+              <ImageUpload value={item.image_url || ''} onChange={(url) => update(i, 'image_url', url)} />
               <input value={item.caption || ''} onChange={e => update(i, 'caption', e.target.value)} placeholder="Caption" className="w-full border rounded px-2 py-1 text-sm" />
               <button onClick={() => remove(i)} className="text-xs text-red-500 hover:bg-red-50 px-2 py-1 rounded"><Trash2 className="w-3 h-3 inline mr-1" /> Hapus</button>
             </div>

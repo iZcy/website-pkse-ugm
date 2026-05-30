@@ -118,7 +118,7 @@ export default function ActivitiesPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto p-6">
             <h3 className="text-lg font-bold text-slate-800 mb-4">{editId ? 'Edit Aktivitas' : 'Tambah Aktivitas'}</h3>
             <div className="space-y-3">
               <div>
