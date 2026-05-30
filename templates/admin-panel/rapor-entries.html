@@ -51,6 +51,13 @@
 
 <div id="save-status" class="hidden mb-3 px-4 py-2 rounded-lg text-sm"></div>
 
+<div class="flex justify-end mb-3">
+  <button onclick="saveAll()" id="save-all-btn" class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    Simpan Semua
+  </button>
+</div>
+
 <div id="entries-section">
   <div class="text-slate-400 text-center py-8">Memuat data...</div>
 </div>
@@ -181,6 +188,42 @@ async function saveEntry(memberId) {
       renderEntries();
     } else { alert('Gagal: ' + (result.error || 'unknown')); }
   } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function saveAll() {
+  const btn = document.getElementById('save-all-btn');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+  const rows = document.querySelectorAll('[data-member-row]');
+  let saved = 0, failed = 0;
+  for (const row of rows) {
+    const memberId = row.getAttribute('data-member-row');
+    try {
+      const scores = [];
+      for (let i = 0; i < 5; i++) {
+        const inp = row.querySelector('[data-member="' + memberId + '"][data-idx="' + i + '"]');
+        scores.push(parseInt(inp.value) || 0);
+      }
+      const fb = row.querySelector('[data-member="' + memberId + '"][data-field="feedback"]');
+      const body = {
+        instance_id: instanceId,
+        member_id: memberId,
+        period_label: period,
+        scores: scores,
+        feedback: fb.value,
+        published: false,
+      };
+      const r = await fetch('/api/cms/rapor-entries', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body) });
+      if (r.ok) saved++; else failed++;
+    } catch(e) { failed++; }
+  }
+  const statusEl = document.getElementById('save-status');
+  statusEl.className = 'mb-3 px-4 py-2 rounded-lg text-sm ' + (failed === 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700');
+  statusEl.textContent = 'Tersimpan: ' + saved + ', Gagal: ' + failed;
+  statusEl.classList.remove('hidden');
+  btn.disabled = false;
+  btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Simpan Semua';
+  loadData();
 }
 
 loadData();
