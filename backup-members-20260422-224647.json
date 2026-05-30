@@ -1,0 +1,1924 @@
+{
+  count: 104,
+  exported: '2026-04-22T15:46:48.984Z'
+}
+---
+{
+  _id: ObjectId('69c51213727c4a62558563b2'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Auliya Maharani Lazuardi',
+  nickname: 'Rani',
+  program_studi: 'Teknologi Pangan dan Hasil Pertanian',
+  fakultas: 'Teknologi Pertanian',
+  angkatan: '2022',
+  photo_url: '/uploads/1776240405666_IMG_7659.JPG',
+  cover_url: '',
+  department: 'Pengurus Inti',
+  position: 'Wakil Ketua',
+  sort_order: 1,
+  phone: '085601246143',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563b5'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Dzakiya Nuha Nida Nabilla',
+  nickname: 'Nuha',
+  program_studi: 'Kedokteran Hewan',
+  fakultas: 'Kedokteran Hewan',
+  angkatan: '2022',
+  photo_url: '/uploads/1776240540039_IMG_7661.JPG',
+  cover_url: '',
+  department: 'Bendahara',
+  position: 'Bendahara 2',
+  sort_order: 4,
+  phone: '088802695379',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563b6'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Ni Kadek Anggi Satrya Pradnyani',
+  nickname: 'Anggi',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2024',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pengurus Inti',
+  position: 'Staf Sekretaris',
+  sort_order: 5,
+  phone: '082145435966',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563b8'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Sayyida Rifa Ghadhiya Adla',
+  nickname: 'Adla',
+  program_studi: 'Kedokteran Reguler',
+  fakultas: 'FKKMK',
+  angkatan: '2024',
+  photo_url: '/uploads/1776240775234_Sayyida_Rifa_Ghadhiya_Adla.JPG',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Bendahara',
+  sort_order: 7,
+  phone: '085176819606',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563b9'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Rendra Rafid Fauzan',
+  nickname: 'Rendra',
+  program_studi: 'Agronomi',
+  fakultas: 'Pertanian',
+  angkatan: '2024',
+  photo_url: '/uploads/1776240836565_Rendra_Rafid_Fauzan.JPG',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 8,
+  phone: '085697000904',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ba'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Bagas Ibnu Firmansyah',
+  nickname: 'Bagas',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2023',
+  photo_url: '/uploads/1776240912828_Bagas_Ibnu_Firmansyah.jpg',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 9,
+  phone: '087764276527',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563bb'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Ignina Tamamika Shalsabila',
+  nickname: 'Nina',
+  program_studi: 'Pengelolaan Arsip dan Rekaman Informasi',
+  fakultas: 'Sekolah Vokasi',
+  angkatan: '2024',
+  photo_url: '/uploads/1776240955014_ignina.jpg',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 10,
+  phone: '085764470819',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563bc'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Alya Pri Amalia',
+  nickname: 'Alya',
+  program_studi: 'Teknik Sumber Daya Air',
+  fakultas: 'Teknik',
+  angkatan: '2025',
+  photo_url: '/uploads/1776241005018_Alya_Pri_Amalia.jpg',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 11,
+  phone: '085866001149',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563bd'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Maulana Iqbal Pambudi',
+  nickname: 'Iqbal',
+  program_studi: 'Ilmu dan Industri Peternakan',
+  fakultas: 'Peternakan',
+  angkatan: '2023',
+  photo_url: '/uploads/1776241064837_Maulana_Iqbal_Pambudi.jpeg',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 12,
+  phone: '082229174874',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563be'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Dzakiyya Amany Rahmah',
+  nickname: 'Rahmah',
+  program_studi: 'Farmasi',
+  fakultas: 'Farmasi',
+  angkatan: '2024',
+  photo_url: '/uploads/1776241148541_Dzakiyya_Amany_Rahmah.JPG',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 13,
+  phone: '088229936434',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563bf'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Shabrina Putri Syahradini',
+  nickname: 'Shabrina',
+  program_studi: 'Psikologi',
+  fakultas: 'Psikologi',
+  angkatan: '2024',
+  photo_url: '/uploads/1776241201773_Shabrina_Putri_Syahradini.JPG',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 14,
+  phone: '089516238488',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563c0'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Claresta Zuhrah Aulia',
+  nickname: 'Claresta',
+  program_studi: 'Manajemen',
+  fakultas: 'Fakultas Ekonomika dan Bisnis',
+  angkatan: '2023',
+  photo_url: '/uploads/1776241256096_Claresta_Zuhrah_Aulia.jpg',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 15,
+  phone: '0895367163744',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563c1'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Iman Hasanudin',
+  nickname: 'Iman',
+  program_studi: 'Ilmu dan Industri Peternakan',
+  fakultas: 'Peternakan',
+  angkatan: '2022',
+  photo_url: '/uploads/1776241702149_Iman.png',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 16,
+  phone: '081234971506',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563c2'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Roihan Afifi',
+  nickname: 'Roihan',
+  program_studi: 'Akuntansi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 17,
+  phone: '087838665462',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563c3'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Annisa Bella Safitri',
+  nickname: 'Bella',
+  program_studi: 'Kimia',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 18,
+  phone: '08980925174',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563c4'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Khansamitri Winggarnisvari P',
+  nickname: 'Khansa',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf',
+  sort_order: 19,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  },
+  phone: '081338923306'
+}
+{
+  _id: ObjectId('69c51213727c4a62558563c5'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Arya Aminullah',
+  nickname: 'Arya',
+  program_studi: 'Arkeologi',
+  fakultas: 'Ilmu Budaya',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf ComDev',
+  sort_order: 20,
+  phone: '082397614100',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563cb'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Laura Cecillia Manurung',
+  nickname: 'Laura',
+  program_studi: 'Ilmu Aktuaria',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '/uploads/1776242189212_Laura_Cecillia_Manurung.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  sort_order: 26,
+  phone: '082268392072',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563cc'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Nisrina Salsabila Rafi',
+  nickname: 'Erin',
+  program_studi: 'Teknologi Hasil Perikanan',
+  fakultas: 'pertanian',
+  angkatan: '2024',
+  photo_url: '/uploads/1776242263487_Nisrina_Salsabila_Rafi.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  sort_order: 27,
+  phone: '088901729661',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563cd'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Megawangi Ganda Putri',
+  nickname: 'Megi',
+  program_studi: 'Pendidikan Bahasa Prancis',
+  fakultas: 'Bahasa, Seni, dan Budaya',
+  angkatan: '2025',
+  photo_url: '/uploads/1776242314489_Megawangi_Ganda_Putri.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  sort_order: 28,
+  phone: '085697037417',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ce'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Inkania Ngoluna Habeahan',
+  nickname: 'Inka',
+  program_studi: 'Gizi Kesehatan',
+  fakultas: 'Kedokteran, Kesehatan Masyarakat dan Keperawatan',
+  angkatan: '2024',
+  photo_url: '/uploads/1776242368179_Inkania_Ngoluna_Habeahan.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  sort_order: 29,
+  phone: '088295433875',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563cf'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Dyah Puspita Ningrum',
+  nickname: 'Dyah',
+  program_studi: 'Farmasi',
+  fakultas: 'Farmasi',
+  angkatan: '2023',
+  photo_url: '/uploads/1776242441983_Dyah_Puspita_Ningrum.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  sort_order: 30,
+  phone: '087859318683',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d0'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Elisabeth Sandra Murti',
+  nickname: 'Elisa',
+  program_studi: 'Teknologi Pangan dan Hasil Pertanian',
+  fakultas: 'Teknologi Pertanian',
+  angkatan: '2023',
+  photo_url: '/uploads/1776242510881_Elisabeth_Sandra_Murti.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  sort_order: 31,
+  phone: '081938521848',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d1'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Lintang Wira Hawwary',
+  nickname: 'Wira',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776242547082_Lintang_Wira_Hawwary.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Mariposa',
+  sort_order: 32,
+  phone: '089524860040',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d2'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Klara Karina Mahardika',
+  nickname: 'Klara',
+  program_studi: 'Akuntansi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Mariposa',
+  sort_order: 33,
+  phone: '081327934161',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d4'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Givany Safrina A',
+  nickname: 'Givany',
+  program_studi: 'Manajemen',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf',
+  sort_order: 35,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  },
+  phone: '081227552469'
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d5'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Rauf Sayid Ahmad Saputra',
+  nickname: 'Rauf',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2024',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Mariposa',
+  sort_order: 36,
+  phone: '088239811343',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d6'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Ghea Navali Wihatma',
+  nickname: 'Ghea',
+  program_studi: 'Biologi',
+  fakultas: 'Biologi',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Menteri',
+  sort_order: 37,
+  phone: '087889163976',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d8'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Lintang Permatasari',
+  nickname: 'Lintang',
+  program_studi: 'Biologi',
+  fakultas: 'Biologi',
+  angkatan: '2023',
+  photo_url: '/uploads/1776245727696_Lintang_Permatasari.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Deputi Kesejahteraan Beswan',
+  sort_order: 39,
+  phone: '0895360427329',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563d9'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Camelia Azzahra',
+  nickname: 'Rara',
+  program_studi: 'Perencanaan Wilayah dan Kota',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '/uploads/1776245782974_Camelia_Azzahra.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 40,
+  phone: '085642607370',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563da'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Fryan Carol Simarmata',
+  nickname: 'Carol',
+  program_studi: 'Akuntansi',
+  fakultas: 'Fakultas Ekonomika dan Bisnis',
+  angkatan: '2023',
+  photo_url: '/uploads/1776245824697_Fryan_Carol_Simarmata.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 41,
+  phone: '081274340344',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563db'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Marsha Paramitha Susanto',
+  nickname: 'Marsha',
+  program_studi: 'Kimia',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 42,
+  phone: '081222793822',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563dc'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Falens Nicanor',
+  nickname: 'Falen',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2022',
+  photo_url: '/uploads/1776245871818_Falens_Nicanor.png',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 43,
+  phone: '081317086651',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563dd'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Vira Ardiana Puspaningrum',
+  nickname: 'Vira',
+  program_studi: 'Bahasa dan Kebudayaan Korea',
+  fakultas: 'Ilmu Budaya',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 44,
+  phone: '081253945373',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563de'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Nabil Almadani',
+  nickname: 'Nabil',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2023',
+  photo_url: '/uploads/1776245917484_Nabil_Almadani.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 45,
+  phone: '085706447523',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563df'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Megawati Ganda Wangi',
+  nickname: 'Mega',
+  program_studi: 'Pendidikan Bahasa dan Sastra Indonesia',
+  fakultas: 'FBSB',
+  angkatan: '2025',
+  photo_url: '/uploads/1776246019667_Megawati_Ganda_Wangi.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Minat Bakat',
+  sort_order: 46,
+  phone: '085711111651',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e0'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Ara Dwi Narendra',
+  nickname: 'Naren',
+  program_studi: 'Teknik Elektro',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '/uploads/1776246087718_Ara_Dwi_Narendra.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Kesejahteraan Beswan',
+  sort_order: 47,
+  phone: '082147224448',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e2'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Bagus Cipta Pratama',
+  nickname: 'Bagus',
+  program_studi: 'Ilmu Komputer',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Kesejahteraan Beswan',
+  sort_order: 49,
+  phone: '081217920623',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e3'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Almio Rafifa Avriella Salsabiella',
+  nickname: 'Rafifa',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2024',
+  photo_url: '/uploads/1776246468290_Almio_Rafifa.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Kesejahteraan Beswan',
+  sort_order: 50,
+  phone: '087715307822',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e5'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Auliya Habibah',
+  nickname: 'Awaw',
+  program_studi: 'Ilmu hubungan internasional',
+  fakultas: 'Ilmu sosial dan politik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776242736148_Auliya_Habibah.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Menteri',
+  sort_order: 52,
+  phone: '081324941271',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e6'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Daffa Elgo Santosa',
+  nickname: 'Elgo',
+  program_studi: 'Statistika',
+  fakultas: 'MIPA',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Deputi Kurikulum',
+  sort_order: 53,
+  phone: '085706782707',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e7'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Marya Qori Aina',
+  nickname: 'Aina',
+  program_studi: 'Ilmu Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2023',
+  photo_url: '/uploads/1776248606511_Marya_Qori_Aina.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Deputi Tentor dan Siswa',
+  sort_order: 54,
+  phone: '089602263585',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e8'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Fadillah Rahma Ranita',
+  nickname: 'Nita',
+  program_studi: 'Farmasi',
+  fakultas: 'Farmasi',
+  angkatan: '2023',
+  photo_url: '/uploads/1776248663586_Fadillah_Rahma_Ranita.jpg',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Deputi Evaluasi dan Pengawasan',
+  sort_order: 55,
+  phone: '081319280654',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563e9'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Gniwa Trang Amana',
+  nickname: 'Niwa',
+  program_studi: 'Sosiologi',
+  fakultas: 'Ilmu Sosial dan Ilmu Politik',
+  angkatan: '2025',
+  photo_url: '/uploads/1776248727090_Gniwa_Trang_Amana.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Kurikulum',
+  sort_order: 56,
+  phone: '081225779761',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ea'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Annisa Briliana Nurmadina',
+  nickname: 'Anna',
+  program_studi: 'Pembangunan Ekonomi Kewilayahan',
+  fakultas: 'Sekolah Vokasi',
+  angkatan: '2024',
+  photo_url: '/uploads/1776248764937_Annisa_Briliana_Nurmadina.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Kurikulum',
+  sort_order: 57,
+  phone: '08383704996',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563eb'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Rifqi Hamzah Yugi Nasrullah',
+  nickname: 'Hamzah',
+  program_studi: 'Kehutanan',
+  fakultas: 'Kehutanan',
+  angkatan: '2023',
+  photo_url: '/uploads/1776248818278_IMG_7548.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Kurikulum',
+  sort_order: 58,
+  phone: '085649393589',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ec'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Amanda Rafida Al-Azizah',
+  nickname: 'Amanda',
+  program_studi: 'Elektronika dan Instrumentasi',
+  fakultas: 'MIPA',
+  angkatan: '2024',
+  photo_url: '/uploads/1776248871209_Amanda_Rafida_Al-Azizah.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Tentor dan Siswa',
+  sort_order: 59,
+  phone: '089609906377',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ed'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Rania Victoria Waluyo',
+  nickname: 'Rania',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2024',
+  photo_url: '/uploads/1776248921166_IMG_7477.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Tentor dan Siswa',
+  sort_order: 60,
+  phone: '0895390537292',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ee'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Muhammad Husni Kadafi',
+  nickname: 'Dafi',
+  program_studi: 'Teknik Mesin',
+  fakultas: 'Teknik',
+  angkatan: '2024',
+  photo_url: '/uploads/1776248990721_IMG_7552.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Tentor dan Siswa',
+  sort_order: 61,
+  phone: '089665776473',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ef'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Abdullah Azzam',
+  nickname: 'Azzam',
+  program_studi: 'Pembangunan Sosial dan Kesejahteraan',
+  fakultas: 'Ilmu Sosial dan Ilmu Politik',
+  angkatan: '2024',
+  photo_url: '/uploads/1776249042133_A__Azzam.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Evaluasi dan Pengawasan',
+  sort_order: 62,
+  phone: '085726170047',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f0'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Larissa Davigena Hutagaol',
+  nickname: 'Issa',
+  program_studi: 'Ilmu Hubungan Internasional',
+  fakultas: 'Ilmu Sosial dan ilmu Politik',
+  angkatan: '2024',
+  photo_url: '/uploads/1776249108680_Larissa_Davigena_Hutagaol.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Evaluasi dan Pengawasan',
+  sort_order: 63,
+  phone: '081393282529',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f1'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Muhammad Rafi Abiyyu',
+  nickname: 'Rafi',
+  program_studi: 'Teknik Geologi',
+  fakultas: 'Teknik',
+  angkatan: '2024',
+  photo_url: '/uploads/1776249155296_IMG_7467.JPG',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Evaluasi dan Pengawasan',
+  sort_order: 64,
+  phone: '088239328752',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f2'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Irma Manurung',
+  nickname: 'Irma',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Kurikulum',
+  sort_order: 65,
+  phone: '082369683230',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f3'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Nadia Savitri Budiono',
+  nickname: 'Nadia',
+  program_studi: 'Gizi',
+  fakultas: 'Kedokteran, Kesehatan Masyarakat, dan Keperawatan',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Evaluasi dan Pengawasan',
+  sort_order: 66,
+  phone: '085710289727',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f4'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Audrea Gresda Zahra Oretha',
+  nickname: 'Drea',
+  program_studi: '',
+  fakultas: 'Farmasi',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Superbedjo',
+  position: 'Staf Evaluasi dan Pengawasan',
+  sort_order: 67,
+  phone: '081391919234',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f5'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Raina Aramita',
+  nickname: 'Raina',
+  program_studi: 'Bahasa dan Kebudayaan Jepang',
+  fakultas: 'Ilmu Budaya',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249314732_IMG_7647.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Menteri',
+  sort_order: 68,
+  phone: '089516655417',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f6'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Geraldine Angeli Tari Damauly T.',
+  nickname: 'Geraldine',
+  program_studi: 'Ilmu Komputer',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249358816_IMG_7648.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Deputi Desain Komunikasi Visual',
+  sort_order: 69,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  },
+  phone: '082132031290'
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f7'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Mariah Oktavia Saragih',
+  nickname: 'Mariah',
+  program_studi: 'Ilmu dan Industri Peternakan',
+  fakultas: 'Peternakan',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249395116_IMG_7654.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Deputi Humas dan Publikasi',
+  sort_order: 70,
+  phone: '082274570643',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f8'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Kansa Medina Khalila Vizano',
+  nickname: 'Meddy',
+  program_studi: 'Kimia',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249528428_Kansa_Meddy.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Desain Komunikasi Visual',
+  sort_order: 71,
+  phone: '089666061374',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563f9'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Sultan Muhamad Badruzzaman',
+  nickname: 'Sultan',
+  program_studi: 'Filsafat',
+  fakultas: 'Filsafat',
+  angkatan: '2024',
+  photo_url: '/uploads/1776249553382_Sultan_Muhamad_Badruzzaman.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Desain Komunikasi Visual',
+  sort_order: 72,
+  phone: '08561731865',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563fa'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Jasmine Noor Azizah',
+  nickname: 'Jasmine',
+  program_studi: 'Psikologi',
+  fakultas: 'Psikologi',
+  angkatan: '2024',
+  photo_url: '/uploads/1776249592166_IMG_7641.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Desain Komunikasi Visual',
+  sort_order: 73,
+  phone: '082124396118',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563fb'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Devi Vita Sari',
+  nickname: 'Devi',
+  program_studi: 'Farmasi',
+  fakultas: 'Farmasi',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249643494_Devi_Vita_Sari.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Desain Komunikasi Visual',
+  sort_order: 74,
+  phone: '089696612877',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563fc'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Yudistira',
+  nickname: 'Yudis',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776249665300_Yudistira.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Desain Komunikasi Visual',
+  sort_order: 75,
+  phone: '081351363637',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563fd'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Anis Astrisiana',
+  nickname: 'Anis',
+  program_studi: 'Teknik Kimia',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776249711823_Anis_Astrisiana.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Humas dan Publikasi',
+  sort_order: 76,
+  phone: '085876050892',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563fe'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Azzahra Dewi Santika',
+  nickname: 'Tika',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249755203_IMG_7640.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Humas dan Publikasi',
+  sort_order: 77,
+  phone: '085701432980',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a62558563ff'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Geraldine Rosemary Sondakh',
+  nickname: 'Gerry',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249805037_IMG_7634.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Humas dan Publikasi',
+  sort_order: 78,
+  phone: '08998426330',
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a6255856400'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Meutya Syifa Azzahra',
+  nickname: 'Meutya',
+  program_studi: 'Akuntansi',
+  fakultas: 'Vokasi',
+  angkatan: '2024',
+  photo_url: '/uploads/1776249852683_IMG_7643.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Humas dan Publikasi',
+  sort_order: 79,
+  phone: '08812533464',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a6255856401'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Najmusawwa Aulia Rahmah',
+  nickname: 'Mumu',
+  program_studi: 'Teknik Kimia',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '/uploads/1776249917987_Najmusawwa_Aulia_Rahmah.JPG',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Humas dan Publikasi',
+  sort_order: 80,
+  phone: '085789278993',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69c51213727c4a6255856402'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Sarah Kristina Elisaeth Sinurat',
+  nickname: 'Sarah',
+  program_studi: 'Ilmu Komunikasi',
+  fakultas: 'Ilmu Sosial dan Ilmu Politik',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: '',
+  sort_order: 81,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  },
+  phone: '082267273884'
+}
+{
+  _id: ObjectId('69c51213727c4a6255856403'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Barbara Neanake Ajieste',
+  nickname: 'Barbara',
+  program_studi: 'Teknologi Informasi',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Medsi (Media, Desain, dan Relasi)',
+  position: 'Staf Humas dan Publikasi',
+  sort_order: 82,
+  phone: '085875891040',
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f470'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Andreleo Jean Caesar Indra Purnama',
+  nickname: 'Leo',
+  program_studi: 'Kehutanan',
+  fakultas: 'Kehutanan',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Ketua Paguyuban',
+  position: 'Ketua',
+  phone: '083847340229',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f472'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Nisa’ul Kholifah',
+  nickname: 'Nisa',
+  program_studi: 'Filsafat',
+  fakultas: 'Filsafat',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Sekretaris',
+  position: 'Sekretaris',
+  phone: '089508149893',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f475'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Yitzhak Edmund Tio Manalu',
+  nickname: 'Yitzhak',
+  program_studi: 'Teknologi Informasi',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Bendahara',
+  position: 'Bendahara 2',
+  phone: '081717407674',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f476'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Nailah ‘Ilma Hamuda',
+  nickname: 'Ilma',
+  program_studi: 'Psikologi',
+  fakultas: 'Psikologi',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev',
+  position: 'Ketua',
+  phone: '085877891014',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f483'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Khansamitri Winggarnisvari Priowasono',
+  nickname: 'Khansa',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev',
+  position: 'Staf ComDev',
+  phone: '081338923306',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f485'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Aditya Firdaus',
+  nickname: 'Aditya',
+  program_studi: 'Pariwisata',
+  fakultas: 'Ilmu Budaya',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Menteri',
+  phone: '082135688505',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f486'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Fadhlurrahman Zain Lubis',
+  nickname: 'Zain',
+  program_studi: 'Ekonomi Pertanian dan Agribisnis',
+  fakultas: 'Pertanian',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Deputi Maestro de Tactical Data Organization (Matador)',
+  phone: '081277936365',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f487'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Aurellia Zaitun Candraningrum',
+  nickname: 'Lia',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Deputi Maestro de Internal Positions Satisfaction (Mariposa)',
+  phone: '085786487400',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f488'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Syifa Aulia',
+  nickname: 'Syifa',
+  program_studi: 'Filsafat',
+  fakultas: 'Filsafat',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Staf Matador',
+  phone: '085877335878',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f489'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Azriel Sakti Raja Manihuruk',
+  nickname: 'Azriel',
+  program_studi: 'Teknik Elektro',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Staf Matador',
+  phone: '081261689448',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f491'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Besta Fajar Bagaskara',
+  nickname: 'Besta',
+  program_studi: 'Pembangunan Sosial dan Kesejahteraan',
+  fakultas: 'Ilmu Sosial dan Politik',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Staf Mariposa',
+  phone: '087764900755',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f493'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Givany Safrina Azzahra',
+  nickname: 'Givany',
+  program_studi: 'Manajemen',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'MSDP',
+  position: 'Staf Mariposa',
+  phone: '081227552469',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f4a6'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Mathew Liman',
+  nickname: 'Mathew',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad',
+  position: 'Deputi Minat Bakat',
+  phone: '082112233690',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f4b0'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Nadia Mazaya Nur Fauzia',
+  nickname: 'Nadia',
+  program_studi: 'Teknik Elektro',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad',
+  position: 'Staf Kesejahteraan Beswan',
+  phone: '08818092487',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f4b3'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Sri Luqman Hasdha Annisa Ridha',
+  nickname: 'Ridha',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad',
+  position: 'Staf Kesejahteraan Beswan',
+  phone: '087838208268',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f4b4'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Khairunnisa',
+  nickname: 'Aca',
+  program_studi: 'Kedokteran Gigi',
+  fakultas: 'Kedokteran Gigi',
+  angkatan: '2024',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad',
+  position: 'Staf Kesejahteraan Beswan',
+  phone: '081378348342',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f4b6'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Geraldine Angelie Tari D. T.',
+  nickname: 'Geraldine',
+  program_studi: 'Ilmu Komputer',
+  fakultas: 'MIPA',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Medsi',
+  position: 'Deputi Desain Komunikasi Visual',
+  phone: '082132031290',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d26429aace02ce1fe6f4bd'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'Sarah Kristina Elisabeth Sinurat',
+  nickname: 'Sawa',
+  program_studi: 'Ilmu Komunikasi',
+  fakultas: 'Ilmu Sosial dan Ilmu Politik',
+  angkatan: '2023',
+  photo_url: '',
+  cover_url: '',
+  department: 'Medsi',
+  position: 'Staf Desain Komunikasi Visual',
+  phone: '082267273884',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d264c5aace02ce1fe6f535'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Andreleo Jean Caesar Indra P.',
+  nickname: 'Leo',
+  program_studi: 'Kehutanan',
+  fakultas: 'Kehutanan',
+  angkatan: '2022',
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  },
+  photo_url: '/uploads/1775396029924_IMG_7658.JPG',
+  cover_url: '',
+  department: 'Pengurus Inti',
+  position: 'Ketua',
+  phone: '083847340229',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69d6f8f1aace02ce1fe6f538'),
+  period_label: '',
+  sub_period: '',
+  full_name: 'a',
+  nickname: 'a',
+  program_studi: 'a',
+  fakultas: 'a',
+  angkatan: 'a',
+  photo_url: '',
+  cover_url: '',
+  department: 'a',
+  position: 'a',
+  phone: 'a',
+  sort_order: 0
+}
+{
+  _id: ObjectId('69df421747eccf69ac68219b'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Nisa’ul Kholifah',
+  nickname: 'Nisa',
+  program_studi: 'Filsafat',
+  fakultas: 'Filsafat',
+  angkatan: '2022',
+  photo_url: '/uploads/1776240464633_Sekretaris_Nisa_ul_Kholifah.JPG',
+  cover_url: '',
+  department: 'Pengurus Inti',
+  position: 'Sekretaris',
+  phone: '089508149893',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac68219c'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Yitzhak Edmund Tio Manalu',
+  nickname: 'Yitzhak',
+  program_studi: 'Teknologi Informasi',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776240603121_YITZHAK_EDMUND_TIO_MANALU_PHPI.JPG',
+  cover_url: '',
+  department: 'Bendahara',
+  position: 'Bendahara 1',
+  phone: '081717407674',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac68219d'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Nailah ‘Ilma Hamuda',
+  nickname: 'Ilma',
+  program_studi: 'Psikologi',
+  fakultas: 'Psikologi',
+  angkatan: '2022',
+  photo_url: '/uploads/1776240719097_Nailah__Ilma_Hamuda.jpg',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Ketua',
+  phone: '085877891014',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac68219e'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Khansamitri Winggarnisvari Priowasono',
+  nickname: 'Khansa',
+  program_studi: 'Ilmu Ekonomi',
+  fakultas: 'Ekonomika dan Bisnis',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'ComDev (Community Development)',
+  position: 'Staf',
+  phone: '081338923306',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac68219f'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Aditya Firdaus',
+  nickname: 'Aditya',
+  program_studi: 'Pariwisata',
+  fakultas: 'Ilmu Budaya',
+  angkatan: '2023',
+  photo_url: '/uploads/1776241761617_Aditya_Firdaus.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Menteri',
+  phone: '082135688505',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a0'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Fadhlurrahman Zain Lubis',
+  nickname: 'Zain',
+  program_studi: 'Ekonomi Pertanian dan Agribisnis',
+  fakultas: 'Pertanian',
+  angkatan: '2022',
+  photo_url: '/uploads/1776241890874_Zain.png',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Deputi Maestro de Tactical Data Organization (Matador)',
+  phone: '081277936365',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a1'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Aurellia Zaitun Candraningrum',
+  nickname: 'Lia',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776241959828_Aurellia_Zaitun_Candraningrum.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Deputi Maestro de Internal Positions Satisfaction (Mariposa)',
+  phone: '085786487400',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a2'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Syifa Aulia',
+  nickname: 'Syifa',
+  program_studi: 'Filsafat',
+  fakultas: 'Filsafat',
+  angkatan: '2022',
+  photo_url: '/uploads/1776242039408_Syifa_Aulia.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf',
+  phone: '085877335878',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a3'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Azriel Sakti Raja Manihuruk',
+  nickname: 'Azriel',
+  program_studi: 'Teknik Elektro',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '/uploads/1776242118171_Azriel_Sakti_Raja_Manihuruk.JPG',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Matador',
+  phone: '081261689448',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a4'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Besta Fajar Bagaskara',
+  nickname: 'Besta',
+  program_studi: 'Pembangunan Sosial dan Kesejahteraan',
+  fakultas: 'Ilmu Sosial dan Politik',
+  angkatan: '2023',
+  photo_url: '/uploads/1776242619358_Besta_Fajar_Bagaskara.png',
+  cover_url: '',
+  department: 'MSDP (Manajemen Sumber Daya Paguyuban)',
+  position: 'Staf Mariposa',
+  phone: '087764900755',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a6'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Mathew Liman',
+  nickname: 'Mathew',
+  program_studi: 'Teknik Sipil',
+  fakultas: 'Teknik',
+  angkatan: '2022',
+  photo_url: '/uploads/1776242969842_Mathew.png',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Deputi Minat Bakat',
+  phone: '082112233690',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 1'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a7'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Nadia Mazaya Nur Fauzia',
+  nickname: 'Nadia',
+  program_studi: 'Teknik Elektro',
+  fakultas: 'Teknik',
+  angkatan: '2023',
+  photo_url: '/uploads/1776243022740_Nadia_Mazaya.JPG',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Kesejahteraan Beswan',
+  phone: '08818092487',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 2'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a8'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Sri Luqman Hasdha Annisa Ridha',
+  nickname: 'Ridha',
+  program_studi: 'Hukum',
+  fakultas: 'Hukum',
+  angkatan: '2022',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Kesejahteraan Beswan',
+  phone: '087838208268',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}
+{
+  _id: ObjectId('69df421747eccf69ac6821a9'),
+  period_label: '25.26',
+  sub_period: '',
+  full_name: 'Khairunnisa',
+  nickname: 'Aca',
+  program_studi: 'Kedokteran Gigi',
+  fakultas: 'Kedokteran Gigi',
+  angkatan: '2024',
+  photo_url: '',
+  cover_url: '',
+  department: 'Pemikad (Pengembangan Minat, Bakat, dan Akademi)',
+  position: 'Staf Kesejahteraan Beswan',
+  phone: '081378348342',
+  sort_order: 0,
+  active_periods: {
+    '25.26': 'Gelombang 3'
+  }
+}

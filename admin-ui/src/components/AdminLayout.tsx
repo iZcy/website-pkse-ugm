@@ -138,6 +138,7 @@ export default function AdminLayout() {
                     <Link
                       key={ii}
                       to={`/${item.href}?period=${period}`}
+                      onClick={item.href === 'broadcast' ? (e: any) => { e.preventDefault(); window.location.href = `/admin/broadcast?period=${period}` } : undefined}
                       className={`sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${isActive(item.href) ? 'active' : ''}`}
                     >
                       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
