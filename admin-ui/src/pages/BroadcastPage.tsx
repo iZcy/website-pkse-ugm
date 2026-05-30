@@ -19,7 +19,6 @@ export default function BroadcastPage() {
   const [status, setStatus] = useState('')
   const [waConnected, setWaConnected] = useState(false)
   const [qrCode, setQrCode] = useState('')
-  const [history, setHistory] = useState<any[]>([])
 
   const loadContacts = useCallback(async () => {
     try {
@@ -70,7 +69,7 @@ export default function BroadcastPage() {
     setSending(true)
     setProgress({ sent: 0, total: selected.size, failed: 0 })
     try {
-      const res = await apiPost('/api/broadcast/send', {
+      await apiPost('/api/broadcast/send', {
         message, phones: [...selected],
         delay_ms: delayMs, period_label: period,
       })
