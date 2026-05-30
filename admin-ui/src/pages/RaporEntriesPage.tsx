@@ -5,11 +5,11 @@ import { apiGet, apiPost } from '../lib/api'
 import { Save, ArrowLeft, Search } from 'lucide-react'
 
 const DEFAULT_ASPECTS = [
-  { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric' },
-  { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric' },
-  { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric' },
-  { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric' },
-  { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive' },
+  { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric', min: 0, max: 5 },
+  { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric', min: 0, max: 5 },
+  { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric', min: 0, max: 5 },
+  { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric', min: 0, max: 5 },
+  { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive', min: 0, max: 5 },
 ]
 
 export default function RaporEntriesPage() {
@@ -43,7 +43,7 @@ export default function RaporEntriesPage() {
       setDepartments(Array.isArray(depts) ? depts : [])
       if (inst?.score_aspects?.length > 0) {
         setAspects(inst.score_aspects.map((a: any) => ({
-          label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric'
+          label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric', min: a.min ?? 0, max: a.max ?? 5
         })))
       }
     } catch { setMembers([]); setEntries([]); setDepartments([]) }
@@ -133,7 +133,7 @@ export default function RaporEntriesPage() {
     try {
       const scores = aspects.map((a, i) => {
         const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
-        return inp?.value || (a.kind === 'numeric' ? '0' : '')
+        return inp?.value || (a.kind === 'numeric' ? String(a.min ?? 0) : '')
       })
       const result = await apiPost('/api/cms/rapor-entries', {
         instance_id: instanceId, member_id: memberId, period_label: period,
@@ -161,7 +161,7 @@ export default function RaporEntriesPage() {
       try {
         const scores = aspects.map((a, i) => {
           const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
-          return inp?.value || (a.kind === 'numeric' ? '0' : '')
+          return inp?.value || (a.kind === 'numeric' ? String(a.min ?? 0) : '')
         })
         await apiPost('/api/cms/rapor-entries', {
           instance_id: instanceId, member_id: memberId, period_label: period,
@@ -180,7 +180,7 @@ export default function RaporEntriesPage() {
       await fetch(`/api/cms/rapor-instances/${instanceId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind })) }),
+        body: JSON.stringify({ score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind, min: a.min, max: a.max })) }),
         credentials: 'same-origin',
       })
       setAspectEditing(false)
@@ -263,8 +263,8 @@ export default function RaporEntriesPage() {
                         <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">{a.label}</label>
                         {a.kind === 'numeric' ? (
                           <div className="flex items-center gap-2">
-                            <input type="range" data-idx={i} defaultValue={scores[i] || 0} min={0} max={5} className="flex-1 h-1.5 accent-blue-600" />
-                            <span className="text-xs font-bold text-slate-600 w-5 text-right">{scores[i] || 0}</span>
+                            <input type="range" data-idx={i} defaultValue={scores[i] || a.min || 0} min={a.min ?? 0} max={a.max ?? 5} className="flex-1 h-1.5 accent-blue-600" />
+                            <span className="text-xs font-bold text-slate-600 w-6 text-right">{scores[i] || a.min || 0}</span>
                           </div>
                         ) : (
                           <textarea data-idx={i} defaultValue={scores[i] || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none" rows={2} placeholder="Tulis penilaian..."/>
@@ -296,11 +296,18 @@ export default function RaporEntriesPage() {
                       <option value="numeric">Angka (0-5)</option>
                       <option value="descriptive">Deskriptif (teks)</option>
                     </select>
+                    {a.kind !== 'descriptive' && (
+                      <div className="flex gap-2 mt-1">
+                        <input type="number" value={a.min ?? 0} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], min: parseInt(e.target.value) || 0 }; setAspects(n) }} className="w-16 border rounded px-1 py-0.5 text-xs" placeholder="Min" />
+                        <span className="text-xs text-slate-300">—</span>
+                        <input type="number" value={a.max ?? 5} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], max: parseInt(e.target.value) || 5 }; setAspects(n) }} className="w-16 border rounded px-1 py-0.5 text-xs" placeholder="Max" />
+                      </div>
+                    )}
                   </div>
                   {aspects.length > 1 && <button onClick={() => setAspects(aspects.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 text-xs pt-2">✕</button>}
                 </div>
               ))}
-              <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric' }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
+              <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric', min: 0, max: 5 }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
             </div>
             <div className="flex gap-2 justify-end mt-4"><button onClick={() => setAspectEditing(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button><button onClick={saveAspects} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Simpan Aspek</button></div>
           </div>

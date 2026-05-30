@@ -14,11 +14,11 @@ export default function RaporPage() {
   const [end, setEnd] = useState('')
   const [saving, setSaving] = useState(false)
   const [aspects, setAspects] = useState<any[]>([
-    { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric' },
-    { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric' },
-    { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric' },
-    { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric' },
-    { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive' },
+    { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric', min: 0, max: 5 },
+    { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric', min: 0, max: 5 },
+    { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric', min: 0, max: 5 },
+    { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric', min: 0, max: 5 },
+    { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive', min: 0, max: 5 },
   ])
 
   const load = useCallback(async () => {
@@ -42,16 +42,16 @@ export default function RaporPage() {
         period_label: period, title,
         activity_start: start + 'T00:00:00Z',
         activity_end: end + 'T23:59:59Z',
-        score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind })),
+        score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind, min: a.min, max: a.max })),
       })
       setShowCreate(false)
       setTitle(''); setStart(''); setEnd('')
       setAspects([
-        { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric' },
-        { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric' },
-        { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric' },
-        { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric' },
-        { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive' },
+        { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric', min: 0, max: 5 },
+        { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric', min: 0, max: 5 },
+        { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric', min: 0, max: 5 },
+        { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric', min: 0, max: 5 },
+        { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive', min: 0, max: 5 },
       ])
       load()
     } catch (e: unknown) { alert((e as Error).message) }
@@ -132,10 +132,17 @@ export default function RaporPage() {
                         <option value="numeric">Angka</option>
                         <option value="descriptive">Teks</option>
                       </select>
+                      {a.kind !== 'descriptive' && (
+                        <div className="flex gap-1 items-center">
+                          <input type="number" value={a.min ?? 0} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], min: parseInt(e.target.value) || 0 }; setAspects(n) }} className="w-12 border rounded px-1 py-0.5 text-xs" placeholder="Min" />
+                          <span className="text-xs text-slate-300">-</span>
+                          <input type="number" value={a.max ?? 5} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], max: parseInt(e.target.value) || 5 }; setAspects(n) }} className="w-12 border rounded px-1 py-0.5 text-xs" placeholder="Max" />
+                        </div>
+                      )}
                       {aspects.length > 1 && <button onClick={() => setAspects(aspects.filter((_, j) => j !== i))} className="text-red-400 text-xs pt-2">✕</button>}
                     </div>
                   ))}
-                  <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric' }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
+                  <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric', min: 0, max: 5 }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
                 </div>
               </div>
             </div>
