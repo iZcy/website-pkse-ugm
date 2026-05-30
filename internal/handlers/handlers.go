@@ -147,15 +147,13 @@ func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
 	data["PeriodAbout"] = periodAbout
 	depts, _ := db.GetDepartments(pl)
 	data["Departments"] = depts
-	members, _ := db.GetMembers(pl)
 	programs, _ := db.GetPrograms(pl)
-	groups, ungrouped := groupByDepartment(depts, members, programs)
+	featuredMembers, _ := db.GetTopMembers(pl, 8)
+	data["Members"] = featuredMembers
+	// Lightweight department grouping without full member list
+	groups, ungrouped := groupByDepartment(depts, featuredMembers, programs)
 	data["DepartmentGroups"] = groups
 	data["UngroupedPrograms"] = ungrouped
-	if len(members) > 8 {
-		members = members[:8]
-	}
-	data["Members"] = members
 	h.render(w, "index.html", data)
 }
 

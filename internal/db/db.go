@@ -1238,6 +1238,32 @@ func GetRecipientLogs(logID string) ([]BroadcastRecipientLog, error) {
 	return res, nil
 }
 
+
+func GetTopMembers(periodLabel string, limit int) ([]Member, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{}
+	if periodLabel != "" && periodLabel != "ALL" {
+		filter = bson.M{"": []bson.M{
+			{"period_label": periodLabel},
+			{"": bson.M{"": bson.A{
+				bson.M{"": bson.A{
+					bson.M{"": bson.M{"field": periodLabel, "input": ""}},
+					"",
+				}},
+				"",
+			}}},
+		}}
+	}
+	opts := options.Find().SetSort(bson.D{{Key: "sort_order", Value: 1}, {Key: "full_name", Value: 1}})
+	if limit > 0 { opts = opts.SetLimit(int64(limit)) }
+	cur, err := col("members").Find(ctx, filter, opts)
+	if err != nil { return nil, err }
+	var res []Member
+	defer cur.Close(ctx)
+	return res, cur.All(ctx, &res)
+}
+
 func GetMembersFiltered(filter bson.M) ([]Member, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
