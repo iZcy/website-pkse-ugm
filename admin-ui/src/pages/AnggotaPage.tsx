@@ -12,28 +12,36 @@ export default function AnggotaPage() {
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
-  const [form, setForm] = useState<Record<string, string>>({})
-
-  const fields = ['full_name','nickname','department','program_studi','fakultas','angkatan','position','phone','nim','photo_url']
-  const labels: Record<string,string> = { full_name:'Nama Lengkap', nickname:'Panggilan', department:'Departemen', program_studi:'Program Studi', fakultas:'Fakultas', angkatan:'Angkatan', position:'Posisi', phone:'Telepon', nim:'NIM', photo_url:'Foto URL' }
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [form, setForm] = useState<any>({})
 
   const load = useCallback(async () => {
     try {
-      const data = await apiGet(`/api/cms/members?period=${period}&per_page=300`)
-      setMembers(data.items || data || [])
+      const data = await apiGet(`/api/cms/members?period=${period}&page=${page}&per_page=20&search=${encodeURIComponent(search)}`)
+      setMembers(data.items || [])
+      setTotalPages(data.pages || 1)
     } catch { setMembers([]) }
     setLoading(false)
-  }, [period])
-
+  }, [period, page, search])
   useEffect(() => { load() }, [load])
 
-  function openAdd() { setEditId(''); setForm({}); setShowModal(true) }
-  function openEdit(m: any) { setEditId(m.id); setForm(Object.fromEntries(fields.map(f => [f, m[f] || '']))); setShowModal(true) }
+  function openAdd() {
+    setEditId('')
+    setForm({ full_name: '', nickname: '', program_studi: '', fakultas: '', angkatan: '', phone: '', nim: '', photo_url: '', cover_url: '', position: '' })
+    setShowModal(true)
+  }
+  function openEdit(m: any) {
+    setEditId(m.id)
+    setForm({ full_name: m.full_name || '', nickname: m.nickname || '', program_studi: m.program_studi || '', fakultas: m.fakultas || '', angkatan: m.angkatan || '', phone: m.phone || '', nim: m.nim || '', photo_url: m.photo_url || '', cover_url: m.cover_url || '', position: m.position || '' })
+    setShowModal(true)
+  }
 
   async function save() {
+    if (!form.full_name) return alert('Nama wajib diisi')
     setSaving(true)
     try {
-      const body = { ...form, period_label: period }
+      const body: any = { ...form, period_label: period }
       if (editId) await apiPut(`/api/cms/members/${editId}`, body)
       else await apiPost('/api/cms/members', body)
       setShowModal(false); load()
@@ -43,20 +51,19 @@ export default function AnggotaPage() {
 
   async function remove(id: string) {
     if (!confirm('Hapus anggota ini?')) return
-    await apiDelete(`/api/cms/members/${id}`)
-    load()
+    await apiDelete(`/api/cms/members/${id}`); load()
   }
 
-  const filtered = search ? members.filter((m: any) => (m.full_name || '').toLowerCase().includes(search.toLowerCase())) : members
+  if (loading) return <div className="text-slate-400 text-center py-8">Memuat...</div>
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-slate-800">Anggota ({members.length})</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Anggota</h2>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-3 py-2 border rounded-lg text-sm w-56" placeholder="Cari..." />
+            <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} className="pl-9 pr-3 py-2 border rounded-lg text-sm w-56" placeholder="Cari..." />
           </div>
           <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
         </div>
@@ -64,57 +71,88 @@ export default function AnggotaPage() {
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600">
-            <tr><th className="text-left px-4 py-2">Nama</th><th className="text-left px-4 py-2">Departemen</th><th className="text-left px-4 py-2">Angkatan</th><th className="text-left px-4 py-2">NIM</th><th className="px-4 py-2 w-24"></th></tr>
+          <thead className="bg-slate-50 text-slate-600 text-xs uppercase">
+            <tr>
+              <th className="px-4 py-3 w-10">No.</th>
+              <th className="px-4 py-3 w-14">Foto</th>
+              <th className="text-left px-4 py-3">Nama</th>
+              <th className="text-left px-4 py-3">Profil</th>
+              <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left px-4 py-3">No. HP</th>
+              <th className="text-left px-4 py-3">Penempatan</th>
+              <th className="px-4 py-3 w-24">Aksi</th>
+            </tr>
           </thead>
           <tbody>
-            {filtered.map((m: any) => (
+            {members.map((m: any, mi: number) => (
               <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-2">
-                  <div className="flex items-center gap-2">
-                    {m.photo_url ? <img src={m.photo_url} className="w-8 h-8 rounded-full object-cover" alt="" /> : <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">{(m.full_name || '?')[0]}</div>}
-                    <div><div className="font-medium">{m.full_name}</div><div className="text-xs text-slate-400">{m.nickname}</div></div>
-                  </div>
+                <td className="px-4 py-3 text-slate-400 text-center">{(page - 1) * 20 + mi + 1}</td>
+                <td className="px-4 py-3">
+                  {m.photo_url ? <img src={m.photo_url} className="w-10 h-10 rounded-full object-cover" alt="" /> : <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-xs">N/A</div>}
                 </td>
-                <td className="px-4 py-2 text-slate-600">{m.department}</td>
-                <td className="px-4 py-2 text-slate-600">{m.angkatan}</td>
-                <td className="px-4 py-2 text-slate-500 text-xs">{m.nim}</td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-3">
+                  <div className="font-medium text-slate-800">{m.full_name}</div>
+                  {m.nickname && <div className="text-xs text-slate-400">{m.nickname}</div>}
+                </td>
+                <td className="px-4 py-3 text-slate-600 text-xs">
+                  <div>{m.program_studi || '-'}</div>
+                  <div className="text-slate-400">{m.fakultas || '-'}{m.angkatan ? ' · ' + m.angkatan : ''}</div>
+                </td>
+                <td className="px-4 py-3">
+                  {m.active_periods?.[period]
+                    ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aktif ({m.active_periods[period]})</span>
+                    : <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Tidak aktif</span>}
+                </td>
+                <td className="px-4 py-3 text-slate-600 text-xs font-mono">{m.phone || <span className="text-slate-300">-</span>}</td>
+                <td className="px-4 py-3 text-slate-600 text-sm">
+                  {m.department ? <div>{m.department}</div> : <div className="text-amber-600 text-xs">Belum ditempatkan</div>}
+                  {m.position && <div className="text-xs text-slate-400">{m.position}</div>}
+                </td>
+                <td className="px-4 py-3">
                   <div className="flex gap-1">
-                    <button onClick={() => openEdit(m)} className="p-1.5 rounded hover:bg-slate-100"><Pencil className="w-3.5 h-3.5 text-slate-500" /></button>
-                    <button onClick={() => remove(m.id)} className="p-1.5 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+                    <button onClick={() => openEdit(m)} className="p-1 rounded hover:bg-slate-100"><Pencil className="w-3.5 h-3.5 text-blue-600" /></button>
+                    <button onClick={() => remove(m.id)} className="p-1 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {loading && <div className="text-center py-8 text-slate-400">Memuat...</div>}
-        {!loading && !filtered.length && <div className="text-center py-8 text-slate-400">Tidak ada anggota</div>}
+        {members.length === 0 && <div className="text-center py-8 text-slate-400">Tidak ada data</div>}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-4">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button key={i} onClick={() => setPage(i + 1)} className={`px-3 py-1 text-sm rounded-lg ${page === i + 1 ? 'bg-blue-600 text-white' : 'border hover:bg-slate-100'}`}>{i + 1}</button>
+          ))}
+        </div>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-            <h3 className="text-lg font-bold text-slate-800 p-6 pb-0 flex-shrink-0">{editId ? 'Edit Anggota' : 'Tambah Anggota'}</h3>
+            <h3 className="text-lg font-bold p-6 pb-0 flex-shrink-0">{editId ? 'Edit Anggota' : 'Tambah Anggota'}</h3>
             <div className="overflow-y-auto flex-1 p-6 space-y-3">
-              {fields.map(f => (
-                <div key={f}><label className="text-sm font-medium text-slate-700">{labels[f]}</label>
-                  {f === 'photo_url' ? (
-                    <ImageUpload value={form[f] || ''} onChange={(url) => setForm({...form, [f]: url})} />
-                  ) : (
-                    <input value={form[f] || ''} onChange={e => setForm({...form, [f]: e.target.value})} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder={labels[f]} />
-                  )}
-                </div>
-              ))}
+              <Field label="Nama Lengkap"><input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="Panggilan"><input value={form.nickname} onChange={e => setForm({ ...form, nickname: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="Program Studi"><input value={form.program_studi} onChange={e => setForm({ ...form, program_studi: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="Fakultas"><input value={form.fakultas} onChange={e => setForm({ ...form, fakultas: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="Angkatan"><input value={form.angkatan} onChange={e => setForm({ ...form, angkatan: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="No. HP"><input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="NIM"><input value={form.nim} onChange={e => setForm({ ...form, nim: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="Posisi"><input value={form.position} onChange={e => setForm({ ...form, position: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              <Field label="Foto"><ImageUpload value={form.photo_url} onChange={url => setForm({ ...form, photo_url: url })} /></Field>
+              <Field label="Cover"><ImageUpload value={form.cover_url} onChange={url => setForm({ ...form, cover_url: url })} placeholder="URL Cover" /></Field>
             </div>
-            <div className="flex gap-2 justify-end p-6 pt-0 flex-shrink-0">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
-              <button onClick={save} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm disabled:opacity-50">{saving ? 'Menyimpan...' : 'Simpan'}</button>
-            </div>
+            <div className="flex gap-2 justify-end p-6 pt-0 flex-shrink-0"><button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button><button onClick={save} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">{saving ? '...' : 'Simpan'}</button></div>
           </div>
         </div>
       )}
     </div>
   )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><label className="text-sm font-medium text-slate-600 mb-1 block">{label}</label>{children}</div>
 }
