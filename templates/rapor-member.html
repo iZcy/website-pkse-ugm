@@ -36,6 +36,30 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
   </div>
 
   {{if .Entries}}
+  
+  {{if .Entries}}
+  <div class="bg-white rounded-2xl p-6 card-shadow fade-in mb-6">
+    <h3 class="font-bold text-gray-900 mb-3">Perbandingan Skor</h3>
+    <div class="space-y-2">
+      {{range .Entries}}
+      <div>
+        <div class="text-xs text-slate-500 mb-1">{{.InstanceTitle}}</div>
+        <div class="flex gap-1">
+          {{range .Scores}}
+          <div class="flex-1">
+            <div class="bg-slate-100 rounded h-5 relative overflow-hidden">
+              <div class="absolute inset-0 {{if ge . 4}}bg-green-500{{else if ge . 3}}bg-yellow-400{{else}}bg-red-400{{end}}" style="width:{{mul . 20}}%"></div>
+              <span class="relative z-10 text-[10px] font-bold text-slate-700 px-1 flex items-center h-full">{{.}}</span>
+            </div>
+          </div>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+
   <h3 class="font-bold text-gray-700 mb-3 fade-in">Daftar Rapor</h3>
   <div class="space-y-2">
     {{range .Entries}}
