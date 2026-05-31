@@ -139,6 +139,10 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 			switch v := s.(type) {
 			case float64: sum += v; count++
 			case int: sum += float64(v); count++
+			case int32: sum += float64(v); count++
+			case int64: sum += float64(v); count++
+			case string:
+				if n, err := strconv.ParseFloat(v, 64); err == nil { sum += n; count++ }
 			}
 		}
 		if count > 0 {
@@ -149,6 +153,10 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 			switch v := s.(type) {
 			case float64: snums = append(snums, v)
 			case int: snums = append(snums, float64(v))
+			case int32: snums = append(snums, float64(v))
+			case int64: snums = append(snums, float64(v))
+			case string:
+				if n, err := strconv.ParseFloat(v, 64); err == nil { snums = append(snums, n) }
 			default: snums = append(snums, 0)
 			}
 		}
