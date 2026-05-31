@@ -114,6 +114,7 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 		Feedback      string
 		Published     bool
 		NumericAvg    float64
+		ScoreNums     []float64
 		ActivityStart string
 		ActivityEnd   string
 	}
@@ -143,6 +144,15 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 		if count > 0 {
 			cards[len(cards)-1].NumericAvg = sum / float64(count)
 		}
+		var snums []float64
+		for _, s := range e.Scores {
+			switch v := s.(type) {
+			case float64: snums = append(snums, v)
+			case int: snums = append(snums, float64(v))
+			default: snums = append(snums, 0)
+			}
+		}
+		cards[len(cards)-1].ScoreNums = snums
 	}
 	gs, _ := db.GetGlobalSetting()
 	orgName := "PKSE UGM"
