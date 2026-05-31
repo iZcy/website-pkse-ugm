@@ -90,6 +90,7 @@ type GlobalSetting struct {
 	FooterText      string             `bson:"footer_text"         json:"footer_text"`
 	FooterCopyText  string             `bson:"footer_copy_text"    json:"footer_copy_text"`
 	SocialMedia     SocialMedia        `bson:"social_media"        json:"social_media"`
+	ScoreAspects    []RaporScoreItem   `bson:"score_aspects,omitempty" json:"score_aspects,omitempty"`
 	EksploraZcyURL  string             `bson:"eksplorazcy_url"     json:"eksplorazcy_url"`
 	UpdatedAt       time.Time          `bson:"updated_at"          json:"updated_at"`
 }
