@@ -2,29 +2,29 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { usePeriod } from '../components/AdminLayout'
 import { RaporInstance, apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Eye, Trash2, Send } from 'lucide-react'
+import { Plus, Eye, Trash2, Send, Settings } from 'lucide-react'
 
 export default function RaporPage() {
   const { period } = usePeriod()
   const [instances, setInstances] = useState<RaporInstance[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const [showAspects, setShowAspects] = useState(false)
   const [title, setTitle] = useState('')
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [saving, setSaving] = useState(false)
-  const [aspects, setAspects] = useState<any[]>([
-    { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric', min: 0, max: 5 },
-    { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric', min: 0, max: 5 },
-    { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric', min: 0, max: 5 },
-    { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric', min: 0, max: 5 },
-    { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive', min: 0, max: 5 },
-  ])
+  const [globalAspects, setGlobalAspects] = useState<any[]>([])
+  const [aspectsSaving, setAspectsSaving] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const data = await apiGet(`/api/cms/rapor-instances?period=${period}`)
+      const [data, gs] = await Promise.all([
+        apiGet(`/api/cms/rapor-instances?period=${period}`),
+        apiGet('/api/cms/global-setting'),
+      ])
       setInstances(data.items || data || [])
+      setGlobalAspects((gs?.score_aspects || gs?.ScoreAspects || []).map((a: any) => ({ label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric', min: a.min ?? 0, max: a.max ?? 5 })))
     } catch { setInstances([]) }
     setLoading(false)
   }, [period])
@@ -42,20 +42,22 @@ export default function RaporPage() {
         period_label: period, title,
         activity_start: start + 'T00:00:00Z',
         activity_end: end + 'T23:59:59Z',
-        score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind, min: a.min, max: a.max })),
+        score_aspects: globalAspects.map((a: any) => ({ aspect: a.aspect || a.label, desc: a.desc, kind: a.kind, min: a.min, max: a.max })),
       })
-      setShowCreate(false)
-      setTitle(''); setStart(''); setEnd('')
-      setAspects([
-        { label: 'Kedisiplinan & Komitmen', desc: 'Kehadiran dan keteraturan', kind: 'numeric', min: 0, max: 5 },
-        { label: 'Keaktifan', desc: 'Partisipasi aktif', kind: 'numeric', min: 0, max: 5 },
-        { label: 'Tanggung Jawab', desc: 'Pemenuhan tugas', kind: 'numeric', min: 0, max: 5 },
-        { label: 'Kerjasama', desc: 'Kemampuan bekerja dalam tim', kind: 'numeric', min: 0, max: 5 },
-        { label: 'Inisiatif', desc: 'Proaktif dalam kontribusi', kind: 'descriptive', min: 0, max: 5 },
-      ])
+      setShowCreate(false); setTitle(''); setStart(''); setEnd('')
       load()
     } catch (e: unknown) { alert((e as Error).message) }
     setSaving(false)
+  }
+
+  async function saveAspects() {
+    setAspectsSaving(true)
+    try {
+      await apiPut('/api/cms/global-setting', { score_aspects: globalAspects.map((a: any) => ({ aspect: a.aspect || a.label, desc: a.desc, kind: a.kind, min: a.min, max: a.max })) })
+      setShowAspects(false)
+      load()
+    } catch (e: any) { alert(e.message) }
+    setAspectsSaving(false)
   }
 
   async function publish(id: string) {
@@ -82,9 +84,14 @@ export default function RaporPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Rapor Beswan</h2>
-        <button onClick={() => setShowCreate(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Buat Rapor Baru
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowAspects(true)} className="bg-white text-slate-700 px-4 py-2 rounded-lg text-sm font-medium border flex items-center gap-2">
+            <Settings className="w-4 h-4" /> Template Aspek ({globalAspects.length})
+          </button>
+          <button onClick={() => setShowCreate(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Buat Rapor Baru
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -127,38 +134,48 @@ export default function RaporPage() {
                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Mulai Absensi</label><input type="date" value={start} onChange={e => setStart(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
                 <div><label className="block text-sm font-medium text-slate-700 mb-1">Akhir Absensi</label><input type="date" value={end} onChange={e => setEnd(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Aspek Penilaian</label>
-                <div className="space-y-2">
-                  {aspects.map((a, i) => (
-                    <div key={i} className="flex gap-2 items-start bg-slate-50 rounded-lg p-2">
-                      <span className="text-xs text-slate-400 pt-2">{i + 1}</span>
-                      <div className="flex-1 space-y-1">
-                        <input value={a.label} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], label: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-sm" placeholder="Nama aspek" />
-                        <input value={a.desc} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], desc: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-xs" placeholder="Deskripsi" />
-                      </div>
-                      <select value={a.kind || 'numeric'} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], kind: e.target.value }; setAspects(n) }} className="text-xs border rounded px-1 py-1">
-                        <option value="numeric">Angka</option>
-                        <option value="descriptive">Teks</option>
-                      </select>
-                      {a.kind !== 'descriptive' && (
-                        <div className="flex gap-1 items-center">
-                          <input type="number" value={a.min ?? 0} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], min: parseInt(e.target.value) || 0 }; setAspects(n) }} className="w-12 border rounded px-1 py-0.5 text-xs" placeholder="Min" />
-                          <span className="text-xs text-slate-300">-</span>
-                          <input type="number" value={a.max ?? 5} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], max: parseInt(e.target.value) || 5 }; setAspects(n) }} className="w-12 border rounded px-1 py-0.5 text-xs" placeholder="Max" />
-                        </div>
-                      )}
-                      {aspects.length > 1 && <button onClick={() => setAspects(aspects.filter((_, j) => j !== i))} className="text-red-400 text-xs pt-2">✕</button>}
-                    </div>
-                  ))}
-                  <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric', min: 0, max: 5 }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
-                </div>
-              </div>
+              <p className="text-xs text-slate-400">Aspek penilaian akan diambil dari Template Aspek global ({globalAspects.length} aspek). Edit via tombol "Template Aspek".</p>
             </div>
             <div className="flex justify-end gap-2 p-6 pt-0 flex-shrink-0">
               <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50">Batal</button>
               <button onClick={create} disabled={saving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">{saving ? 'Membuat...' : 'Buat'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAspects && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowAspects(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <h3 className="text-lg font-bold p-6 pb-0 flex-shrink-0">Edit Template Aspek Penilaian</h3>
+            <div className="overflow-y-auto flex-1 p-6 space-y-3">
+              <p className="text-xs text-slate-400 mb-2">Aspek ini berlaku global. Rapor baru akan mewarisi template ini.</p>
+              {globalAspects.map((a, i) => (
+                <div key={i} className="flex gap-2 items-start bg-slate-50 rounded-lg p-2">
+                  <span className="text-xs text-slate-400 pt-2">{i + 1}</span>
+                  <div className="flex-1 space-y-1">
+                    <input value={a.label || ''} onChange={e => { const n = [...globalAspects]; n[i] = { ...n[i], label: e.target.value }; setGlobalAspects(n) }} className="w-full border rounded px-2 py-1 text-sm" placeholder="Nama aspek" />
+                    <input value={a.desc || ''} onChange={e => { const n = [...globalAspects]; n[i] = { ...n[i], desc: e.target.value }; setGlobalAspects(n) }} className="w-full border rounded px-2 py-1 text-xs" placeholder="Deskripsi" />
+                  </div>
+                  <select value={a.kind || 'numeric'} onChange={e => { const n = [...globalAspects]; n[i] = { ...n[i], kind: e.target.value }; setGlobalAspects(n) }} className="text-xs border rounded px-1 py-1">
+                    <option value="numeric">Angka</option>
+                    <option value="descriptive">Teks</option>
+                  </select>
+                  {a.kind !== 'descriptive' && (
+                    <div className="flex gap-1 items-center">
+                      <input type="number" value={a.min ?? 0} onChange={e => { const n = [...globalAspects]; n[i] = { ...n[i], min: parseInt(e.target.value) || 0 }; setGlobalAspects(n) }} className="w-12 border rounded px-1 py-0.5 text-xs" placeholder="Min" />
+                      <span className="text-xs text-slate-300">-</span>
+                      <input type="number" value={a.max ?? 5} onChange={e => { const n = [...globalAspects]; n[i] = { ...n[i], max: parseInt(e.target.value) || 5 }; setGlobalAspects(n) }} className="w-12 border rounded px-1 py-0.5 text-xs" placeholder="Max" />
+                    </div>
+                  )}
+                  {globalAspects.length > 1 && <button onClick={() => setGlobalAspects(globalAspects.filter((_, j) => j !== i))} className="text-red-400 text-xs pt-2">✕</button>}
+                </div>
+              ))}
+              <button onClick={() => setGlobalAspects([...globalAspects, { label: '', desc: '', kind: 'numeric', min: 0, max: 5 }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
+            </div>
+            <div className="flex justify-end gap-2 p-6 pt-0 flex-shrink-0">
+              <button onClick={() => setShowAspects(false)} className="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50">Batal</button>
+              <button onClick={saveAspects} disabled={aspectsSaving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">{aspectsSaving ? 'Menyimpan...' : 'Simpan Template'}</button>
             </div>
           </div>
         </div>
