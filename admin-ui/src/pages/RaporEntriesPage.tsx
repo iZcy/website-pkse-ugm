@@ -182,19 +182,6 @@ export default function RaporEntriesPage() {
     load()
   }
 
-  async function saveAspects() {
-    try {
-      await fetch(`/api/cms/rapor-instances/${instanceId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ score_aspects: aspects.map((a: any) => ({ aspect: a.label, desc: a.desc, kind: a.kind, min: a.min, max: a.max })) }),
-        credentials: 'same-origin',
-      })
-      setAspectEditing(false)
-      setStatus('Aspek penilaian tersimpan!')
-      setTimeout(() => setStatus(''), 2000)
-    } catch (e: any) { alert(e.message) }
-  }
 
   const totalMembers = members.length
   const deptTabs = [
@@ -216,7 +203,7 @@ export default function RaporEntriesPage() {
           <h2 className="text-2xl font-bold text-slate-800">Isi Nilai Rapor</h2>
         </div>
         <div className="flex gap-2 items-center">
-          <button onClick={() => setAspectEditing(true)} className="text-xs text-blue-600 hover:underline">{aspects.length} aspek</button>
+          <button onClick={() => setAspectEditing(true)} className="text-xs text-blue-600 hover:underline">{aspects.filter(a => !a.disabled).length}/{aspects.length} aspek</button>
           <button onClick={saveAll} disabled={savingAll} className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">{savingAll ? '⏳ Menyimpan...' : <><Save className="w-4 h-4" /> Simpan Semua</>}</button>
         </div>
       </div>
@@ -293,33 +280,19 @@ export default function RaporEntriesPage() {
 
       {aspectEditing && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setAspectEditing(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto p-6">
-            <h3 className="text-lg font-bold mb-4">Edit Aspek Penilaian</h3>
-            <div className="space-y-3">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+            <h3 className="text-lg font-bold mb-2">Aspek Aktif</h3>
+            <p className="text-xs text-slate-400 mb-4">Centang aspek yang diterapkan pada rapor ini. Edit aspek di halaman Rapor.</p>
+            <div className="space-y-2">
               {aspects.map((a, i) => (
-                <div key={i} className="flex gap-2 items-start border rounded-lg p-2">
-                  <span className="text-xs text-slate-400 pt-2">{i + 1}</span>
-                  <div className="flex-1 space-y-1">
-                    <input value={a.label} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], label: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-sm" placeholder="Nama aspek" />
-                    <input value={a.desc} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], desc: e.target.value }; setAspects(n) }} className="w-full border rounded px-2 py-1 text-xs" placeholder="Deskripsi" />
-                    <select value={a.kind || 'numeric'} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], kind: e.target.value }; setAspects(n) }} className="text-xs border rounded px-2 py-1">
-                      <option value="numeric">Angka</option>
-                      <option value="descriptive">Deskriptif (teks)</option>
-                    </select>
-                    {a.kind !== 'descriptive' && (
-                      <div className="flex gap-2 mt-1">
-                        <input type="number" value={a.min ?? 0} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], min: parseInt(e.target.value) || 0 }; setAspects(n) }} className="w-16 border rounded px-1 py-0.5 text-xs" placeholder="Min" />
-                        <span className="text-xs text-slate-300">—</span>
-                        <input type="number" value={a.max ?? 5} onChange={e => { const n = [...aspects]; n[i] = { ...n[i], max: parseInt(e.target.value) || 5 }; setAspects(n) }} className="w-16 border rounded px-1 py-0.5 text-xs" placeholder="Max" />
-                      </div>
-                    )}
-                  </div>
-                  {aspects.length > 1 && <button onClick={() => setAspects(aspects.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-600 text-xs pt-2">✕</button>}
-                </div>
+                <label key={i} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer text-sm">
+                  <input type="checkbox" checked={!a.disabled} onChange={() => { const n = [...aspects]; n[i] = { ...n[i], disabled: !a.disabled }; setAspects(n) }} className="accent-blue-600" />
+                  <span>{a.label}</span>
+                  <span className="text-xs text-slate-400 ml-auto">{a.kind === 'descriptive' ? 'Teks' : `Angka (${a.min}-${a.max})`}</span>
+                </label>
               ))}
-              <button onClick={() => setAspects([...aspects, { label: '', desc: '', kind: 'numeric', min: 0, max: 5 }])} className="text-xs text-blue-600 hover:underline">+ Tambah aspek</button>
             </div>
-            <div className="flex gap-2 justify-end mt-4"><button onClick={() => setAspectEditing(false)} className="px-4 py-2 border rounded-lg text-sm">Batal</button><button onClick={saveAspects} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Simpan Aspek</button></div>
+            <div className="flex gap-2 justify-end mt-4"><button onClick={() => setAspectEditing(false)} className="px-4 py-2 border rounded-lg text-sm">Tutup</button></div>
           </div>
         </div>
       )}
