@@ -113,6 +113,9 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 		Scores        []interface{}
 		Feedback      string
 		Published     bool
+		NumericAvg    float64
+		ActivityStart string
+		ActivityEnd   string
 	}
 	var cards []entryCard
 	for _, e := range entries {
@@ -128,6 +131,18 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 			Feedback:      e.Feedback,
 			Published:     e.Published,
 		})
+		// Calculate numeric average for graph
+		var sum float64
+		var count int
+		for _, s := range e.Scores {
+			switch v := s.(type) {
+			case float64: sum += v; count++
+			case int: sum += float64(v); count++
+			}
+		}
+		if count > 0 {
+			cards[len(cards)-1].NumericAvg = sum / float64(count)
+		}
 	}
 	gs, _ := db.GetGlobalSetting()
 	orgName := "PKSE UGM"
