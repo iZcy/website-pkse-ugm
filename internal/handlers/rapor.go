@@ -244,7 +244,9 @@ default: s = 0
 		"Instance":            instance,
 		"Entry":               entry,
 		"AllInstances":        allInstances,
-		"ScoreItems":          scoreItems,
+		"ScoreItems":          scoreNumeric,
+	"ScoreNumeric":       scoreNumeric,
+		"ScoreDescriptive":   scoreDescriptive,
 		"AttendanceSummary":   map[string]any{"Present": present, "Absent": absent, "Total": total, "Percentage": pct},
 		"ActivitiesByCategory": catActs,
 	}

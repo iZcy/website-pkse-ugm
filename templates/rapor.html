@@ -86,7 +86,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
       Penilaian
     </h3>
     <div class="space-y-4">
-      {{range $i, $s := .ScoreItems}}
+      {{range $i, $s := .ScoreNumeric}}
       <div>
         <div class="flex justify-between items-center mb-1.5">
           <span class="text-sm font-medium text-gray-700">{{$s.Aspect}}</span>
@@ -157,6 +157,27 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
       Pesan &amp; Kesan
     </h3>
     <p class="text-gray-600 leading-relaxed whitespace-pre-line">{{.Entry.Feedback}}</p>
+  </div>
+  {{end}}
+
+  
+  {{if .ScoreDescriptive}}
+  <div class="bg-white rounded-2xl p-6 card-shadow fade-in mb-4">
+    <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+      <i data-lucide="file-text" class="w-5 h-5 text-gold-500"></i>
+      Catatan &amp; Evaluasi
+    </h3>
+    <div class="space-y-4">
+      {{range .ScoreDescriptive}}
+      <div>
+        <span class="text-sm font-medium text-gray-700">{{.Aspect}}</span>
+        <div class="border rounded-lg bg-slate-50 p-3 mt-1">
+          <p class="text-sm text-gray-700 whitespace-pre-wrap">{{if .TextVal}}{{.TextVal}}{{else}}<span class="text-gray-400 italic">Belum diisi</span>{{end}}</p>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">{{.Desc}}</p>
+      </div>
+      {{end}}
+    </div>
   </div>
   {{end}}
 
