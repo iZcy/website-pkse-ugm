@@ -38,22 +38,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
   {{if .Entries}}
   <div class="bg-white rounded-2xl p-6 card-shadow fade-in mb-6">
     <h3 class="font-bold text-gray-900 mb-3">Perbandingan Skor</h3>
-    <div class="space-y-2">
-      {{range .Entries}}
-      <div>
-        <div class="text-xs text-slate-500 mb-1">{{.InstanceTitle}}</div>
-        <div class="flex gap-1">
-          {{range .Scores}}
-          <div class="flex-1">
-            <div class="bg-slate-100 rounded h-5 relative overflow-hidden">
-              <div class="absolute inset-0 {{if ge . 4}}bg-green-500{{else if ge . 3}}bg-yellow-400{{else}}bg-red-400{{end}}" style="width:{{mul . 20}}%"></div>
-              <span class="relative z-10 text-[10px] font-bold text-slate-700 px-1 flex items-center h-full">{{.}}</span>
-            </div>
-          </div>
-          {{end}}
-        </div>
-      </div>
-      {{end}}
+    <div class="overflow-x-auto">
+      <table class="w-full text-xs">
+        <thead><tr class="border-b text-left text-slate-500"><th class="py-2 pr-3">Rapor</th><th class="py-2 px-1 text-center">S1</th><th class="py-2 px-1 text-center">S2</th><th class="py-2 px-1 text-center">S3</th><th class="py-2 px-1 text-center">S4</th><th class="py-2 px-1 text-center">S5</th></tr></thead>
+        <tbody>
+          {{range .Entries}}<tr class="border-b border-slate-50"><td class="py-2 pr-3 text-slate-600 truncate max-w-[200px]">{{.InstanceTitle}}</td>{{range .Scores}}<td class="py-2 px-1 text-center font-mono font-bold">{{.}}</td>{{end}}</tr>{{end}}
+        </tbody>
+      </table>
     </div>
   </div>
 
