@@ -135,6 +135,7 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 	data := map[string]any{
 		"OrgName": orgName,
 		"Member":  member,
+		"MemberID":           member.ID.Hex(),
 		"Entries": cards,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -204,7 +205,8 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 			{4, "Inisiatif", "Proaktif dalam kontribusi dan ide", "descriptive", 0, 5},
 		}
 	}
-	var scoreItems []scoreItem
+	var scoreNumeric []scoreItem
+	var scoreDescriptive []scoreItem
 	textVal := ""
 	for _, sa := range aspectList {
 		s := 0
@@ -215,7 +217,12 @@ case string:
     if n, err := strconv.Atoi(v); err == nil { s = n } else { s = 0; textVal = v }
 default: s = 0
 } }
-		scoreItems = append(scoreItems, scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s, Kind: sa.Kind, Min: sa.Min, Max: sa.Max, TextVal: textVal})
+		item := scoreItem{Aspect: sa.Label, Desc: sa.Desc, Score: s, Kind: sa.Kind, Min: sa.Min, Max: sa.Max, TextVal: textVal}
+		if sa.Kind == "descriptive" {
+			scoreDescriptive = append(scoreDescriptive, item)
+		} else {
+			scoreNumeric = append(scoreNumeric, item)
+		}
 	}
 	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", instance.ActivityStart, instance.ActivityEnd)
 	type actItem struct {
@@ -241,10 +248,10 @@ default: s = 0
 	data := map[string]any{
 		"OrgName":             orgName,
 		"Member":              member,
+		"MemberID":           member.ID.Hex(),
 		"Instance":            instance,
 		"Entry":               entry,
 		"AllInstances":        allInstances,
-		"ScoreItems":          scoreNumeric,
 	"ScoreNumeric":       scoreNumeric,
 		"ScoreDescriptive":   scoreDescriptive,
 		"AttendanceSummary":   map[string]any{"Present": present, "Absent": absent, "Total": total, "Percentage": pct},

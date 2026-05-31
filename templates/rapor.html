@@ -37,7 +37,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
 <body class="pb-16">
 
 <div class="max-w-2xl mx-auto px-4 pt-8">
-  <a href="/rapor" class="text-sm text-gray-400 hover:text-gray-600 mb-4 inline-block">&larr; Kembali</a>
+  <a href="/rapor/m/{{.MemberID}}" class="text-sm text-gray-400 hover:text-gray-600 mb-4 inline-block">&larr; Kembali ke rapor saya</a>
   {{if .Error}}
   <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center fade-in">
     <div class="text-red-500 mb-4"><i data-lucide="alert-circle" class="w-12 h-12 mx-auto"></i></div>
@@ -190,6 +190,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
 </div>
 
 <script>lucide.createIcons()</script>
-<div class="text-center mt-6"><a href="/rapor" class="text-sm text-gray-400 hover:text-gray-600">&larr; Kembali ke pencarian rapor</a></div>
+<div class="text-center mt-6"><a href="/rapor/m/{{.MemberID}}" class="text-sm text-gray-400 hover:text-gray-600">&larr; Kembali ke rapor saya</a></div>
 </body>
 </html>
