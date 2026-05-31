@@ -33,20 +33,26 @@ export default function RaporEntriesPage() {
   const load = useCallback(async () => {
     if (!instanceId) { setLoading(false); return }
     try {
-      const [inst, mem, ent, depts] = await Promise.all([
+      const [inst, mem, ent, depts, gs] = await Promise.all([
         apiGet(`/api/cms/rapor-instances/${instanceId}`),
         apiGet(`/api/cms/members?period=${period}&per_page=200`),
         apiGet(`/api/cms/rapor-entries?instance_id=${instanceId}`),
         apiGet(`/api/cms/departments?period=${period}`),
+        apiGet('/api/cms/global-setting'),
       ])
       setInstance(inst)
       setMembers(Array.isArray(mem?.items) ? mem.items : Array.isArray(mem) ? mem : [])
       setEntries(Array.isArray(ent?.items) ? ent.items : Array.isArray(ent) ? ent : [])
       setDepartments(Array.isArray(depts) ? depts : [])
+      const tmpl = (gs?.score_aspects || gs?.ScoreAspects || []).map((a: any) => ({
+        label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric', min: a.min ?? 0, max: a.max ?? 5
+      }))
       if (inst?.score_aspects?.length > 0) {
-        setAspects(inst.score_aspects.map((a: any) => ({
-          label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric', min: a.min ?? 0, max: a.max ?? 5
-        })))
+        const instMap = new Map()
+        inst.score_aspects.forEach((a: any) => instMap.set(a.aspect || a.label, a))
+        setAspects(tmpl.map((a: any) => ({ ...a, ...(instMap.get(a.label) || {}) })))
+      } else {
+        setAspects(tmpl)
       }
     } catch { setMembers([]); setEntries([]); setDepartments([]) }
     setLoading(false)
@@ -139,7 +145,7 @@ export default function RaporEntriesPage() {
       })
       const result = await apiPost('/api/cms/rapor-entries', {
         instance_id: instanceId, member_id: memberId, period_label: period,
-        scores, published: false,
+        scores,
       })
       const idx = entries.findIndex((e: any) => {
         const mid = typeof e.member_id === 'object' ? (e.member_id.$oid || e.member_id) : e.member_id
@@ -170,7 +176,7 @@ export default function RaporEntriesPage() {
         })
         await apiPost('/api/cms/rapor-entries', {
           instance_id: instanceId, member_id: memberId, period_label: period,
-          scores, published: false,
+          scores,
         })
         saved++
         setStatus(`Menyimpan... ${saved}/${rows.length}`)
