@@ -42,12 +42,13 @@ body{font-family:"Plus Jakarta Sans",sans-serif;background:linear-gradient(135de
     (function(){
       var labels = [{{range .Entries}}"{{.InstanceTitle}}",{{end}}];
       var allScores = [{{range .Entries}}[{{range .ScoreNums}}{{.}},{{end}}],{{end}}];
+      var labels2 = [{{range .AspectLabels}}"{{.}}",{{end}}];
       var maxLen = 0; for (var i=0;i<allScores.length;i++) maxLen = Math.max(maxLen,allScores[i].length);
       var colors = ["#22c55e","#3b82f6","#f59e0b","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316"];
       var datasets = [];
       for (var a=0;a<maxLen;a++) {
         datasets.push({
-          label: "Aspek "+(a+1),
+          label: labels2[a] || ("Aspek "+(a+1)),
           data: labels.map(function(_,i){ return (allScores[i]||[])[a]||0 }),
           borderColor: colors[a%colors.length],
           backgroundColor: colors[a%colors.length]+"20",
