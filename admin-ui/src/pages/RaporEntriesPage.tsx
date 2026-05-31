@@ -274,6 +274,7 @@ export default function RaporEntriesPage() {
                               onChange={e => { const v = parseInt(e.target.value); setSliderVals(prev => ({ ...prev, [`${mid}-${i}`]: v })) }}
                               className="flex-1 h-1.5 accent-blue-600" />
                             <span className="text-xs font-bold text-slate-600 w-6 text-right">{sliderVals[`${mid}-${i}`] ?? scores[i] ?? a.min ?? 0}</span>
+                            <input type="number" data-idx={i} value={sliderVals[`${mid}-${i}`] ?? scores[i] ?? a.min ?? 0} onChange={e => { const v = Math.max(a.min??0, Math.min(a.max??5, parseInt(e.target.value)||0)); setSliderVals(prev=>({...prev,[`${mid}-${i}`]:v})) }} min={a.min??0} max={a.max??5} className="w-14 border rounded px-1.5 py-0.5 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                           </div>
                         ) : (
                           <textarea data-idx={i} defaultValue={scores[i] || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none" rows={2} placeholder="Tulis penilaian..."/>
@@ -281,7 +282,7 @@ export default function RaporEntriesPage() {
                       </div>
                     ))}
                   </div>
-                  {token && <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400 truncate">🔗 /t/{token}</div>}
+                  {token && <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400 truncate"><button onClick={e=>{e.preventDefault();navigator.clipboard.writeText("https://pkseugm.web.id/rapor/t/"+token)}} className="text-[10px] text-blue-500 hover:text-blue-700 underline">{"https://pkseugm.web.id/rapor/t/"+String(token).substring(0,16)+"..."}</button></div>}
                 </div>
               )
             })}
