@@ -151,15 +151,22 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 			cards[len(cards)-1].NumericAvg = sum / float64(count)
 		}
 		var snums []float64
-		for _, s := range e.Scores {
-			switch v := s.(type) {
-			case float64: snums = append(snums, v)
-			case int: snums = append(snums, float64(v))
-			case int32: snums = append(snums, float64(v))
-			case int64: snums = append(snums, float64(v))
-			case string:
-				if n, err := strconv.ParseFloat(v, 64); err == nil { snums = append(snums, n) }
-			default: snums = append(snums, 0)
+		if inst != nil {
+			for i, sa := range inst.ScoreAspects {
+				if sa.Kind == "descriptive" { continue }
+				if i < len(e.Scores) {
+					switch v := e.Scores[i].(type) {
+					case float64: snums = append(snums, v)
+					case int: snums = append(snums, float64(v))
+					case int32: snums = append(snums, float64(v))
+					case int64: snums = append(snums, float64(v))
+					case string:
+						if n, err := strconv.ParseFloat(v, 64); err == nil { snums = append(snums, n) }
+					default: snums = append(snums, 0)
+					}
+				} else {
+					snums = append(snums, 0)
+				}
 			}
 		}
 		cards[len(cards)-1].ScoreNums = snums
@@ -168,14 +175,18 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 	orgName := "PKSE UGM"
 	if gs != nil && gs.OrgName != "" { orgName = gs.OrgName }
 	var aspectLabels []string
-	if len(entries) > 0 {
-		inst2, _ := db.GetRaporInstanceByID(entries[0].InstanceID.Hex())
-		if inst2 != nil {
-			for _, sa := range inst2.ScoreAspects {
-				if sa.Kind != "descriptive" {
-					aspectLabels = append(aspectLabels, sa.Aspect)
+	if len(cards) > 0 {
+		for _, e2 := range entries {
+			if !e2.Published { continue }
+			inst2, _ := db.GetRaporInstanceByID(e2.InstanceID.Hex())
+			if inst2 != nil {
+				for _, sa := range inst2.ScoreAspects {
+					if sa.Kind != "descriptive" {
+						aspectLabels = append(aspectLabels, sa.Aspect)
+					}
 				}
 			}
+			break
 		}
 	}
 	data := map[string]any{
