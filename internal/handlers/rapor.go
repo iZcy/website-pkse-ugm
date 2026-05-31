@@ -149,10 +149,6 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 		}
 		if count > 0 {
 			cards[len(cards)-1].NumericAvg = sum / float64(count)
-		if inst != nil {
-			cards[len(cards)-1].ActivityStart = inst.ActivityStart.Format("02 Jan 2006")
-			cards[len(cards)-1].ActivityEnd = inst.ActivityEnd.Format("02 Jan 2006")
-		}
 		}
 		var snums []float64
 		for _, s := range e.Scores {
@@ -171,13 +167,26 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 	gs, _ := db.GetGlobalSetting()
 	orgName := "PKSE UGM"
 	if gs != nil && gs.OrgName != "" { orgName = gs.OrgName }
+	var aspectLabels []string
+	if len(entries) > 0 {
+		inst2, _ := db.GetRaporInstanceByID(entries[0].InstanceID.Hex())
+		if inst2 != nil {
+			for _, sa := range inst2.ScoreAspects {
+				if sa.Kind != "descriptive" {
+					aspectLabels = append(aspectLabels, sa.Aspect)
+				}
+			}
+		}
+	}
 	data := map[string]any{
-		"OrgName":      orgName,
+		"OrgName":       orgName,
 		"Member":        member,
 		"MemberID":      member.ID.Hex(),
 		"Entries":       cards,
-t	"AspectLabels":  aspectLabels,
-		"AspectLabels":  aspectLabels,rh.tmpl.ExecuteTemplate(w, "rapor-member.html", data)
+		"AspectLabels":  aspectLabels,
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	rh.tmpl.ExecuteTemplate(w, "rapor-member.html", data)
 }
 
 func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
