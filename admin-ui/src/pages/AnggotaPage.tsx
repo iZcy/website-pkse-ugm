@@ -14,7 +14,9 @@ export default function AnggotaPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [periods, setPeriods] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [activePeriods, setActivePeriods] = useState<Record<string,string>>({})
 
   const load = useCallback(async () => {
     try {
@@ -24,11 +26,13 @@ export default function AnggotaPage() {
     } catch { setMembers([]) }
     setLoading(false)
   }, [period, page, search])
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load(); apiGet('/api/cms/periods').then(d => setPeriods(d||[])).catch(()=>{}) }, [load])
 
   function openAdd() {
     setEditId('')
     setForm({ full_name: '', nickname: '', program_studi: '', fakultas: '', angkatan: '', phone: '', nim: '', photo_url: '', cover_url: '', position: '' })
+    setActivePeriods({})
+    setActivePeriods(m.active_periods || {})
     setShowModal(true)
   }
   function openEdit(m: any) {
@@ -41,7 +45,7 @@ export default function AnggotaPage() {
     if (!form.full_name) return alert('Nama wajib diisi')
     setSaving(true)
     try {
-      const body: any = { ...form, period_label: period }
+      const body: any = { ...form, period_label: period, active_periods: activePeriods }
       if (editId) await apiPut(`/api/cms/members/${editId}`, body)
       else await apiPost('/api/cms/members', body)
       setShowModal(false); load()
@@ -141,6 +145,7 @@ export default function AnggotaPage() {
               <Field label="Angkatan"><input value={form.angkatan} onChange={e => setForm({ ...form, angkatan: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
               <Field label="No. HP"><input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
               <Field label="NIM"><input value={form.nim} onChange={e => setForm({ ...form, nim: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+              {periods.length > 0 && <div><label className="text-sm font-medium text-slate-600 mb-1 block">Aktif per Periode/Sub-Periode</label><div className="grid grid-cols-2 gap-2">{periods.map((p: any) => <div key={p.label} className="border border-slate-200 rounded-lg p-2 bg-slate-50"><div className="text-xs text-slate-600 mb-1">{p.display_name || p.label}</div><select value={activePeriods[p.label] || ''} onChange={e => { const n={...activePeriods}; e.target.value ? n[p.label]=e.target.value : delete n[p.label]; setActivePeriods(n) }} className="w-full border rounded px-2 py-1 text-xs"><option value="">Tidak aktif</option>{(p.sub_periods||['Gelombang 1']).map((sp: string) => <option key={sp} value={sp}>{sp}</option>)}</select></div>)}</div></div>}
               <Field label="Posisi"><input value={form.position} onChange={e => setForm({ ...form, position: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
               <Field label="Foto"><ImageUpload value={form.photo_url} onChange={url => setForm({ ...form, photo_url: url })} /></Field>
               <Field label="Cover"><ImageUpload value={form.cover_url} onChange={url => setForm({ ...form, cover_url: url })} placeholder="URL Cover" /></Field>
