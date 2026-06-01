@@ -71,6 +71,9 @@ func main() {
 	mux.HandleFunc("/rapor/t/", raporH.View)
 	mux.HandleFunc("/rapor/m/", raporH.Member)
 	mux.HandleFunc("/rapor/api/search", raporH.SearchMembers)
+	mux.HandleFunc("/rapor/api/login", raporH.APILogin)
+	mux.HandleFunc("/rapor/api/member/", raporH.APIMember)
+	mux.HandleFunc("/rapor/api/entry/", raporH.APIEntry)
 	mux.HandleFunc("/rapor", raporH.Login)
 
 	// Public API

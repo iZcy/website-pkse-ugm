@@ -356,3 +356,146 @@ func (rh *RaporHandler) renderError(w http.ResponseWriter, msg string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	rh.tmpl.ExecuteTemplate(w, "rapor.html", map[string]any{"Error": msg})
 }
+
+func (rh *RaporHandler) APILogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"error":"method not allowed"}`))
+		return
+	}
+	var body struct {
+		FullName string `json:"full_name"`
+		NIM      string `json:"nim"`
+	}
+	json.NewDecoder(r.Body).Decode(&body)
+	if body.FullName == "" || body.NIM == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"error":"Nama dan NIM wajib diisi"}`))
+		return
+	}
+	member, err := db.FindMemberByNIM(body.NIM, body.FullName)
+	if err != nil || member == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"error":"Data tidak ditemukan"}`))
+		return
+	}
+	token := generateRaporToken(member.ID.Hex())
+	http.SetCookie(w, &http.Cookie{Name: "rapor_auth", Value: token, Path: "/rapor", HttpOnly: true, SameSite: http.SameSiteStrictMode})
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"id":"` + member.ID.Hex() + `"}`))
+}
+
+func (rh *RaporHandler) APIMember(w http.ResponseWriter, r *http.Request) {
+	memberID := strings.TrimPrefix(r.URL.Path, "/rapor/api/member/")
+	cookie, err := r.Cookie("rapor_auth")
+	if err != nil || !verifyRaporToken(cookie.Value, memberID) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"error":"unauthorized"}`))
+		return
+	}
+	member, err := db.GetMemberByID(memberID)
+	if err != nil { w.Header().Set("Content-Type", "application/json"); w.Write([]byte(`{}`)); return }
+	entries, _ := db.GetRaporEntriesForMember(memberID, "")
+	type entryCard struct {
+		InstanceTitle string        `json:"instance_title"`
+		PeriodLabel   string        `json:"period_label"`
+		Token         string        `json:"token"`
+		Scores        []interface{} `json:"scores"`
+		ActivityStart string        `json:"activity_start"`
+		ActivityEnd   string        `json:"activity_end"`
+	}
+	var cards []entryCard
+	var labels []string
+	var allScores [][]float64
+	var chartLabels []string
+	for _, e := range entries {
+		if !e.Published { continue }
+		inst, _ := db.GetRaporInstanceByID(e.InstanceID.Hex())
+		title := "Rapor"
+		astart, aend := "", ""
+		if inst != nil {
+			title = inst.Title
+			astart = inst.ActivityStart.Format("02 Jan 2006")
+			aend = inst.ActivityEnd.Format("02 Jan 2006")
+			if len(chartLabels) == 0 {
+				for _, sa := range inst.ScoreAspects {
+					if sa.Kind != "descriptive" { chartLabels = append(chartLabels, sa.Aspect) }
+				}
+			}
+		}
+		var snums []float64
+		for _, s := range e.Scores {
+			switch v := s.(type) {
+			case float64: snums = append(snums, v)
+			case int: snums = append(snums, float64(v))
+			case int32: snums = append(snums, float64(v))
+			case int64: snums = append(snums, float64(v))
+			case string:
+				if n, err := strconv.ParseFloat(v, 64); err == nil { snums = append(snums, n) }
+			default: snums = append(snums, 0)
+			}
+		}
+		allScores = append(allScores, snums)
+		labels = append(labels, title)
+		cards = append(cards, entryCard{InstanceTitle: title, PeriodLabel: e.PeriodLabel, Token: e.Token, Scores: e.Scores, ActivityStart: astart, ActivityEnd: aend})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"member": map[string]any{"FullName": member.FullName, "Department": member.Department, "ProgramStudi": member.ProgramStudi, "NIM": member.NIM, "PhotoURL": member.PhotoURL},
+		"entries": cards, "chartData": map[string]any{"labels": labels, "scores": allScores}, "aspectLabels": chartLabels,
+	})
+}
+
+func (rh *RaporHandler) APIEntry(w http.ResponseWriter, r *http.Request) {
+	token := strings.TrimPrefix(r.URL.Path, "/rapor/api/entry/")
+	entry, err := db.GetRaporEntryByToken(token)
+	if err != nil || !entry.Published { w.Header().Set("Content-Type", "application/json"); w.Write([]byte("{}")); return }
+	inst, _ := db.GetRaporInstanceByID(entry.InstanceID.Hex())
+	member, _ := db.GetMemberByID(entry.MemberID.Hex())
+	
+	type scoreItem struct {
+		Label   string `json:"label"`
+		Desc    string `json:"desc"`
+		Score   int    `json:"score"`
+		Kind    string `json:"kind"`
+		Min     int    `json:"min"`
+		Max     int    `json:"max"`
+		TextVal string `json:"textVal,omitempty"`
+	}
+	var scores []scoreItem
+	if inst != nil {
+		for i, sa := range inst.ScoreAspects {
+			s := 0; tv := ""
+			if i < len(entry.Scores) {
+				switch v := entry.Scores[i].(type) {
+				case float64: s = int(v)
+				case int: s = v
+				case string:
+					if n, err := strconv.Atoi(v); err == nil { s = n } else { tv = v }
+				}
+			}
+			scores = append(scores, scoreItem{Label: sa.Aspect, Desc: sa.Desc, Score: s, Kind: sa.Kind, Min: sa.Min, Max: sa.Max, TextVal: tv})
+		}
+	}
+	
+	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", inst.ActivityStart, inst.ActivityEnd)
+	present, total := 0, 0
+	for _, a := range activities {
+		if member != nil && a.Date.Before(member.CreatedAt) { continue }
+		att := false
+		for _, aid := range a.AttendeeIDs { if aid == entry.MemberID { att = true; break } }
+		total++; if att { present++ }
+	}
+	absent := total - present
+	pct := 0
+	if total > 0 { pct = present * 100 / total }
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"member": map[string]any{"id": member.ID.Hex(), "FullName": member.FullName, "Department": member.Department, "ProgramStudi": member.ProgramStudi, "NIM": member.NIM, "PhotoURL": member.PhotoURL, "Angkatan": member.Angkatan, "Fakultas": member.Fakultas},
+		"instance": map[string]any{"title": inst.Title, "period_label": inst.PeriodLabel},
+		"entry": entry,
+		"scores": scores,
+		"attendance": map[string]any{"present": present, "absent": absent, "total": total, "pct": pct},
+	})
+}
