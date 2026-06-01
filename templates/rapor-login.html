@@ -9,6 +9,10 @@
 <style>
 body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdf4 100%);min-height:100vh}
 .card-shadow{box-shadow:0 4px 24px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+.autocomplete{position:relative}
+.autocomplete-items{position:absolute;top:100%;left:0;right:0;z-index:99;background:white;border:1px solid #d1d5db;border-radius:0 0 12px 12px;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.autocomplete-items div{padding:10px 16px;cursor:pointer;font-size:14px;border-bottom:1px solid #f3f4f6}
+.autocomplete-items div:hover,.autocomplete-active{background:#f0fdf4}
 </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -19,7 +23,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
       PKSE UGM
     </div>
     <h1 class="text-3xl font-bold text-green-900">Rapor Beswan</h1>
-    <p class="text-green-600 mt-2">Masukkan nama dan NIM untuk melihat rapor Anda</p>
+    <p class="text-green-600 mt-2">Ketik nama Anda untuk melihat rapor</p>
   </div>
 
   {{if .Error}}
@@ -29,20 +33,55 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
   {{end}}
 
   <div class="bg-white rounded-2xl p-8 card-shadow">
-    <form method="POST" action="/rapor">
+    <form method="POST" action="/rapor" onsubmit="return validateForm()">
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
-          <input type="text" name="full_name" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" placeholder="Nama sesuai KTP" autocomplete="name">
+          <div class="autocomplete">
+            <input id="nameInput" type="text" name="full_name" required autocomplete="off" class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none" placeholder="Ketik nama Anda..." oninput="searchMembers(this.value)" onfocus="if(this.value.length>=2)searchMembers(this.value)">
+            <div id="suggestions" class="autocomplete-items hidden"></div>
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">NIM</label>
-          <input type="text" name="nim" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none font-mono" placeholder="Contoh: 22/123456/TK/78910">
+          <input id="nimInput" type="text" name="nim" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none font-mono bg-slate-50" placeholder="Terisi otomatis" readonly>
         </div>
         <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-xl transition">Lihat Rapor</button>
       </div>
     </form>
   </div>
 </div>
+<script>
+let searchTimer;
+async function searchMembers(q) {
+  clearTimeout(searchTimer);
+  if (q.length < 2) { document.getElementById('suggestions').classList.add('hidden'); return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('/rapor/api/search?q=' + encodeURIComponent(q));
+      const data = await r.json();
+      const el = document.getElementById('suggestions');
+      if (!data.length) { el.classList.add('hidden'); return; }
+      el.innerHTML = data.map(m => '<div onclick="selectMember(this)" data-name="' + m.full_name.replace(/"/g,'&quot;') + '" data-nim="' + (m.nim||'') + '">' + m.full_name + (m.nim ? ' <span class="text-xs text-slate-400">' + m.nim + '</span>' : '') + '</div>').join('');
+      el.classList.remove('hidden');
+    } catch(e) { document.getElementById('suggestions').classList.add('hidden'); }
+  }, 200);
+}
+function selectMember(el) {
+  document.getElementById('nameInput').value = el.dataset.name;
+  document.getElementById('nimInput').value = el.dataset.nim || '';
+  document.getElementById('suggestions').classList.add('hidden');
+}
+function validateForm() {
+  if (!document.getElementById('nimInput').value) {
+    alert('Pilih nama dari daftar yang muncul');
+    return false;
+  }
+  return true;
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.autocomplete')) document.getElementById('suggestions').classList.add('hidden');
+});
+</script>
 </body>
 </html>

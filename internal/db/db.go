@@ -104,6 +104,19 @@ type User struct {
 	CreatedAt      time.Time `bson:"created_at"      json:"created_at"`
 }
 
+
+func SearchMembersByName(query string) ([]Member, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{"full_name": bson.M{"$regex": query, "$options": "i"}}
+	opts := options.Find().SetLimit(10).SetSort(bson.D{{Key: "full_name", Value: 1}})
+	cur, err := col("members").Find(ctx, filter, opts)
+	if err != nil { return nil, err }
+	var res []Member
+	defer cur.Close(ctx)
+	return res, cur.All(ctx, &res)
+}
+
 type Period struct {
 	ID                primitive.ObjectID `bson:"_id,omitempty"       json:"id"`
 	Label             string             `bson:"label"               json:"label"`

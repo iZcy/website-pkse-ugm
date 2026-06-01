@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"strconv"
 	"html/template"
+	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
@@ -319,6 +320,31 @@ default: s = 0
 	rh.tmpl.ExecuteTemplate(w, "rapor.html", data)
 }
 
+
+func (rh *RaporHandler) SearchMembers(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("q")
+	if len(q) < 2 {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("[]"))
+		return
+	}
+	members, err := db.SearchMembersByName(q)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("[]"))
+		return
+	}
+	type result struct {
+		FullName string `json:"full_name"`
+		NIM      string `json:"nim"`
+	}
+	var results []result
+	for _, m := range members {
+		results = append(results, result{FullName: m.FullName, NIM: m.NIM})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
 func (rh *RaporHandler) renderError(w http.ResponseWriter, msg string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	rh.tmpl.ExecuteTemplate(w, "rapor.html", map[string]any{"Error": msg})
