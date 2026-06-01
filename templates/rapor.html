@@ -87,6 +87,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
       <i data-lucide="bar-chart-3" class="w-5 h-5 text-rapor-600"></i>
       Penilaian
     </h3>
+    {{if .TotalScore}}<div class="bg-rapor-50 rounded-xl p-3 mb-3 flex items-center justify-between"><span class="text-sm font-medium text-rapor-700">Total Skor</span><span class="text-lg font-bold text-rapor-600">{{.TotalScore}}{{if .MaxTotal}}/{{mul .MaxTotal (len .ScoreNumeric)}}{{end}}</span></div>{{end}}
     <div class="space-y-4">
       {{range $i, $s := .ScoreNumeric}}
       <div>
