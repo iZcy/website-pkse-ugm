@@ -186,8 +186,9 @@ type Member struct {
 	Department      string             `bson:"department"    json:"department"`
 	Position        string             `bson:"position"      json:"position"`
 	Phone           string             `bson:"phone"         json:"phone"`
+	NIM             string             `bson:"nim"          json:"nim"`
+	CreatedAt       time.Time          `bson:"created_at"    json:"created_at,omitempty"`
 	SortOrder       int                `bson:"sort_order"    json:"sort_order"`
-	NIM             string             `bson:"nim"            json:"nim"`
 }
 
 type Announcement struct {
@@ -763,6 +764,7 @@ type Activity struct {
 	Name        string               `bson:"name"           json:"name"`
 	Date        time.Time            `bson:"date"           json:"date"`
 	AttendeeIDs []primitive.ObjectID `bson:"attendee_ids"   json:"attendee_ids"`
+	Attendance   map[string]int     `bson:"attendance,omitempty" json:"attendance,omitempty"`
 	CreatedAt   time.Time            `bson:"created_at"     json:"created_at"`
 }
 

@@ -289,23 +289,24 @@ default: s = 0
 		Attended bool
 	}
 	catActs := map[string][]actItem{}
-	present, total := 0, 0
+	present, attTotal := 0, 0
 	for _, a := range activities {
+		if a.Date.Before(member.CreatedAt) { continue }
 		attended := false
-		for _, aid := range a.AttendeeIDs {
-			if aid == entry.MemberID { attended = true; break }
+		if a.Attendance != nil { status, ok := a.Attendance[entry.MemberID.Hex()]; if ok && status >= 2 { attended = true } } else { for _, aid := range a.AttendeeIDs {
+			if aid == entry.MemberID { attended = true; break } }
 		}
 		cat := a.Category
 		if cat == "" { cat = "Lainnya" }
 		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended})
-		total++
+		attTotal++
 		if attended { present++ }
 	}
-	absent := total - present
+	absent := attTotal - present
 	pct := 0
-	if total > 0 { pct = present * 100 / total }
-	var total int
-	for _, si := range scoreNumeric { total += si.Score }
+	if attTotal > 0 { pct = present * 100 / attTotal }
+	var scoreTotal int
+	for _, si := range scoreNumeric { scoreTotal += si.Score }
 	var maxTotal int
 	for _, si := range scoreNumeric { if si.Max > maxTotal { maxTotal = si.Max } }
 	data := map[string]any{
@@ -316,10 +317,10 @@ default: s = 0
 		"Entry":               entry,
 		"AllInstances":        allInstances,
 	"ScoreNumeric":       scoreNumeric,
-	"TotalScore":        total,
+	"TotalScore":        scoreTotal,
 	"MaxTotal":         maxTotal,
 		"ScoreDescriptive":   scoreDescriptive,
-		"AttendanceSummary":   map[string]any{"Present": present, "Absent": absent, "Total": total, "Percentage": pct},
+		"AttendanceSummary":   map[string]any{"Present": present, "Absent": absent, "Total": attTotal, "Percentage": pct},
 		"ActivitiesByCategory": catActs,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
