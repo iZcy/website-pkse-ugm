@@ -190,6 +190,10 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+tvar total int
+	for _, si := range scoreNumeric { total += si.Score }
+	var maxTotal int
+	for _, si := range scoreNumeric { if si.Max > maxTotal { maxTotal = si.Max } }
 	data := map[string]any{
 		"OrgName":       orgName,
 		"Member":        member,
@@ -304,6 +308,10 @@ default: s = 0
 	absent := total - present
 	pct := 0
 	if total > 0 { pct = present * 100 / total }
+tvar total int
+	for _, si := range scoreNumeric { total += si.Score }
+	var maxTotal int
+	for _, si := range scoreNumeric { if si.Max > maxTotal { maxTotal = si.Max } }
 	data := map[string]any{
 		"OrgName":             orgName,
 		"Member":              member,
@@ -312,6 +320,7 @@ default: s = 0
 		"Entry":               entry,
 		"AllInstances":        allInstances,
 	"ScoreNumeric":       scoreNumeric,
+t	"TotalScore":        total,
 		"ScoreDescriptive":   scoreDescriptive,
 		"AttendanceSummary":   map[string]any{"Present": present, "Absent": absent, "Total": total, "Percentage": pct},
 		"ActivitiesByCategory": catActs,

@@ -81,7 +81,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
   </div>
 
   <div class="bg-white rounded-2xl p-6 card-shadow fade-in mb-4">
-    <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+    {{ := 0}}{{range .ScoreNumeric}}{{ = add  .Score}}{{end}}
+{{ := 0}}{{range .ScoreNumeric}}{{if gt  .Max}}{{ = .Max}}{{end}}{{end}}
+  <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
       <i data-lucide="bar-chart-3" class="w-5 h-5 text-rapor-600"></i>
       Penilaian
     </h3>
