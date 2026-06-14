@@ -342,12 +342,12 @@ export default function ActivitiesPage() {
               <table className="border-collapse text-[11px]">
                 <thead className="sticky top-0 z-20">
                   <tr>
-                    <th className="sticky left-0 z-30 bg-white border-b-2 border-slate-300 px-3 py-2 text-left font-semibold text-slate-700 whitespace-nowrap min-w-[200px]" style={{boxShadow:'2px 0 4px rgba(0,0,0,0.06)'}}>Anggota</th>
+                    <th className="sticky left-0 z-30 bg-white border-b-2 border-l border-r border-slate-300 px-3 py-2 text-left font-semibold text-slate-700 whitespace-nowrap min-w-[200px]" style={{boxShadow:'2px 0 4px rgba(0,0,0,0.06)'}}>Anggota</th>
                     {tableActs.map(a => (
-                      <th key={a.id} className="border-b-2 border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium">
+                      <th key={a.id} className="border-b-2 border-l border-r border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium">
                         <div className="text-slate-600 leading-tight">{a.name}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
-                          {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : '-'}
+                          {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}
                           {a.mandatory !== false ? <span className="text-red-500 ml-1">W</span> : <span className="text-slate-300 ml-1">O</span>}
                         </div>
                       </th>
@@ -357,7 +357,7 @@ export default function ActivitiesPage() {
                 <tbody>
                   {tableMembers.map((m, mi) => (
                     <tr key={m.id} className={mi % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                      <td className={`sticky left-0 z-10 border-b border-slate-200 px-3 py-2 whitespace-nowrap ${mi%2===0?'bg-white':'bg-slate-50'}`} style={{boxShadow: mi%2===0?'2px 0 4px rgba(0,0,0,0.04)':'2px 0 4px rgba(0,0,0,0.02)'}}>
+                      <td className={`sticky left-0 z-10 border-b border-l border-r border-slate-200 px-3 py-2 whitespace-nowrap ${mi%2===0?'bg-white':'bg-slate-50'}`} style={{boxShadow: mi%2===0?'2px 0 4px rgba(0,0,0,0.04)':'2px 0 4px rgba(0,0,0,0.02)'}}>
                         <div className="font-semibold text-slate-800">{m.full_name}</div>
                         <div className="text-[10px] text-slate-400">{m.department?.replace(/ \(.*/,'') || ''} · {tableJoinDates[m.id] || ''}</div>
                       </td>
@@ -367,16 +367,16 @@ export default function ActivitiesPage() {
                         const active = activeCell?.mid === m.id && activeCell?.aid === a.id
                         if (tableMode === 'volunteer') {
                           return (
-                            <td key={a.id} className={`border-b border-slate-200 px-1 py-1 text-center ${excluded ? 'bg-red-50' : ''}`}>
+                            <td key={a.id} className={`border-b border-l border-r border-slate-200 px-2 py-1 text-center min-w-[80px] ${excluded ? 'bg-red-50' : ''}`}>
                               {excluded ? <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-red-100 text-red-400 border border-red-200">—</span> : (
-                                <input className="w-14 text-center text-xs px-1 py-0.5 border border-slate-200 rounded focus:outline-none focus:border-blue-400"
+                                <input className="w-full text-center text-xs px-1 py-0.5 border border-slate-200 rounded focus:outline-none focus:border-blue-400"
                                        value={tableVolRoles[m.id]?.[a.id] || ''} placeholder="..."
                                        onChange={e => setTableVolRoles(p => ({...p, [m.id]: {...p[m.id], [a.id]: e.target.value}}))} />
                               )}
                             </td>
                           )
                         }
-                        const baseCls = 'border-b border-slate-200 px-0 py-1 text-center'
+                        const baseCls = 'border-b border-l border-r border-slate-200 px-0 py-1 text-center'
                         if (excluded) {
                           return (
                             <td key={a.id} className={`${baseCls} bg-red-50`}>
