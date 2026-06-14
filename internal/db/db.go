@@ -306,7 +306,11 @@ func CreateUser(u User) error {
 func UpdateUser(id string, fields map[string]any) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	_, err := col("users").UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": fields})
+	filter := bson.M{"_id": id}
+	if oid, err := primitive.ObjectIDFromHex(id); err == nil {
+		filter = bson.M{"_id": oid}
+	}
+	_, err := col("users").UpdateOne(ctx, filter, bson.M{"$set": fields})
 	return err
 }
 
