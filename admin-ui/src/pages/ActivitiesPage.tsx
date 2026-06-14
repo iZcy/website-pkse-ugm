@@ -30,6 +30,7 @@ export default function ActivitiesPage() {
   const [tableActs, setTableActs] = useState<Activity[]>([])
   const [tableStatus, setTableStatus] = useState<Record<string,Record<string,number>>>({})
   const [tableVolRoles, setTableVolRoles] = useState<Record<string,Record<string,string>>>({})
+  const [tableJoinDates, setTableJoinDates] = useState<Record<string,string>>({})
   const [showScoring, setShowScoring] = useState(false)
   const [scWajibH, setScWajibH] = useState('2'); const [scWajibI, setScWajibI] = useState('1'); const [scWajibA, setScWajibA] = useState('0')
   const [scOptH, setScOptH] = useState('1.5'); const [scOptI, setScOptI] = useState('0.75'); const [scOptA, setScOptA] = useState('0')
@@ -115,11 +116,13 @@ export default function ActivitiesPage() {
 
       const st: Record<string,Record<string,number>> = {}
       const vr: Record<string,Record<string,string>> = {}
+      const jd: Record<string,string> = {}
       for (const m of items) {
         st[m.id] = {}; vr[m.id] = {}
         const ap = m.active_periods || {}
         const sp = ap[period] || ''
         const joinDate = dates[sp] || ''
+        jd[m.id] = joinDate ? `${sp} · ${new Date(joinDate).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}` : (sp || '?')
         for (const a of acts) {
           if (joinDate && a.date && a.date.slice(0,10) < joinDate) {
             st[m.id][a.id] = -1
@@ -130,7 +133,7 @@ export default function ActivitiesPage() {
           vr[m.id][a.id] = (a.volunteer_roles||{})[m.id] || ''
         }
       }
-      setTableStatus(st); setTableVolRoles(vr)
+      setTableStatus(st); setTableVolRoles(vr); setTableJoinDates(jd)
       setShowTable(true)
     } catch (e) { alert(String(e)) }
     setSaving(false)
@@ -354,9 +357,9 @@ export default function ActivitiesPage() {
                 <tbody>
                   {tableMembers.map((m, mi) => (
                     <tr key={m.id} className={mi % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                      <td className="sticky left-0 z-10 border-b border-slate-200 px-3 py-2 whitespace-nowrap" style={{boxShadow: mi%2===0?'2px 0 4px rgba(0,0,0,0.04)':'2px 0 4px rgba(0,0,0,0.02)'}}>
+                      <td className={`sticky left-0 z-10 border-b border-slate-200 px-3 py-2 whitespace-nowrap ${mi%2===0?'bg-white':'bg-slate-50'}`} style={{boxShadow: mi%2===0?'2px 0 4px rgba(0,0,0,0.04)':'2px 0 4px rgba(0,0,0,0.02)'}}>
                         <div className="font-semibold text-slate-800">{m.full_name}</div>
-                        <div className="text-[10px] text-slate-400">{m.department?.replace(/ \(.*/,'') || ''}</div>
+                        <div className="text-[10px] text-slate-400">{m.department?.replace(/ \(.*/,'') || ''} · {tableJoinDates[m.id] || ''}</div>
                       </td>
                       {tableActs.map(a => {
                         const s = tableStatus[m.id]?.[a.id] ?? S_A
