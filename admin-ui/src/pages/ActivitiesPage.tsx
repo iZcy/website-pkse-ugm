@@ -193,6 +193,7 @@ export default function ActivitiesPage() {
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 border border-red-400 text-red-600 font-medium">■ blm gabung</span>
                 </div>
               </div>
+              <button onClick={saveTable} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium whitespace-nowrap">{saving?'Menyimpan...':'Simpan Semua'}</button>
             </div>
             <div className="overflow-auto flex-1 bg-slate-50">
               <table className="border-collapse text-[11px]">
@@ -264,10 +265,6 @@ export default function ActivitiesPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
-            <div className="flex justify-between items-center px-3 py-2 border-t flex-shrink-0 bg-white">
-              <span className="text-xs text-slate-400">{tableMode==='attendance'?'Klik sel lalu pilih status (H/I/A)':'Isi peran/kontribusi volunteer'}</span>
-              <button onClick={saveTable} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium">{saving?'Menyimpan...':'Simpan Semua'}</button>
             </div>
         </div>
       )}
