@@ -20,7 +20,8 @@ export default function ActivitiesPage() {
   const [saving, setSaving] = useState(false)
 
   const cats = ['yayasan', 'paguyuban', 'lintas']
-  const catColors: Record<string, string> = { yayasan: 'bg-blue-100 text-blue-700', paguyuban: 'bg-green-100 text-green-700', lintas: 'bg-purple-100 text-purple-700' }
+  const catBadge: Record<string, string> = { yayasan: 'bg-blue-600 text-white', paguyuban: 'bg-green-600 text-white', lintas: 'bg-purple-600 text-white' }
+  const catCard: Record<string, string> = { yayasan: 'bg-blue-50 border-blue-200', paguyuban: 'bg-green-50 border-green-200', lintas: 'bg-purple-50 border-purple-200' }
 
   const loadActivities = useCallback(async () => {
     try {
@@ -98,18 +99,20 @@ export default function ActivitiesPage() {
       <div className="space-y-3">
         {filtered.length === 0 && <div className="text-slate-400 text-center py-8">Belum ada aktivitas</div>}
         {filtered.map(a => (
-          <div key={a.id} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColors[a.category] || ''}`}>{a.category}</span>
+          <div key={a.id} className={`rounded-xl border p-4 ${catCard[a.category] || 'bg-white border-slate-200'}`}>
+            <div className="mb-3">
+              <span className={`px-3 py-0.5 rounded-full text-xs font-medium capitalize ${catBadge[a.category] || ''}`}>{a.category}</span>
+            </div>
+            <div className="flex items-center justify-between">
               <div>
                 <div className="font-medium text-slate-800">{a.name}</div>
                 <div className="text-xs text-slate-500">{a.date ? new Date(a.date).toLocaleDateString('id-ID') : '-'} · {a.attendee_ids?.length || 0} hadir</div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => openAttendance(a)} className="text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200">Kehadiran</button>
-              <button onClick={() => openEdit(a)} className="text-xs px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200">Edit</button>
-              <button onClick={() => remove(a.id)} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">Hapus</button>
+              <div className="flex gap-2">
+                <button onClick={() => openAttendance(a)} className="text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200">Kehadiran</button>
+                <button onClick={() => openEdit(a)} className="text-xs px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200">Edit</button>
+                <button onClick={() => remove(a.id)} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">Hapus</button>
+              </div>
             </div>
           </div>
         ))}
