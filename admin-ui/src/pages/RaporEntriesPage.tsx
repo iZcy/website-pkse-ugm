@@ -26,7 +26,6 @@ export default function RaporEntriesPage() {
   const [status, setStatus] = useState('')
   const [aspectEditing, setAspectEditing] = useState(false)
   const [aspects, setAspects] = useState<any[]>(DEFAULT_ASPECTS)
-  const [sliderVals, setSliderVals] = useState<Record<string,number>>({})
   const [activeDept, setActiveDept] = useState('__all__')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -141,7 +140,8 @@ export default function RaporEntriesPage() {
     const row = document.querySelector(`[data-member="${memberId}"]`)?.closest('[data-row]') as HTMLElement
     if (!row) { setSaving(null); return }
     try {
-      const scores = aspects.filter((a: any) => !a.disabled).map((a: any, i: number) => {
+      const visibleAspects = aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas'))
+      const scores = visibleAspects.map((a: any, i: number) => {
         const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
         return inp?.value || String(a.min ?? 0)
       })
@@ -175,7 +175,8 @@ export default function RaporEntriesPage() {
       const memberId = (row as HTMLElement).dataset.row || ''
       if (!memberId) continue
       try {
-        const scores = aspects.filter((a: any) => !a.disabled).map((a: any, i: number) => {
+        const visibleAspects = aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas'))
+        const scores = visibleAspects.map((a: any, i: number) => {
           const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
           return inp?.value || String(a.min ?? 0)
         })
@@ -265,22 +266,20 @@ export default function RaporEntriesPage() {
                     </div>
                     <button onClick={() => saveEntry(mid)} disabled={saving === mid} className="ml-auto px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex-shrink-0 transition-colors">{saving === mid ? '...' : 'Simpan'}</button>
                   </div>
-                  <div className="space-y-2">
-                    {aspects.filter((a: any) => !a.disabled).map((a: any, i: number) => (
-                      <div key={i} className="group">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <label className="text-[11px] font-medium text-slate-500">{a.label}</label>
-                          {a.kind === 'numeric' && (
-                            <span className="text-[11px] font-bold text-blue-600 w-6 text-right">{sliderVals[`${mid}-${i}`] ?? scores[i] ?? 0}/{a.max ?? 5}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input type="range" data-idx={i} defaultValue={scores[i] || 0} min={a.min ?? 0} max={a.max ?? 5} step={1}
-                            onChange={e => { const v = parseInt(e.target.value); setSliderVals(prev => ({ ...prev, [`${mid}-${i}`]: v })) }}
-                            className="flex-1 h-1.5 accent-blue-600 cursor-pointer" />
-                        </div>
-                      </div>
-                    ))}
+                   <div className="space-y-2">
+                     {aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas')).map((a: any, i: number) => (
+                       <div key={i} className="group">
+                         <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">{a.label}</label>
+                         <div className="flex items-center gap-2">
+                           <input type="range" data-idx={i} defaultValue={scores[i] || 0} min={a.min ?? 0} max={a.max ?? 5} step={1}
+                             onChange={e => { const v = parseInt(e.target.value); const card = (e.target as HTMLElement).closest('[data-row]'); const num = card?.querySelector(`[data-num="${i}"]`) as HTMLInputElement; if(num) num.value = String(v) }}
+                             className="flex-1 h-1.5 accent-blue-600 cursor-pointer" />
+                           <input type="number" data-num={i} defaultValue={scores[i] || 0} min={a.min ?? 0} max={a.max ?? 5}
+                             onChange={e => { const v = Math.min(a.max ?? 5, Math.max(a.min ?? 0, parseInt((e.target as HTMLInputElement).value) || 0)); (e.target as HTMLInputElement).value = String(v); const card = (e.target as HTMLElement).closest('[data-row]'); const rng = card?.querySelector(`[data-idx="${i}"]`) as HTMLInputElement; if(rng) rng.value = String(v) }}
+                             className="w-10 text-center text-xs font-mono border border-slate-200 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-400 outline-none" />
+                         </div>
+                       </div>
+                     ))}
                     {/* Pesan Menteri / Feedback */}
                     <div className="pt-2">
                       <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">Pesan Menteri</label>
