@@ -34,6 +34,7 @@ export default function ActivitiesPage() {
   const [scWajibH, setScWajibH] = useState('2'); const [scWajibI, setScWajibI] = useState('1'); const [scWajibA, setScWajibA] = useState('0')
   const [scOptH, setScOptH] = useState('1.5'); const [scOptI, setScOptI] = useState('0.75'); const [scOptA, setScOptA] = useState('0')
   const [scVol, setScVol] = useState('0.5')
+  const [activeCell, setActiveCell] = useState<{mid:string;aid:string}|null>(null)
 
   const cats = ['yayasan', 'paguyuban']
   const catBadge: Record<string, string> = { yayasan: 'bg-blue-600 text-white', paguyuban: 'bg-green-600 text-white' }
@@ -135,13 +136,9 @@ export default function ActivitiesPage() {
     setSaving(false)
   }
 
-  function toggleCell(mid: string, aid: string) {
-    setTableStatus(prev => {
-      const cur = prev[mid]?.[aid] ?? S_A
-      if (cur < 0) return prev
-      const n = cur >= S_H ? S_A : cur + 1
-      return {...prev, [mid]: {...prev[mid], [aid]: n}}
-    })
+  function setCell(mid: string, aid: string, val: number) {
+    setTableStatus(prev => ({...prev, [mid]: {...prev[mid], [aid]: val}}))
+    setActiveCell(null)
   }
 
   async function saveTable() {
@@ -332,48 +329,64 @@ export default function ActivitiesPage() {
                 )}
               </div>
             </div>
-            <div className="overflow-auto flex-1">
-              <table className="border-collapse text-xs">
-                <thead className="sticky top-0 bg-white z-10">
+            <div className="overflow-auto flex-1 bg-slate-50">
+              <table className="border-collapse text-[11px]">
+                <thead className="sticky top-0 z-20">
                   <tr>
-                    <th className="border p-2 text-left bg-slate-50 sticky left-0 z-20 min-w-[200px]">Anggota / Dept</th>
+                    <th className="sticky left-0 z-30 bg-white border-b-2 border-slate-300 px-3 py-2 text-left font-semibold text-slate-700 whitespace-nowrap min-w-[200px]" style={{boxShadow:'2px 0 4px rgba(0,0,0,0.06)'}}>Anggota</th>
                     {tableActs.map(a => (
-                      <th key={a.id} className="border p-1 bg-slate-50 align-bottom" style={{minWidth:'50px',maxWidth:'70px'}}>
-                        <div className="text-slate-500 text-xs -rotate-90 origin-left whitespace-nowrap translate-y-2" style={{height:'130px'}}>
-                          <span className="font-medium text-slate-700">{a.name}</span>
-                          <span className="mx-1">·</span>
+                      <th key={a.id} className="border-b-2 border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium">
+                        <div className="text-slate-600 leading-tight">{a.name}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
                           {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short'}) : '-'}
-                          {a.mandatory !== false ? <span className="text-red-500 ml-1">W</span> : <span className="text-slate-400 ml-1">O</span>}
+                          {a.mandatory !== false ? <span className="text-red-500 ml-1">W</span> : <span className="text-slate-300 ml-1">O</span>}
                         </div>
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {tableMembers.map(m => (
-                    <tr key={m.id} className="hover:bg-slate-50">
-                      <td className="border p-2 sticky left-0 bg-white z-10">
-                        <div className="font-medium text-slate-700">{m.full_name}</div>
-                        <div className="text-slate-400 text-xs">{m.department || ''}</div>
+                  {tableMembers.map((m, mi) => (
+                    <tr key={m.id} className={mi % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                      <td className="sticky left-0 z-10 border-b border-slate-200 px-3 py-2 whitespace-nowrap" style={{boxShadow: mi%2===0?'2px 0 4px rgba(0,0,0,0.04)':'2px 0 4px rgba(0,0,0,0.02)'}}>
+                        <div className="font-semibold text-slate-800">{m.full_name}</div>
+                        <div className="text-[10px] text-slate-400">{m.department?.replace(/ \(.*/,'') || ''}</div>
                       </td>
                       {tableActs.map(a => {
                         const s = tableStatus[m.id]?.[a.id] ?? S_A
                         const excluded = s < 0
-                        const role = tableVolRoles[m.id]?.[a.id] || ''
+                        const active = activeCell?.mid === m.id && activeCell?.aid === a.id
                         if (tableMode === 'volunteer') {
                           return (
-                            <td key={a.id} className={`border p-0 text-center ${excluded ? 'bg-red-50 border-red-300' : ''}`}>
-                              <input className="w-full text-xs p-1 border-0 bg-transparent text-center focus:outline-none focus:bg-blue-50"
-                                     value={role} placeholder="-" disabled={excluded}
-                                     onChange={e => setTableVolRoles(p => ({...p, [m.id]: {...p[m.id], [a.id]: e.target.value}}))} />
+                            <td key={a.id} className={`border-b border-slate-200 px-1 py-1 text-center ${excluded ? 'bg-red-50' : ''}`}>
+                              {excluded ? <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-red-100 text-red-400 border border-red-200">—</span> : (
+                                <input className="w-14 text-center text-xs px-1 py-0.5 border border-slate-200 rounded focus:outline-none focus:border-blue-400"
+                                       value={tableVolRoles[m.id]?.[a.id] || ''} placeholder="..."
+                                       onChange={e => setTableVolRoles(p => ({...p, [m.id]: {...p[m.id], [a.id]: e.target.value}}))} />
+                              )}
+                            </td>
+                          )
+                        }
+                        const baseCls = 'border-b border-slate-200 px-0 py-1 text-center'
+                        if (excluded) {
+                          return (
+                            <td key={a.id} className={`${baseCls} bg-red-50`}>
+                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-red-100 text-red-400 border border-red-200">—</span>
                             </td>
                           )
                         }
                         return (
-                          <td key={a.id} className={`border p-0 text-center ${excluded ? 'bg-red-50 border-red-300' : 'cursor-pointer'}`}
-                              onClick={() => toggleCell(m.id, a.id)}>
-                            {excluded ? <span className="text-red-300 text-lg">—</span> : (
-                              <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${ST_C[s]||''}`}>{ST_L[s]}</span>
+                          <td key={a.id} className={`${baseCls} cursor-pointer hover:bg-blue-50 transition-colors relative`}
+                              onClick={() => setActiveCell(active ? null : {mid: m.id, aid: a.id})}>
+                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-sm ${
+                              s===S_H?'bg-green-500 text-white':s===S_I?'bg-amber-400 text-white':'bg-red-100 text-red-600 border border-red-200'}`}>{ST_L[s]}</span>
+                            {active && (
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 flex gap-0.5 bg-white rounded-lg shadow-xl border p-0.5"
+                                   onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setCell(m.id, a.id, S_H)} className="px-2 py-1 text-xs font-bold rounded bg-green-500 text-white hover:bg-green-600">H</button>
+                                <button onClick={() => setCell(m.id, a.id, S_I)} className="px-2 py-1 text-xs font-bold rounded bg-amber-400 text-white hover:bg-amber-500">I</button>
+                                <button onClick={() => setCell(m.id, a.id, S_A)} className="px-2 py-1 text-xs font-bold rounded bg-red-400 text-white hover:bg-red-500">A</button>
+                              </div>
                             )}
                           </td>
                         )
@@ -383,11 +396,11 @@ export default function ActivitiesPage() {
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-between items-center p-4 border-t flex-shrink-0">
-              <span className="text-xs text-slate-400">{tableMode==='attendance'?'Klik sel: H→I→A→H':'Isi peran/kontribusi volunteer'}</span>
+            <div className="flex justify-between items-center px-4 py-3 border-t flex-shrink-0 bg-white">
+              <span className="text-xs text-slate-400">{tableMode==='attendance'?'Klik sel lalu pilih status (H/I/A)':'Isi peran/kontribusi volunteer'}</span>
               <div className="flex gap-2">
                 <button onClick={() => setShowTable(false)} className="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Batal</button>
-                <button onClick={saveTable} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">{saving?'Menyimpan...':'Simpan Semua'}</button>
+                <button onClick={saveTable} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium">{saving?'Menyimpan...':'Simpan Semua'}</button>
               </div>
             </div>
           </div>
