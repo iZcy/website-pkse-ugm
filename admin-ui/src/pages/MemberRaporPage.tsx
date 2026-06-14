@@ -47,7 +47,7 @@ export default function MemberRaporPage() {
           </div>
         </div>
 
-        {entries.length > 0 && chartData.scores.length > 0 && (
+        {entries.length > 1 && chartData.scores.length > 0 && (
           <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
             <h3 className="font-bold text-gray-900 mb-3">Perbandingan Skor</h3>
             <div className="h-64">
@@ -59,7 +59,7 @@ export default function MemberRaporPage() {
         <h3 className="font-bold text-gray-700 mb-3">Daftar Rapor</h3>
         <div className="space-y-2">
           {entries.map(e => (
-            <Link key={e.token} to={`/rapor/t/${e.token}`} className="block bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+            <Link key={e.token} to={`/t/${e.token}`} className="block bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-semibold text-gray-900">{e.instance_title}</h4>
@@ -79,7 +79,7 @@ export default function MemberRaporPage() {
         )}
 
         <div className="text-center mt-8">
-          <Link to="/rapor" className="text-sm text-green-600 hover:underline">← Cari anggota lain</Link>
+          <Link to="/" className="text-sm text-green-600 hover:underline">← Kembali ke menu utama</Link>
         </div>
       </div>
       <ChartScript labels={chartData.labels} scores={chartData.scores} aspectLabels={aspectLabels} />

@@ -33,7 +33,7 @@ export default function EntryDetailPage() {
   return (
     <div style={{background:'linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdf4 100%)',minHeight:'100vh',fontFamily:'Plus Jakarta Sans,sans-serif'}} className="pb-16">
       <div className="max-w-2xl mx-auto px-4 pt-8">
-        <Link to={`/rapor/m/${member.id}`} className="text-sm text-gray-400 hover:text-gray-600 mb-4 inline-block">← Kembali ke rapor saya</Link>
+        <Link to={`/m/${member.id}`} className="text-sm text-gray-400 hover:text-gray-600 mb-4 inline-block">← Kembali ke rapor saya</Link>
 
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur rounded-full px-4 py-2 text-sm text-green-700 font-medium shadow-sm mb-4">
@@ -47,7 +47,7 @@ export default function EntryDetailPage() {
         {allInstances.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
             {allInstances.map(i => (
-              <Link key={i.token} to={`/rapor/t/${i.token}`}
+              <Link key={i.token} to={`/t/${i.token}`}
                 className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${i.active ? 'bg-green-700 text-white shadow' : 'bg-white text-green-700 border border-green-200 hover:bg-green-50'}`}>
                 {i.title}
               </Link>
@@ -174,7 +174,7 @@ export default function EntryDetailPage() {
         </div>
 
         <div className="text-center mt-6">
-          <Link to={`/rapor/m/${member.id}`} className="text-sm text-gray-400 hover:text-gray-600">← Kembali ke rapor saya</Link>
+          <Link to={`/m/${member.id}`} className="text-sm text-gray-400 hover:text-gray-600">← Kembali ke rapor saya</Link>
         </div>
       </div>
     </div>
