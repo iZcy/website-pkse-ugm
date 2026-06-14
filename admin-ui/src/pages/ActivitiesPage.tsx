@@ -258,18 +258,24 @@ export default function ActivitiesPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700">Kategori</label>
-                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm">
-                  {cats.map(c => <option key={c} value={c}>{c}</option>)}
+                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm capitalize">
+                  <option value="yayasan">Yayasan</option>
+                  <option value="paguyuban">Paguyuban</option>
                 </select>
               </div>
               <div>
                 <label className="text-sm font-medium text-slate-700">Tanggal</label>
                 <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={mandatory} onChange={e => setMandatory(e.target.checked)} id="mandatory" className="accent-red-600 w-4 h-4" />
-                <label htmlFor="mandatory" className="text-sm text-slate-700">Wajib</label>
-                <span className="text-xs text-slate-400">(tidak wajib = opsional)</span>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-slate-700">Wajib</span>
+                  <p className="text-xs text-slate-400">Kegiatan wajib dihadiri seluruh anggota</p>
+                </div>
+                <button onClick={() => setMandatory(!mandatory)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${mandatory ? 'bg-red-500' : 'bg-slate-300'}`}>
+                  <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${mandatory ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                </button>
               </div>
             </div>
             <div className="flex gap-2 mt-4 justify-end">
