@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { usePeriod } from '../components/AdminLayout'
 import { RaporInstance, apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Eye, Trash2, Send, Settings } from 'lucide-react'
+import { Plus, Eye, Trash2, Send, Settings, Weight } from 'lucide-react'
 
 export default function RaporPage() {
   const { period } = usePeriod()
@@ -10,12 +10,17 @@ export default function RaporPage() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [showAspects, setShowAspects] = useState(false)
+  const [showWeights, setShowWeights] = useState(false)
+  const [weightInst, setWeightInst] = useState<RaporInstance | null>(null)
   const [title, setTitle] = useState('')
   const [start, setStart] = useState('')
   const [end, setEnd] = useState('')
   const [saving, setSaving] = useState(false)
   const [globalAspects, setGlobalAspects] = useState<any[]>([])
   const [aspectsSaving, setAspectsSaving] = useState(false)
+  const [wHadir, setWHadir] = useState('2')
+  const [wIzin, setWIzin] = useState('1')
+  const [wAbsen, setWAbsen] = useState('0')
 
   const load = useCallback(async () => {
     try {
@@ -58,6 +63,29 @@ export default function RaporPage() {
       load()
     } catch (e: any) { alert(e.message) }
     setAspectsSaving(false)
+  }
+
+  function openWeights(inst: RaporInstance) {
+    setWeightInst(inst)
+    const w = inst.attendance_weights || { hadir: 2, izin: 1, absen: 0 }
+    setWHadir(String(w.hadir ?? 2))
+    setWIzin(String(w.izin ?? 1))
+    setWAbsen(String(w.absen ?? 0))
+    setShowWeights(true)
+  }
+
+  async function saveWeights() {
+    if (!weightInst) return
+    setSaving(true)
+    try {
+      await apiPut(`/api/cms/rapor-instances/${weightInst.id}`, {
+        ...weightInst,
+        attendance_weights: { hadir: Number(wHadir) || 0, izin: Number(wIzin) || 0, absen: Number(wAbsen) || 0 }
+      })
+      setShowWeights(false); setWeightInst(null)
+      load()
+    } catch (e: any) { alert(e.message) }
+    setSaving(false)
   }
 
   async function publish(id: string) {
@@ -107,6 +135,9 @@ export default function RaporPage() {
               <Link to={`/rapor/entries?period=${period}&instance_id=${inst.id}`} className="px-3 py-1.5 text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg hover:bg-indigo-100 text-nowrap">
                 <Eye className="w-3.5 h-3.5 inline mr-1" /> Isi Nilai
               </Link>
+              <button onClick={() => openWeights(inst)} className="px-3 py-1.5 text-sm bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 text-nowrap">
+                <Weight className="w-3.5 h-3.5 inline mr-1" /> Bobot
+              </button>
               {inst.published ? (
                 <button onClick={() => unpublish(inst.id)} className="px-3 py-1.5 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 text-nowrap">
                   Unpublish
@@ -176,6 +207,33 @@ export default function RaporPage() {
             <div className="flex justify-end gap-2 p-6 pt-0 flex-shrink-0">
               <button onClick={() => setShowAspects(false)} className="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50">Batal</button>
               <button onClick={saveAspects} disabled={aspectsSaving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">{aspectsSaving ? 'Menyimpan...' : 'Simpan Template'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWeights && weightInst && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowWeights(false)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+            <h3 className="text-lg font-bold mb-4">Bobot Kehadiran — {weightInst.title}</h3>
+            <p className="text-xs text-slate-400 mb-4">Nilai yang diberikan per status kehadiran. Skor akhir = (total / max) × 100%</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-sm w-20 text-rapor-700 font-medium">Hadir</span>
+                <input type="number" step="0.5" value={wHadir} onChange={e => setWHadir(e.target.value)} className="w-24 border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm w-20 text-gold-600 font-medium">Izin</span>
+                <input type="number" step="0.5" value={wIzin} onChange={e => setWIzin(e.target.value)} className="w-24 border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm w-20 text-red-500 font-medium">Absen</span>
+                <input type="number" step="0.5" value={wAbsen} onChange={e => setWAbsen(e.target.value)} className="w-24 border rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button onClick={() => setShowWeights(false)} className="px-4 py-2 text-sm border rounded-lg hover:bg-slate-50">Batal</button>
+              <button onClick={saveWeights} disabled={saving} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">{saving ? 'Menyimpan...' : 'Simpan'}</button>
             </div>
           </div>
         </div>

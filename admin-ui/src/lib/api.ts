@@ -72,6 +72,7 @@ export interface RaporInstance {
   activity_start: string
   activity_end: string
   published: boolean
+  attendance_weights?: Record<string, number>
   created_at: string
 }
 
