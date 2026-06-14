@@ -41,12 +41,14 @@ export default function ActivitiesPage() {
   const loadActivities = useCallback(async () => {
     try {
       const data = await apiGet(`/api/cms/activities?period=${period}`)
-      setActivities(data.items || data || [])
-    } catch { setActivities([]) }
-    setLoading(false)
+      const items = data.items || data || []
+      setActivities(items)
+      setLoading(false)
+      return items
+    } catch { setActivities([]); setLoading(false); return [] }
   }, [period])
 
-  useEffect(() => { loadActivities().then(() => { if (tab === 'table') openTable() }) }, [loadActivities])
+  useEffect(() => { loadActivities().then(data => { if (tab === 'table') openTable(data) }) }, [loadActivities])
 
   const filtered = catFilter ? activities.filter(a => a.category === catFilter) : activities
 
@@ -72,33 +74,33 @@ export default function ActivitiesPage() {
 
   function deptIx(d: string) { const i = DEPT.indexOf(d); return i >= 0 ? i : 99 }
 
-  async function openTable() {
+  async function openTable(acts?: Activity[]) {
     setSaving(true)
     try {
       const [ms, ps] = await Promise.all([
         apiGet(`/api/cms/members?period=${period}&per_page=200`),
         apiGet('/api/cms/periods'),
-      ])
-      const items = (ms.items || ms || []) as Member[]
-      items.sort((a,b) => deptIx(a.department||'') - deptIx(b.department||'') || (a.full_name||'').localeCompare(b.full_name||''))
-      setTableMembers(items)
+      ]);
+      const rawMembers = (ms.items || ms || []) as Member[]
+      rawMembers.sort((a:Member,b:Member) => deptIx(a.department||'') - deptIx(b.department||'') || (a.full_name||'').localeCompare(b.full_name||''))
+      setTableMembers(rawMembers)
       const pd = (ps as any[]).find((p:any) => p.label === period)
       const dates = pd?.sub_period_dates || {}
 
-      const acts = activities.slice().sort((a,b) => (a.date||'').localeCompare(b.date||''))
-      setTableActs(acts)
+      const sorted = (acts || activities).slice().sort((a,b) => (a.date||'').localeCompare(b.date||''))
+      setTableActs(sorted)
       setTableMode('attendance')
 
       const st: Record<string,Record<string,number>> = {}
       const vr: Record<string,Record<string,string>> = {}
       const jd: Record<string,string> = {}
-      for (const m of items) {
+      for (const m of rawMembers) {
         st[m.id] = {}; vr[m.id] = {}
         const ap = m.active_periods || {}
         const sp = ap[period] || ''
         const joinDate = dates[sp] || ''
         jd[m.id] = joinDate ? `${sp} · ${new Date(joinDate).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}` : (sp || '?')
-        for (const a of acts) {
+        for (const a of sorted) {
           if (joinDate && a.date && a.date.slice(0,10) < joinDate) {
             st[m.id][a.id] = -1
           } else {
@@ -184,7 +186,7 @@ export default function ActivitiesPage() {
         <div className="flex gap-2">
           <div className="flex rounded-lg border overflow-hidden">
             <button onClick={() => setTab('summary')} className={`px-4 py-2 text-sm font-medium ${tab==='summary'?'bg-blue-600 text-white':'bg-white text-slate-600 hover:bg-slate-50'}`}>Ringkasan</button>
-            <button onClick={() => { setTab('table'); if (!showTable) openTable() }} className={`px-4 py-2 text-sm font-medium ${tab==='table'?'bg-blue-600 text-white':'bg-white text-slate-600 hover:bg-slate-50'}`}>Edit Kehadiran</button>
+            <button onClick={() => { setTab('table'); if (!showTable) openTable(activities) }} className={`px-4 py-2 text-sm font-medium ${tab==='table'?'bg-blue-600 text-white':'bg-white text-slate-600 hover:bg-slate-50'}`}>Edit Kehadiran</button>
           </div>
           <button onClick={openScoring} className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
             <Settings className="w-4 h-4" /> Bobot Skor
