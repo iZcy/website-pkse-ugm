@@ -100,6 +100,11 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
 			return
 		}
+		if dateStr, ok := body["date"].(string); ok {
+			if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
+				body["date"] = t
+			}
+		}
 		if err := db.UpdateActivity(idSegment, body); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
