@@ -44,7 +44,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">NIM</label>
-          <input id="nimInput" type="text" name="nim" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none font-mono bg-slate-50" placeholder="Terisi otomatis" readonly>
+          <input id="nimInput" type="text" name="nim" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none font-mono" placeholder="Masukkan NIM Anda">
         </div>
         <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-xl transition">Lihat Rapor</button>
       </div>
@@ -62,19 +62,19 @@ async function searchMembers(q) {
       const data = await r.json();
       const el = document.getElementById('suggestions');
       if (!data.length) { el.classList.add('hidden'); return; }
-      el.innerHTML = data.map(m => '<div onclick="selectMember(this)" data-name="' + m.full_name.replace(/"/g,'&quot;') + '" data-nim="' + (m.nim||'') + '">' + m.full_name + (m.nim ? ' <span class="text-xs text-slate-400">' + m.nim + '</span>' : '') + '</div>').join('');
+      el.innerHTML = data.map(m => '<div onclick="selectMember(this)" data-name="' + m.full_name.replace(/"/g,'&quot;') + '">' + m.full_name + '</div>').join('');
       el.classList.remove('hidden');
     } catch(e) { document.getElementById('suggestions').classList.add('hidden'); }
   }, 200);
 }
 function selectMember(el) {
   document.getElementById('nameInput').value = el.dataset.name;
-  document.getElementById('nimInput').value = el.dataset.nim || '';
+  document.getElementById('nimInput').focus();
   document.getElementById('suggestions').classList.add('hidden');
 }
 function validateForm() {
   if (!document.getElementById('nimInput').value) {
-    alert('Pilih nama dari daftar yang muncul');
+    alert('Masukkan NIM Anda untuk melihat rapor');
     return false;
   }
   return true;
