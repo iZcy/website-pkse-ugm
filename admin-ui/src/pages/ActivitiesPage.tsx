@@ -36,7 +36,7 @@ export default function ActivitiesPage() {
   const [scOptH, setScOptH] = useState('1.5'); const [scOptI, setScOptI] = useState('0.75'); const [scOptA, setScOptA] = useState('0')
   const [scVol, setScVol] = useState('0.5')
   const [activeCell, setActiveCell] = useState<{mid:string;aid:string}|null>(null)
-  const [tab, setTab] = useState<'summary'|'table'>('summary')
+  const [tab, setTab] = useState<'summary'|'table'>('table')
 
   const cats = ['yayasan', 'paguyuban']
   const catBadge: Record<string, string> = { yayasan: 'bg-blue-600 text-white', paguyuban: 'bg-green-600 text-white' }
@@ -57,7 +57,7 @@ export default function ActivitiesPage() {
     } catch { setMembers([]) }
   }, [period])
 
-  useEffect(() => { loadActivities(); loadMembers() }, [loadActivities, loadMembers])
+  useEffect(() => { loadActivities(); loadMembers().then(() => { if (tab === 'table') openTable() }) }, [loadActivities, loadMembers])
 
   const filtered = catFilter ? activities.filter(a => a.category === catFilter) : activities
 
