@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { apiGet } from '../lib/api'
 import { LogOut, Key, BarChart3, Loader2 } from 'lucide-react'
 
-interface Profile { full_name: string; department: string; program_studi: string; nim: string; angkatan: string; fakultas: string; photo_url: string; rapor_id: string }
+interface Profile {
+  full_name: string; nickname: string; department: string; program_studi: string;
+  nim: string; angkatan: string; fakultas: string; photo_url: string; rapor_id: string;
+  phone: string; position: string;
+  active_periods?: Record<string,string>; active_positions?: Record<string,string>
+}
 
 export default function MemberDashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -40,6 +45,10 @@ export default function MemberDashboard() {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
   if (!profile) return <div className="min-h-screen flex items-center justify-center text-red-500">Gagal memuat profil. <a href="/login" className="underline ml-1">Login ulang</a></div>
 
+  const positions = profile.active_positions || {}
+  const periods = profile.active_periods || {}
+  const periodKeys = Object.keys(periods).sort().reverse()
+
   return (
     <div className="min-h-screen pb-16" style={{background:'linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdf4 100%)'}}>
       <div className="max-w-md mx-auto px-4 pt-8">
@@ -50,18 +59,38 @@ export default function MemberDashboard() {
 
         <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
           <div className="flex items-center gap-4 mb-4">
-            {profile.photo_url ? <img src={profile.photo_url} className="w-16 h-16 rounded-full object-cover border-2 border-green-200" /> : (
+            {profile.photo_url ? <img src={profile.photo_url} className="w-16 h-16 rounded-full object-cover border-2 border-green-200" alt="" /> : (
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-2xl font-bold border-2 border-green-200">{profile.full_name[0]}</div>
             )}
             <div>
               <h2 className="text-lg font-bold text-gray-900">{profile.full_name}</h2>
-              <p className="text-sm text-gray-500">{profile.department} · {profile.program_studi}</p>
-              {profile.nim && <p className="text-xs text-gray-400 mt-0.5">NIM: {profile.nim}</p>}
+              <p className="text-sm text-gray-500">{profile.department || '-'}{profile.program_studi ? ' · ' + profile.program_studi : ''}</p>
+              {profile.nickname && <p className="text-xs text-gray-400">{profile.nickname}</p>}
             </div>
           </div>
-          <div className="border-t pt-3 flex gap-2 text-sm text-gray-500">
-            <span>Angkatan {profile.angkatan}</span><span>·</span><span>{profile.fakultas}</span>
+          <div className="border-t pt-3 space-y-1 text-sm">
+            {profile.nim && <div className="flex"><span className="text-gray-400 w-20">NIM</span><span className="text-gray-700">{profile.nim}</span></div>}
+            {profile.angkatan && <div className="flex"><span className="text-gray-400 w-20">Angkatan</span><span className="text-gray-700">{profile.angkatan}</span></div>}
+            {profile.fakultas && <div className="flex"><span className="text-gray-400 w-20">Fakultas</span><span className="text-gray-700">{profile.fakultas}</span></div>}
+            {profile.phone && <div className="flex"><span className="text-gray-400 w-20">Telepon</span><span className="text-gray-700">{profile.phone}</span></div>}
           </div>
+
+          {periodKeys.length > 0 && (
+            <div className="border-t mt-4 pt-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Riwayat Kepengurusan</h3>
+              <div className="space-y-2">
+                {periodKeys.map(p => (
+                  <div key={p} className="flex justify-between items-start text-sm">
+                    <div>
+                      <span className="text-gray-600 font-medium">{p}</span>
+                      <span className="text-gray-400 ml-2">{periods[p] || '-'}</span>
+                    </div>
+                    <span className="text-gray-500 text-xs">{positions[p] || 'Anggota'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">
