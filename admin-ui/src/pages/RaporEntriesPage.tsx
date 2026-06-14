@@ -48,11 +48,13 @@ export default function RaporEntriesPage() {
         label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric', min: a.min ?? 0, max: a.max ?? 5
       }))
       if (inst?.score_aspects?.length > 0) {
-        const instMap = new Map()
-        inst.score_aspects.forEach((a: any) => instMap.set(a.aspect || a.label, a))
-        setAspects(tmpl.map((a: any) => ({ ...a, ...(instMap.get(a.label) || {}) })))
-      } else {
+        setAspects(inst.score_aspects.map((a: any) => ({
+          label: a.aspect || a.label || '', desc: a.desc || '', kind: a.kind || 'numeric', min: a.min ?? 0, max: a.max ?? 5
+        })))
+      } else if (tmpl.length > 0) {
         setAspects(tmpl)
+      } else {
+        setAspects(DEFAULT_ASPECTS)
       }
     } catch { setMembers([]); setEntries([]); setDepartments([]) }
     setLoading(false)
@@ -139,14 +141,17 @@ export default function RaporEntriesPage() {
     const row = document.querySelector(`[data-member="${memberId}"]`)?.closest('[data-row]') as HTMLElement
     if (!row) { setSaving(null); return }
     try {
-      const scores = aspects.map((a, i) => {
-        const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
-        return inp?.value || (a.kind === 'numeric' ? String(a.min ?? 0) : '')
+      const scores = aspects.filter((a: any) => !a.disabled).map((a: any, i: number) => {
+        const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
+        return inp?.value || String(a.min ?? 0)
       })
-      const result = await apiPost('/api/cms/rapor-entries', {
+      const feedbackEl = row.querySelector('[data-feedback]') as HTMLTextAreaElement
+      const body: any = {
         instance_id: instanceId, member_id: memberId, period_label: period,
         scores,
-      })
+      }
+      if (feedbackEl) body.feedback = feedbackEl.value
+      const result = await apiPost('/api/cms/rapor-entries', body)
       const idx = entries.findIndex((e: any) => {
         const mid = typeof e.member_id === 'object' ? (e.member_id.$oid || e.member_id) : e.member_id
         return mid === memberId
@@ -170,14 +175,17 @@ export default function RaporEntriesPage() {
       const memberId = (row as HTMLElement).dataset.row || ''
       if (!memberId) continue
       try {
-        const scores = aspects.map((a, i) => {
-          const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement | HTMLTextAreaElement
-          return inp?.value || (a.kind === 'numeric' ? String(a.min ?? 0) : '')
+        const scores = aspects.filter((a: any) => !a.disabled).map((a: any, i: number) => {
+          const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
+          return inp?.value || String(a.min ?? 0)
         })
-        await apiPost('/api/cms/rapor-entries', {
+        const feedbackEl = row.querySelector('[data-feedback]') as HTMLTextAreaElement
+        const body: any = {
           instance_id: instanceId, member_id: memberId, period_label: period,
           scores,
-        })
+        }
+        if (feedbackEl) body.feedback = feedbackEl.value
+        await apiPost('/api/cms/rapor-entries', body)
         saved++
         setStatus(`Menyimpan... ${saved}/${rows.length}`)
       } catch (e: any) { failed++; console.error('saveAll failed for', memberId, e.message) }
@@ -258,22 +266,26 @@ export default function RaporEntriesPage() {
                     <button onClick={() => saveEntry(mid)} disabled={saving === mid} className="ml-auto px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex-shrink-0 transition-colors">{saving === mid ? '...' : 'Simpan'}</button>
                   </div>
                   <div className="space-y-2">
-                    {aspects.map((a, i) => (
+                    {aspects.filter((a: any) => !a.disabled).map((a: any, i: number) => (
                       <div key={i} className="group">
-                        <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">{a.label}</label>
-                        {a.kind === 'numeric' ? (
-                          <div className="flex items-center gap-2">
-                            <input type="number" data-idx={i} defaultValue={scores[i] || a.min || 0} min={a.min ?? 0} max={a.max ?? 5}
-                              onChange={e => { const v = parseInt(e.target.value); setSliderVals(prev => ({ ...prev, [`${mid}-${i}`]: v })) }}
-                              className="flex-1 h-1.5 accent-blue-600" />
-                            <span className="text-xs font-bold text-slate-600 w-6 text-right">{sliderVals[`${mid}-${i}`] ?? scores[i] ?? a.min ?? 0}</span>
-                            
-                          </div>
-                        ) : (
-                          <textarea data-idx={i} defaultValue={scores[i] || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none" rows={2} placeholder="Tulis penilaian..."/>
-                        )}
+                        <div className="flex items-center justify-between mb-0.5">
+                          <label className="text-[11px] font-medium text-slate-500">{a.label}</label>
+                          {a.kind === 'numeric' && (
+                            <span className="text-[11px] font-bold text-blue-600 w-6 text-right">{sliderVals[`${mid}-${i}`] ?? scores[i] ?? 0}/{a.max ?? 5}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input type="range" data-idx={i} defaultValue={scores[i] || 0} min={a.min ?? 0} max={a.max ?? 5} step={1}
+                            onChange={e => { const v = parseInt(e.target.value); setSliderVals(prev => ({ ...prev, [`${mid}-${i}`]: v })) }}
+                            className="flex-1 h-1.5 accent-blue-600 cursor-pointer" />
+                        </div>
                       </div>
                     ))}
+                    {/* Pesan Menteri / Feedback */}
+                    <div className="pt-2">
+                      <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">Pesan Menteri</label>
+                      <textarea data-feedback="1" defaultValue={ent?.feedback || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none bg-amber-50/50" rows={3} placeholder="Tulis pesan/feedback dari menteri..."/>
+                    </div>
                   </div>
                   {token && <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-400 truncate"><button onClick={e=>{e.preventDefault();navigator.clipboard.writeText("https://pkseugm.web.id/rapor/t/"+token)}} className="text-[10px] text-blue-500 hover:text-blue-700 underline">{"https://pkseugm.web.id/rapor/t/"+String(token).substring(0,16)+"..."}</button></div>}
                 </div>

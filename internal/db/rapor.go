@@ -240,10 +240,15 @@ func UpsertRaporEntry(e RaporEntry) error {
 		_, err := col("rapor_entries").InsertOne(ctx, e)
 		return err
 	}
+	token := existing.Token
+	if token == "" {
+		token = GenerateToken()
+	}
 	update := bson.M{"$set": bson.M{
 		"scores":    e.Scores,
 		"feedback":  e.Feedback,
 		"published": e.Published,
+		"token":     token,
 		"updated_at": now,
 	}}
 	_, err = col("rapor_entries").UpdateOne(ctx, filter, update)
