@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"webapp/internal/auth"
 	"webapp/internal/db"
@@ -13,7 +14,16 @@ var tmpl *template.Template
 
 func Init() {
 	var err error
-	tmpl, err = template.ParseGlob(filepath.Join("templates", "admin-panel", "*.html"))
+	funcMap := template.FuncMap{
+		"substr": func(s string, start, length int) string {
+			rs := []rune(s)
+			if start >= len(rs) { return "" }
+			end := start + length
+			if end > len(rs) { end = len(rs) }
+			return string(rs[start:end])
+		},
+	}
+	tmpl, err = template.New("admin").Funcs(funcMap).ParseGlob(filepath.Join("templates", "admin-panel", "*.html"))
 	if err != nil {
 		panic("admin template parse: " + err.Error())
 	}
@@ -83,7 +93,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	globalSetting, _ := db.GetGlobalSetting()
 
 	if r.Method == http.MethodGet {
-		if u, _, ok := auth.ResolveSession(w, r); ok && u != "" {
+		if u, role, ok := auth.ResolveSession(w, r); ok && u != "" {
+			if role == "member" {
+				http.Redirect(w, r, "/member", http.StatusFound)
+				return
+			}
 			selectedPeriod := r.URL.Query().Get("period")
 			http.Redirect(w, r, "/admin/pengumuman?period="+selectedPeriod, http.StatusFound)
 			return
@@ -95,14 +109,33 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		u, err := db.GetUserByUsername(username)
 		if err != nil || !auth.CheckPassword(u.PasswordHash, password) {
-			w.WriteHeader(http.StatusUnauthorized)
-			tmpl.ExecuteTemplate(w, "login.html", map[string]any{
-				"Error":         "Username atau password salah.",
-				"GlobalSetting": globalSetting,
-			})
-			return
+			// Auto-register: try members collection
+			member, mErr := db.GetMemberByNIM(username)
+			if mErr == nil && member != nil && password == username {
+				hash, _ := auth.HashPassword(password)
+				u = &db.User{Username: username, PasswordHash: hash, Role: "member", CreatedAt: time.Now()}
+				if cErr := db.CreateUser(*u); cErr != nil {
+					w.WriteHeader(http.StatusUnauthorized)
+					tmpl.ExecuteTemplate(w, "login.html", map[string]any{
+						"Error":         "Gagal membuat akun. Hubungi admin.",
+						"GlobalSetting": globalSetting,
+					})
+					return
+				}
+			} else {
+				w.WriteHeader(http.StatusUnauthorized)
+				tmpl.ExecuteTemplate(w, "login.html", map[string]any{
+					"Error":         "Username atau password salah.",
+					"GlobalSetting": globalSetting,
+				})
+				return
+			}
 		}
 		auth.SetSession(w, u.Username, u.Role)
+		if u.Role == "member" {
+			http.Redirect(w, r, "/member", http.StatusFound)
+			return
+		}
 		allPeriods, _ := db.GetPeriods()
 		selPeriod := ""
 		for _, p := range allPeriods {
@@ -146,5 +179,27 @@ func GlobalStats(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "gl
 func Periode(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "periode.html", "periode") }
 func Akun(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "akun.html", "akun") }
 func Activities(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "activities.html", "activities") }
-func Rapor(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "rapor.html", "rapor") }
+func Rapor(w http.ResponseWriter, r *http.Request)      { renderAdmin(w, r, "rapor.html", "rapor") }
 func RaporEntries(w http.ResponseWriter, r *http.Request) { renderAdmin(w, r, "rapor-entries.html", "rapor") }
+
+func MemberDashboard(w http.ResponseWriter, r *http.Request) {
+	username, role, ok := auth.ResolveSession(w, r)
+	if !ok || role != "member" {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	member, err := db.GetMemberByNIM(username)
+	if err != nil {
+		http.Error(w, "member not found", http.StatusNotFound)
+		return
+	}
+	gs, _ := db.GetGlobalSetting()
+	orgName := "PKSE UGM"
+	if gs != nil && gs.OrgName != "" { orgName = gs.OrgName }
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	tmpl.ExecuteTemplate(w, "member-dashboard.html", map[string]any{
+		"OrgName": orgName,
+		"Member":  member,
+		"MemberID": member.ID.Hex(),
+	})
+}

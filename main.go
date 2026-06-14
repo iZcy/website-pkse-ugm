@@ -74,7 +74,10 @@ func main() {
 	mux.HandleFunc("/rapor/api/login", raporH.APILogin)
 	mux.HandleFunc("/rapor/api/member/", raporH.APIMember)
 	mux.HandleFunc("/rapor/api/entry/", raporH.APIEntry)
-	mux.HandleFunc("/rapor", raporH.Login)
+	mux.HandleFunc("/rapor", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	})
+	mux.HandleFunc("/member", admin.MemberDashboard)
 
 	// Public API
 
