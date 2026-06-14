@@ -63,7 +63,8 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(idSegment, "/attendance") {
 			activityID := strings.TrimSuffix(idSegment, "/attendance")
 			var body struct {
-				AttendeeIDs []string `json:"attendee_ids"`
+				AttendeeIDs []string       `json:"attendee_ids"`
+				Attendance  map[string]int `json:"attendance"`
 			}
 			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 				writeJSON(w, 400, map[string]string{"error": err.Error()})
@@ -78,7 +79,7 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 				}
 				oids = append(oids, oid)
 			}
-			if err := db.SetActivityAttendance(activityID, oids); err != nil {
+			if err := db.SetActivityAttendance(activityID, oids, body.Attendance); err != nil {
 				writeJSON(w, 500, map[string]string{"error": err.Error()})
 				return
 			}

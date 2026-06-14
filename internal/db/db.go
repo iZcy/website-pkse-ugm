@@ -118,14 +118,15 @@ func SearchMembersByName(query string) ([]Member, error) {
 }
 
 type Period struct {
-	ID                primitive.ObjectID `bson:"_id,omitempty"       json:"id"`
-	Label             string             `bson:"label"               json:"label"`
-	DisplayName       string             `bson:"display_name"        json:"display_name"`
-	IsActive          bool               `bson:"is_active"           json:"is_active"`
-	HierarchyImageURL string             `bson:"hierarchy_image_url" json:"hierarchy_image_url"`
-	CreatedAt         time.Time          `bson:"created_at"          json:"created_at"`
-	SubPeriods        []string           `bson:"sub_periods"         json:"sub_periods"`
-	HeroImageURL      string             `bson:"hero_image_url"      json:"hero_image_url"`
+	ID                primitive.ObjectID  `bson:"_id,omitempty"       json:"id"`
+	Label             string              `bson:"label"               json:"label"`
+	DisplayName       string              `bson:"display_name"        json:"display_name"`
+	IsActive          bool                `bson:"is_active"           json:"is_active"`
+	HierarchyImageURL string              `bson:"hierarchy_image_url" json:"hierarchy_image_url"`
+	CreatedAt         time.Time           `bson:"created_at"          json:"created_at"`
+	SubPeriods        []string            `bson:"sub_periods"         json:"sub_periods"`
+	SubPeriodDates    map[string]string   `bson:"sub_period_dates,omitempty" json:"sub_period_dates,omitempty"`
+	HeroImageURL      string              `bson:"hero_image_url"      json:"hero_image_url"`
 }
 
 func normalizePeriodSubPeriods(p *Period) {
@@ -769,14 +770,15 @@ type Activity struct {
 }
 
 type RaporInstance struct {
-	ID            primitive.ObjectID `bson:"_id,omitempty"   json:"id"`
-	PeriodLabel   string             `bson:"period_label"    json:"period_label"`
-	Title         string             `bson:"title"           json:"title"`
-	ActivityStart time.Time          `bson:"activity_start"  json:"activity_start"`
-	ActivityEnd   time.Time          `bson:"activity_end"    json:"activity_end"`
-	Published     bool               `bson:"published"       json:"published"`
-	ScoreAspects  []RaporScoreItem  `bson:"score_aspects,omitempty" json:"score_aspects,omitempty"`
-	CreatedAt     time.Time          `bson:"created_at"      json:"created_at"`
+	ID                primitive.ObjectID `bson:"_id,omitempty"   json:"id"`
+	PeriodLabel       string             `bson:"period_label"    json:"period_label"`
+	Title             string             `bson:"title"           json:"title"`
+	ActivityStart     time.Time          `bson:"activity_start"  json:"activity_start"`
+	ActivityEnd       time.Time          `bson:"activity_end"    json:"activity_end"`
+	Published         bool               `bson:"published"       json:"published"`
+	ScoreAspects      []RaporScoreItem  `bson:"score_aspects,omitempty" json:"score_aspects,omitempty"`
+	AttendanceWeights map[string]float64 `bson:"attendance_weights,omitempty" json:"attendance_weights,omitempty"`
+	CreatedAt         time.Time          `bson:"created_at"      json:"created_at"`
 }
 
 type RaporScoreItem struct {

@@ -4,10 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
-	"strconv"
-	"html/template"
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -284,27 +285,79 @@ default: s = 0
 		}
 	}
 	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", instance.ActivityStart, instance.ActivityEnd)
+
+	// Get member's sub-period join date for exclusion
+	memberJoinDate := member.CreatedAt // fallback
+	if sp, ok := member.ActivePeriods[entry.PeriodLabel]; ok && sp != "" {
+		periods, _ := db.GetPeriods()
+		for _, p := range periods {
+			if p.Label == entry.PeriodLabel {
+				if p.SubPeriodDates != nil {
+					if ds, ok2 := p.SubPeriodDates[sp]; ok2 && ds != "" {
+						if t, err := time.Parse("2006-01-02", ds); err == nil {
+							memberJoinDate = t
+						}
+					}
+				}
+				break
+			}
+		}
+	}
+
+	// Get attendance weights (default: hadir=2, izin=1, absen=0)
+	weights := map[string]float64{"hadir": 2, "izin": 1, "absen": 0}
+	if instance.AttendanceWeights != nil {
+		for k, v := range instance.AttendanceWeights {
+			weights[k] = v
+		}
+	}
+
 	type actItem struct {
 		Name     string
 		Attended bool
+		Status   string
 	}
 	catActs := map[string][]actItem{}
-	present, attTotal := 0, 0
+	var totalWeight float64
+	var maxWeight float64
+	var attTotal int
+	hadirCount, izinCount, absenCount := 0, 0, 0
 	for _, a := range activities {
-		if a.Date.Before(member.CreatedAt) { continue }
-		attended := false
-		if a.Attendance != nil { status, ok := a.Attendance[entry.MemberID.Hex()]; if ok && status >= 2 { attended = true } } else { for _, aid := range a.AttendeeIDs {
-			if aid == entry.MemberID { attended = true; break } }
+		if a.Date.Before(memberJoinDate) { continue }
+		status := "absen"
+		if a.Attendance != nil {
+			if sc, ok := a.Attendance[entry.MemberID.Hex()]; ok {
+				switch sc {
+				case 2: status = "hadir"
+				case 1: status = "izin"
+				case 0: status = "absen"
+				}
+			}
 		}
+		// Fallback: check attendee_ids for backward compat
+		if status == "absen" && a.AttendeeIDs != nil {
+			for _, aid := range a.AttendeeIDs {
+				if aid == entry.MemberID { status = "hadir"; break }
+			}
+		}
+		attended := status == "hadir"
 		cat := a.Category
 		if cat == "" { cat = "Lainnya" }
-		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended})
+		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended, Status: status})
 		attTotal++
-		if attended { present++ }
+		totalWeight += weights[status]
+		maxWeight += weights["hadir"]
+		switch status {
+		case "hadir": hadirCount++
+		case "izin": izinCount++
+		case "absen": absenCount++
+		}
 	}
-	absent := attTotal - present
+	absentCount := attTotal - hadirCount
 	pct := 0
-	if attTotal > 0 { pct = present * 100 / attTotal }
+	if attTotal > 0 { pct = hadirCount * 100 / attTotal }
+	attendanceScore := 0.0
+	if maxWeight > 0 { attendanceScore = totalWeight / maxWeight * 100 }
 	var scoreTotal int
 	for _, si := range scoreNumeric { scoreTotal += si.Score }
 	var maxTotal int
@@ -320,7 +373,12 @@ default: s = 0
 	"TotalScore":        scoreTotal,
 	"MaxTotal":         maxTotal,
 		"ScoreDescriptive":   scoreDescriptive,
-		"AttendanceSummary":   map[string]any{"Present": present, "Absent": absent, "Total": attTotal, "Percentage": pct},
+		"AttendanceSummary":   map[string]any{
+			"Present": hadirCount, "Izin": izinCount, "Absent": absentCount,
+			"Total": attTotal, "Percentage": pct,
+			"Score": fmt.Sprintf("%.1f", attendanceScore),
+			"Weights": weights,
+		},
 		"ActivitiesByCategory": catActs,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
