@@ -79,7 +79,7 @@ export default function MemberRaporPage() {
         )}
 
         <div className="text-center mt-8">
-          <Link to="/" className="text-sm text-green-600 hover:underline">← Kembali ke menu utama</Link>
+          <a href="/member" className="text-sm text-green-600 hover:underline">← Kembali ke menu utama</a>
         </div>
       </div>
       <ChartScript labels={chartData.labels} scores={chartData.scores} aspectLabels={aspectLabels} />
