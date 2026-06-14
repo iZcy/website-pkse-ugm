@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { Activity, Member, apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Table2, Settings } from 'lucide-react'
+import { Plus, Settings } from 'lucide-react'
 
 const S_H = 2; const S_I = 1; const S_A = 0
 const ST_C: Record<number,string> = {2:'bg-green-500 text-white',1:'bg-amber-400 text-white',0:'bg-red-400 text-white'}
@@ -36,6 +36,7 @@ export default function ActivitiesPage() {
   const [scOptH, setScOptH] = useState('1.5'); const [scOptI, setScOptI] = useState('0.75'); const [scOptA, setScOptA] = useState('0')
   const [scVol, setScVol] = useState('0.5')
   const [activeCell, setActiveCell] = useState<{mid:string;aid:string}|null>(null)
+  const [tab, setTab] = useState<'summary'|'table'>('summary')
 
   const cats = ['yayasan', 'paguyuban']
   const catBadge: Record<string, string> = { yayasan: 'bg-blue-600 text-white', paguyuban: 'bg-green-600 text-white' }
@@ -168,7 +169,7 @@ export default function ActivitiesPage() {
         }
         await new Promise(r => setTimeout(r, 50))
       }
-      setShowTable(false)
+      setTab('summary')
       loadActivities()
     } catch (e: any) { alert(e.message) }
     setSaving(false)
@@ -207,9 +208,10 @@ export default function ActivitiesPage() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Kegiatan & Absensi</h2>
         <div className="flex gap-2">
-          <button onClick={openTable} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
-            <Table2 className="w-4 h-4" /> Edit Kehadiran
-          </button>
+          <div className="flex rounded-lg border overflow-hidden">
+            <button onClick={() => setTab('summary')} className={`px-4 py-2 text-sm font-medium ${tab==='summary'?'bg-blue-600 text-white':'bg-white text-slate-600 hover:bg-slate-50'}`}>Ringkasan</button>
+            <button onClick={() => { setTab('table'); if (!showTable) openTable() }} className={`px-4 py-2 text-sm font-medium ${tab==='table'?'bg-blue-600 text-white':'bg-white text-slate-600 hover:bg-slate-50'}`}>Edit Kehadiran</button>
+          </div>
           <button onClick={openScoring} className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
             <Settings className="w-4 h-4" /> Bobot Skor
           </button>
@@ -320,9 +322,8 @@ export default function ActivitiesPage() {
       )}
 
       {/* Attendance/Volunteer Table Editor */}
-      {showTable && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowTable(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full h-[90vh] flex flex-col">
+      {tab === 'table' && (
+        <div className="bg-white rounded-xl border shadow-sm flex flex-col" style={{height:'calc(100vh - 200px)'}}>
             <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
               <h3 className="text-lg font-bold">Edit Kehadiran</h3>
               <div className="flex items-center gap-4">
@@ -408,12 +409,11 @@ export default function ActivitiesPage() {
             <div className="flex justify-between items-center px-4 py-3 border-t flex-shrink-0 bg-white">
               <span className="text-xs text-slate-400">{tableMode==='attendance'?'Klik sel lalu pilih status (H/I/A)':'Isi peran/kontribusi volunteer'}</span>
               <div className="flex gap-2">
-                <button onClick={() => setShowTable(false)} className="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Batal</button>
+                <button onClick={() => setTab('summary')} className="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Batal</button>
                 <button onClick={saveTable} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium">{saving?'Menyimpan...':'Simpan Semua'}</button>
               </div>
             </div>
           </div>
-        </div>
       )}
 
       {/* Scoring Config */}
