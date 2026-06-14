@@ -304,12 +304,18 @@ default: s = 0
 		}
 	}
 
-	// Get attendance weights (default: hadir=2, izin=1, absen=0)
-	weights := map[string]float64{"hadir": 2, "izin": 1, "absen": 0}
+	// Default dimension weights
+	defWajib := map[string]float64{"hadir": 2, "izin": 1, "absen": 0}
+	defOpt := map[string]float64{"hadir": 1.5, "izin": 0.75, "absen": 0}
+	defVol := 1.0
 	if instance.AttendanceWeights != nil {
-		for k, v := range instance.AttendanceWeights {
-			weights[k] = v
+		if w, ok := instance.AttendanceWeights["wajib"].(map[string]interface{}); ok {
+			for k, v := range w { if f, ok2 := v.(float64); ok2 { defWajib[k] = f } }
 		}
+		if w, ok := instance.AttendanceWeights["tidak_wajib"].(map[string]interface{}); ok {
+			for k, v := range w { if f, ok2 := v.(float64); ok2 { defOpt[k] = f } }
+		}
+		if v, ok := instance.AttendanceWeights["voluntary"].(float64); ok { defVol = v }
 	}
 
 	type actItem struct {
@@ -318,8 +324,6 @@ default: s = 0
 		Status   string
 	}
 	catActs := map[string][]actItem{}
-	var totalWeight float64
-	var maxWeight float64
 	var attTotal int
 	hadirCount, izinCount, absenCount := 0, 0, 0
 	for _, a := range activities {
@@ -345,8 +349,6 @@ default: s = 0
 		if cat == "" { cat = "Lainnya" }
 		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended, Status: status})
 		attTotal++
-		totalWeight += weights[status]
-		maxWeight += weights["hadir"]
 		switch status {
 		case "hadir": hadirCount++
 		case "izin": izinCount++
@@ -356,8 +358,58 @@ default: s = 0
 	absentCount := attTotal - hadirCount
 	pct := 0
 	if attTotal > 0 { pct = hadirCount * 100 / attTotal }
-	attendanceScore := 0.0
-	if maxWeight > 0 { attendanceScore = totalWeight / maxWeight * 100 }
+
+	// Volunteer/Lintas tracking
+	type volItem struct {
+		Name string
+		Role string
+	}
+	var volActivities []volItem
+	volCount := 0
+	for _, a := range activities {
+		if a.VolunteerIDs != nil {
+			for _, vid := range a.VolunteerIDs {
+				if vid == entry.MemberID {
+					role := ""
+					if a.VolunteerRoles != nil {
+						role = a.VolunteerRoles[entry.MemberID.Hex()]
+					}
+					volActivities = append(volActivities, volItem{Name: a.Name, Role: role})
+					volCount++
+				}
+			}
+		}
+	}
+
+	// Calculate score using dimension weights from instance
+	wajibScore, wajibMax := 0.0, 0.0
+	optScore, optMax := 0.0, 0.0
+	volBonus := 0.0
+	for _, a := range activities {
+		if a.Date.Before(memberJoinDate) { continue }
+		status := "absen"
+		if a.Attendance != nil {
+			if sc, ok := a.Attendance[entry.MemberID.Hex()]; ok {
+				switch sc { case 2: status = "hadir"; case 1: status = "izin"; case 0: status = "absen" }
+			}
+		}
+		if status == "absen" && a.AttendeeIDs != nil {
+			for _, aid := range a.AttendeeIDs { if aid == entry.MemberID { status = "hadir"; break } }
+		}
+		if a.Mandatory {
+			wajibMax += defWajib["hadir"]
+			wajibScore += defWajib[status]
+		} else {
+			optMax += defOpt["hadir"]
+			optScore += defOpt[status]
+		}
+	}
+	volBonus = defVol * float64(volCount)
+	weightedTotal := wajibScore + optScore + volBonus
+	weightedMax := wajibMax + optMax
+	weightedPct := 0.0
+	if weightedMax > 0 { weightedPct = weightedTotal / weightedMax * 100 }
+	if weightedPct > 100 { weightedPct = 100 }
 	var scoreTotal int
 	for _, si := range scoreNumeric { scoreTotal += si.Score }
 	var maxTotal int
@@ -374,12 +426,15 @@ default: s = 0
 	"MaxTotal":         maxTotal,
 		"ScoreDescriptive":   scoreDescriptive,
 		"AttendanceSummary":   map[string]any{
-			"Present": hadirCount, "Izin": izinCount, "Absent": absentCount,
+			"Present": hadirCount, "Izin": izinCount, "Absent": absentCount, "Volunteer": volCount,
 			"Total": attTotal, "Percentage": pct,
-			"Score": fmt.Sprintf("%.1f", attendanceScore),
-			"Weights": weights,
+			"Score": fmt.Sprintf("%.1f", weightedPct),
+			"WajibScore": fmt.Sprintf("%.1f", wajibScore), "WajibMax": fmt.Sprintf("%.1f", wajibMax),
+			"OptScore": fmt.Sprintf("%.1f", optScore), "OptMax": fmt.Sprintf("%.1f", optMax),
+			"VolBonus": fmt.Sprintf("%.1f", volBonus),
 		},
 		"ActivitiesByCategory": catActs,
+		"VolunteerActivities":  volActivities,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	rh.tmpl.ExecuteTemplate(w, "rapor.html", data)

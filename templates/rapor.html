@@ -116,7 +116,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
       <i data-lucide="clipboard-check" class="w-5 h-5 text-rapor-600"></i>
       Kehadiran Kegiatan
     </h3>
-    <div class="grid grid-cols-3 gap-3 mb-4">
+    <div class="grid grid-cols-4 gap-3 mb-4">
       <div class="bg-rapor-50 rounded-xl p-3 text-center">
         <div class="text-2xl font-bold text-rapor-700">{{.AttendanceSummary.Present}}</div>
         <div class="text-xs text-rapor-600">Hadir</div>
@@ -129,20 +129,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
         <div class="text-2xl font-bold text-red-600">{{.AttendanceSummary.Absent}}</div>
         <div class="text-xs text-red-500">Tanpa Izin</div>
       </div>
+      <div class="bg-purple-50 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-purple-600">{{.AttendanceSummary.Volunteer}}</div>
+        <div class="text-xs text-purple-500">Lintas</div>
+      </div>
     </div>
     <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
       <span>Skor Kehadiran</span>
       <span class="font-bold text-rapor-700">{{.AttendanceSummary.Score}}%</span>
     </div>
-    {{if .AttendanceSummary.Weights}}
-    <div class="mb-3 text-xs text-gray-400">
-      Pembobotan: hadir={{index .AttendanceSummary.Weights "hadir"}}, izin={{index .AttendanceSummary.Weights "izin"}}, absen={{index .AttendanceSummary.Weights "absen"}}
+    <div class="mb-3 space-y-1 text-xs text-gray-400">
+      <div>Wajib: {{.AttendanceSummary.WajibScore}} / {{.AttendanceSummary.WajibMax}} · Tidak Wajib: {{.AttendanceSummary.OptScore}} / {{.AttendanceSummary.OptMax}}</div>
+      <div>Lintas: +{{.AttendanceSummary.VolBonus}}</div>
     </div>
-    {{end}}
     <div class="score-bar mb-2">
-      <div class="score-bar-fill bg-rapor-500" style="width:{{.AttendanceSummary.Percentage}}%"></div>
+      <div class="score-bar-fill bg-rapor-500" style="width:{{.AttendanceSummary.Score}}%"></div>
     </div>
-    <p class="text-xs text-gray-500 text-center">{{.AttendanceSummary.Percentage}}% kehadiran ({{.AttendanceSummary.Present}} dari {{.AttendanceSummary.Total}} kegiatan)</p>
+    <p class="text-xs text-gray-500 text-center">{{.AttendanceSummary.Score}}% skor kehadiran ({{.AttendanceSummary.Present}} dari {{.AttendanceSummary.Total}} kegiatan)</p>
 
     {{if .ActivitiesByCategory}}
     <div class="mt-4 space-y-3">
@@ -199,8 +202,21 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
     <p class="mt-1">{{.OrgName}}</p>
   </div>
 
-  {{end}}
-</div>
+    {{end}}
+    {{if .VolunteerActivities}}
+    <div class="mt-4">
+      <h4 class="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">Lintas Kementerian</h4>
+      <div class="flex flex-wrap gap-1.5">
+        {{range .VolunteerActivities}}
+        <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+          <i data-lucide="sparkles" class="w-3 h-3"></i>
+          {{.Name}}{{if .Role}} — <span class="font-medium">{{.Role}}</span>{{end}}
+        </span>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
 
 <script>lucide.createIcons()</script>
 <div class="text-center mt-6"><a href="/rapor/m/{{.MemberID}}" class="text-sm text-gray-400 hover:text-gray-600">&larr; Kembali ke rapor saya</a></div>

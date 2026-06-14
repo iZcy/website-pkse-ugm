@@ -780,7 +780,7 @@ type RaporInstance struct {
 	ActivityEnd       time.Time          `bson:"activity_end"    json:"activity_end"`
 	Published         bool               `bson:"published"       json:"published"`
 	ScoreAspects      []RaporScoreItem  `bson:"score_aspects,omitempty" json:"score_aspects,omitempty"`
-	AttendanceWeights map[string]float64 `bson:"attendance_weights,omitempty" json:"attendance_weights,omitempty"`
+	AttendanceWeights primitive.M `bson:"attendance_weights,omitempty" json:"attendance_weights,omitempty"`
 	CreatedAt         time.Time          `bson:"created_at"      json:"created_at"`
 }
 
