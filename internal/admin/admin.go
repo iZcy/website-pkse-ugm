@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"webapp/internal/auth"
 	"webapp/internal/db"
@@ -111,24 +110,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		u, err := db.GetUserByUsername(username)
 		if err != nil || !auth.CheckPassword(u.PasswordHash, password) {
-			// Auto-register: try NIM first, then name
-			member, mErr := db.GetMemberByNIM(username)
-			if mErr != nil {
-				member, mErr = db.GetMemberByName(username)
+			// Try name-to-NIM lookup for members
+			member, mErr := db.GetMemberByName(username)
+			if mErr == nil && member != nil && member.NIM != "" {
+				u, err = db.GetUserByUsername(member.NIM)
 			}
-			if mErr == nil && member != nil && member.NIM != "" && password == member.NIM {
-				hash, _ := auth.HashPassword(password)
-				nu := &db.User{Username: member.NIM, PasswordHash: hash, Role: "member", CreatedAt: time.Now()}
-				if cErr := db.CreateUser(*nu); cErr != nil {
-					w.WriteHeader(http.StatusUnauthorized)
-					tmpl.ExecuteTemplate(w, "login.html", map[string]any{
-						"Error":         "Gagal membuat akun. Hubungi admin.",
-						"GlobalSetting": globalSetting,
-					})
-					return
-				}
-				u = nu
-			} else {
+			if err != nil || !auth.CheckPassword(u.PasswordHash, password) {
 				w.WriteHeader(http.StatusUnauthorized)
 				tmpl.ExecuteTemplate(w, "login.html", map[string]any{
 					"Error":         "Username atau password salah.",
