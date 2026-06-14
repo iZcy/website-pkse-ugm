@@ -11,18 +11,14 @@ const DEPT = ['Pengurus Inti','MSDP (Manajemen Sumber Daya Paguyuban)','ComDev (
 export default function ActivitiesPage() {
   const { period } = usePeriod()
   const [activities, setActivities] = useState<Activity[]>([])
-  const [members, setMembers] = useState<Member[]>([])
   const [catFilter, setCatFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
-  const [showAttendance, setShowAttendance] = useState(false)
   const [editId, setEditId] = useState('')
   const [name, setName] = useState('')
   const [category, setCategory] = useState('yayasan')
   const [date, setDate] = useState('')
   const [mandatory, setMandatory] = useState(true)
-  const [attActivity, setAttActivity] = useState<Activity | null>(null)
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [showTable, setShowTable] = useState(false)
   const [tableMode, setTableMode] = useState<'attendance'|'volunteer'>('attendance')
@@ -50,52 +46,30 @@ export default function ActivitiesPage() {
     setLoading(false)
   }, [period])
 
-  const loadMembers = useCallback(async () => {
-    try {
-      const data = await apiGet(`/api/cms/members?period=${period}&per_page=200`)
-      setMembers(data.items || data || [])
-    } catch { setMembers([]) }
-  }, [period])
-
-  useEffect(() => { loadActivities(); loadMembers().then(() => { if (tab === 'table') openTable() }) }, [loadActivities, loadMembers])
+  useEffect(() => { loadActivities().then(() => { if (tab === 'table') openTable() }) }, [loadActivities])
 
   const filtered = catFilter ? activities.filter(a => a.category === catFilter) : activities
 
   function openAdd() { setEditId(''); setName(''); setCategory('yayasan'); setDate(''); setMandatory(true); setShowModal(true) }
   function openEdit(a: Activity) { setEditId(a.id); setName(a.name); setCategory(a.category); setDate(a.date?.slice(0, 10) || ''); setMandatory(a.mandatory !== false); setShowModal(true) }
-  function openAttendance(a: Activity) { setAttActivity(a); setCheckedIds(new Set(a.attendee_ids || [])); setShowAttendance(true) }
-
   async function save() {
     if (!name || !date) return alert('Isi semua field')
     setSaving(true)
     try {
       const body = { period_label: period, name, category, date: date + 'T00:00:00Z', mandatory }
       if (editId) await apiPut(`/api/cms/activities/${editId}`, body)
-      else await apiPost('/api/cms/activities', body)
+      else await apiPost(`/api/cms/activities`, body)
       setShowModal(false)
       loadActivities()
     } catch (e: unknown) { alert((e as Error).message) }
     setSaving(false)
   }
-
   async function remove(id: string) {
     if (!confirm('Hapus aktivitas ini?')) return
     await apiDelete(`/api/cms/activities/${id}`)
     loadActivities()
   }
 
-  async function saveAttendance() {
-    if (!attActivity) return
-    setSaving(true)
-    try {
-      await apiPut(`/api/cms/activities/${attActivity.id}/attendance`, { attendee_ids: [...checkedIds] })
-      setShowAttendance(false)
-      loadActivities()
-    } catch (e: unknown) { alert((e as Error).message) }
-    setSaving(false)
-  }
-
-  const memberIdStr = (m: Member) => m.id
   function deptIx(d: string) { const i = DEPT.indexOf(d); return i >= 0 ? i : 99 }
 
   async function openTable() {
@@ -242,7 +216,6 @@ export default function ActivitiesPage() {
                 <div className="text-xs text-slate-500">{a.date ? new Date(a.date).toLocaleDateString('id-ID') : '-'} · {a.attendee_ids?.length || 0} hadir</div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => openAttendance(a)} className="text-xs px-3 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200">Kehadiran</button>
                 <button onClick={() => openEdit(a)} className="text-xs px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200">Edit</button>
                 <button onClick={() => remove(a.id)} className="text-xs px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">Hapus</button>
               </div>
@@ -291,35 +264,6 @@ export default function ActivitiesPage() {
         </div>
       )}
 
-      {/* Attendance Modal */}
-      {showAttendance && attActivity && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={e => e.target === e.currentTarget && setShowAttendance(false)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-4">Kehadiran: {attActivity.name}</h3>
-            <div className="overflow-y-auto flex-1 space-y-1 mb-4">
-              {members.map(m => {
-                const mid = memberIdStr(m)
-                return (
-                  <label key={mid} className="flex items-center gap-3 px-2 py-1.5 rounded hover:bg-slate-50 cursor-pointer">
-                    <input type="checkbox" checked={checkedIds.has(mid)} onChange={() => {
-                      const next = new Set(checkedIds)
-                      next.has(mid) ? next.delete(mid) : next.add(mid)
-                      setCheckedIds(next)
-                    }} className="accent-blue-600 w-4 h-4" />
-                    <span className="text-sm text-slate-700">{m.full_name}</span>
-                    <span className="text-xs text-slate-400 ml-auto">{m.department || ''}</span>
-                  </label>
-                )
-              })}
-              {members.length === 0 && <div className="text-slate-400 text-sm">Tidak ada anggota</div>}
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowAttendance(false)} className="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Tutup</button>
-              <button onClick={saveAttendance} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">{saving ? 'Menyimpan...' : 'Simpan Kehadiran'}</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Attendance/Volunteer Table Editor */}
       {tab === 'table' && (
