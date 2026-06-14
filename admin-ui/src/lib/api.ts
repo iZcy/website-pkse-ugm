@@ -53,7 +53,11 @@ export interface Activity {
   category: string
   name: string
   date: string
+  mandatory?: boolean
   attendee_ids: string[]
+  attendance?: Record<string, number>
+  volunteer_ids?: string[]
+  volunteer_roles?: Record<string, string>
   created_at: string
 }
 
@@ -63,6 +67,7 @@ export interface Member {
   department: string
   nim?: string
   photo_url?: string
+  active_periods?: Record<string, string>
 }
 
 export interface RaporInstance {

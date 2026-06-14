@@ -86,6 +86,32 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 200, map[string]string{"ok": "true"})
 			return
 		}
+		if strings.HasSuffix(idSegment, "/volunteers") {
+			activityID := strings.TrimSuffix(idSegment, "/volunteers")
+			var body struct {
+				VolunteerIDs   []string          `json:"volunteer_ids"`
+				VolunteerRoles map[string]string `json:"volunteer_roles"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				writeJSON(w, 400, map[string]string{"error": err.Error()})
+				return
+			}
+			oids := make([]primitive.ObjectID, 0, len(body.VolunteerIDs))
+			for _, s := range body.VolunteerIDs {
+				oid, err := primitive.ObjectIDFromHex(s)
+				if err != nil {
+					writeJSON(w, 400, map[string]string{"error": "invalid id: " + s})
+					return
+				}
+				oids = append(oids, oid)
+			}
+			if err := db.SetActivityVolunteers(activityID, oids, body.VolunteerRoles); err != nil {
+				writeJSON(w, 500, map[string]string{"error": err.Error()})
+				return
+			}
+			writeJSON(w, 200, map[string]string{"ok": "true"})
+			return
+		}
 		if strings.HasSuffix(idSegment, "/unpublish") {
 			instanceID := strings.TrimSuffix(idSegment, "/unpublish")
 			if err := db.UnpublishRaporInstance(instanceID); err != nil {

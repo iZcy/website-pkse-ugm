@@ -759,14 +759,17 @@ type ShortLink struct {
 
 
 type Activity struct {
-	ID          primitive.ObjectID   `bson:"_id,omitempty"  json:"id"`
-	PeriodLabel string               `bson:"period_label"   json:"period_label"`
-	Category    string               `bson:"category"       json:"category"`
-	Name        string               `bson:"name"           json:"name"`
-	Date        time.Time            `bson:"date"           json:"date"`
-	AttendeeIDs []primitive.ObjectID `bson:"attendee_ids"   json:"attendee_ids"`
-	Attendance   map[string]int     `bson:"attendance,omitempty" json:"attendance,omitempty"`
-	CreatedAt   time.Time            `bson:"created_at"     json:"created_at"`
+	ID             primitive.ObjectID   `bson:"_id,omitempty"  json:"id"`
+	PeriodLabel    string               `bson:"period_label"   json:"period_label"`
+	Category       string               `bson:"category"       json:"category"`
+	Name           string               `bson:"name"           json:"name"`
+	Date           time.Time            `bson:"date"           json:"date"`
+	Mandatory      bool                 `bson:"mandatory"      json:"mandatory"`
+	AttendeeIDs    []primitive.ObjectID `bson:"attendee_ids"   json:"attendee_ids"`
+	Attendance     map[string]int       `bson:"attendance,omitempty" json:"attendance,omitempty"`
+	VolunteerIDs   []primitive.ObjectID `bson:"volunteer_ids,omitempty" json:"volunteer_ids,omitempty"`
+	VolunteerRoles map[string]string    `bson:"volunteer_roles,omitempty" json:"volunteer_roles,omitempty"`
+	CreatedAt      time.Time            `bson:"created_at"     json:"created_at"`
 }
 
 type RaporInstance struct {
