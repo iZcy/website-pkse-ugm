@@ -24,18 +24,14 @@ export default function LoginPage() {
     if (q.length < 2) { setResults([]); setShowDropdown(false); return }
     try {
       const data = await apiGet(`/rapor/api/search?q=${encodeURIComponent(q)}`)
-      setResults(data || [])
-      setShowDropdown((data || []).length > 0)
+      const mapped = (data || []).map((m: any) => ({ name: m.full_name || m.name, nim: m.nim, id: m.id || '' }))
+      setResults(mapped)
+      setShowDropdown(mapped.length > 0)
     } catch { setResults([]) }
   }
 
   function select(r: typeof results[0]) {
-    setSelected(r)
-    setQuery(r.name)
-    setNim('')
-    setResults([])
-    setShowDropdown(false)
-    setError('')
+    setSelected(r); setQuery(r.name); setNim(r.nim); setResults([]); setShowDropdown(false); setError('')
   }
 
   async function login(e: React.FormEvent) {
@@ -84,7 +80,6 @@ export default function LoginPage() {
                 {results.map(r => (
                   <div key={r.id} onClick={() => select(r)} className="px-4 py-3 cursor-pointer hover:bg-green-50 border-b border-gray-50 last:border-0">
                     <div className="text-sm font-medium text-gray-800">{r.name}</div>
-                    <div className="text-xs text-gray-400">{r.nim}</div>
                   </div>
                 ))}
               </div>
@@ -94,7 +89,7 @@ export default function LoginPage() {
           {selected && (
             <div className="mb-4 p-3 bg-green-50 rounded-xl text-sm text-green-700">
               <span className="font-medium">{selected.name}</span>
-              <span className="text-green-500 ml-2">· NIM: {selected.nim}</span>
+              <span className="text-green-500 ml-2">· NIM otomatis terisi</span>
             </div>
           )}
 
