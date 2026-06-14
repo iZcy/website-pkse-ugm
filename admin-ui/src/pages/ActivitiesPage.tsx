@@ -179,7 +179,7 @@ export default function ActivitiesPage() {
 
       {/* Attendance/Volunteer Table */}
       {tableActs.length > 0 && (
-        <div className="bg-white rounded-xl border shadow-sm flex flex-col" style={{height:'calc(100vh - 180px)'}}>
+        <div className="bg-white rounded-xl border shadow-sm flex flex-col flex-1 min-h-0">
             <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="flex rounded-lg border overflow-hidden">

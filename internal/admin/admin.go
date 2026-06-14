@@ -109,12 +109,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		u, err := db.GetUserByUsername(username)
 		if err != nil || !auth.CheckPassword(u.PasswordHash, password) {
-			// Auto-register: try members collection
+			// Auto-register: try NIM first, then name
 			member, mErr := db.GetMemberByNIM(username)
-			if mErr == nil && member != nil && password == username {
+			if mErr != nil {
+				member, mErr = db.GetMemberByName(username)
+			}
+			if mErr == nil && member != nil && member.NIM != "" && password == member.NIM {
 				hash, _ := auth.HashPassword(password)
-				u = &db.User{Username: username, PasswordHash: hash, Role: "member", CreatedAt: time.Now()}
-				if cErr := db.CreateUser(*u); cErr != nil {
+				nu := &db.User{Username: member.NIM, PasswordHash: hash, Role: "member", CreatedAt: time.Now()}
+				if cErr := db.CreateUser(*nu); cErr != nil {
 					w.WriteHeader(http.StatusUnauthorized)
 					tmpl.ExecuteTemplate(w, "login.html", map[string]any{
 						"Error":         "Gagal membuat akun. Hubungi admin.",
@@ -122,6 +125,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 					})
 					return
 				}
+				u = nu
 			} else {
 				w.WriteHeader(http.StatusUnauthorized)
 				tmpl.ExecuteTemplate(w, "login.html", map[string]any{

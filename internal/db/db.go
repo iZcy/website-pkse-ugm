@@ -286,6 +286,16 @@ func GetMemberByNIM(nim string) (*Member, error) {
 	return &m, nil
 }
 
+func GetMemberByName(name string) (*Member, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var m Member
+	if err := col("members").FindOne(ctx, bson.M{"full_name": name}).Decode(&m); err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
 func CreateUser(u User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
