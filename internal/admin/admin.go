@@ -235,6 +235,9 @@ func MemberAPI(w http.ResponseWriter, r *http.Request) {
 			"program_studi": member.ProgramStudi, "nim": member.NIM,
 			"angkatan": member.Angkatan, "fakultas": member.Fakultas,
 			"photo_url": member.PhotoURL, "rapor_id": member.ID.Hex(),
+			"position": member.Position, "phone": member.Phone,
+			"active_periods": member.ActivePeriods,
+			"active_positions": member.ActivePositions,
 		})
 	case seg == "change-password" && r.Method == "POST":
 		var body struct {
@@ -268,4 +271,14 @@ func MemberAPI(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 		json.NewEncoder(w).Encode(map[string]string{"error": "not found"})
 	}
+}
+
+func SessionAPI(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	uname, role, ok := auth.GetSessionUser(r)
+	if !ok {
+		json.NewEncoder(w).Encode(map[string]string{"role": ""})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]string{"username": uname, "role": role})
 }
