@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"webapp/internal/auth"
 	"webapp/internal/db"
 )
 
@@ -501,7 +502,17 @@ func (rh *RaporHandler) APILogin(w http.ResponseWriter, r *http.Request) {
 func (rh *RaporHandler) APIMember(w http.ResponseWriter, r *http.Request) {
 	memberID := strings.TrimPrefix(r.URL.Path, "/rapor/api/member/")
 	cookie, err := r.Cookie("rapor_auth")
-	if err != nil || !verifyRaporToken(cookie.Value, memberID) {
+	authorized := err == nil && verifyRaporToken(cookie.Value, memberID)
+	if !authorized {
+		uname, _, ok := auth.GetSessionUser(r)
+		if ok {
+			m, e := db.GetMemberByNIM(uname)
+			if e == nil && m.ID.Hex() == memberID {
+				authorized = true
+			}
+		}
+	}
+	if !authorized {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"error":"unauthorized"}`))
 		return
