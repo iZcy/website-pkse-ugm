@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { Activity, Member, apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Settings } from 'lucide-react'
+import { Plus, Settings, Pencil, Trash2 } from 'lucide-react'
 
 const S_H = 2; const S_I = 1; const S_A = 0
 const ST_C: Record<number,string> = {2:'bg-green-500 text-white',1:'bg-amber-400 text-white',0:'bg-red-400 text-white'}
@@ -273,16 +273,16 @@ export default function ActivitiesPage() {
             <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
               <h3 className="text-lg font-bold">Edit Kehadiran</h3>
               <div className="flex items-center gap-4">
-                <div className="flex rounded-lg border overflow-hidden">
-                  <button onClick={() => setTableMode('attendance')} className={`px-3 py-1 text-xs font-medium ${tableMode==='attendance'?'bg-blue-600 text-white':'bg-white text-slate-600'}`}>Kehadiran</button>
-                  <button onClick={() => setTableMode('volunteer')} className={`px-3 py-1 text-xs font-medium ${tableMode==='volunteer'?'bg-emerald-600 text-white':'bg-white text-slate-600'}`}>Volunteer</button>
-                </div>
                 {tableMode==='attendance' && (
                   <div className="flex gap-2 text-xs">
                     {[S_H,S_I,S_A].map(s=><span key={s} className={`px-2 py-0.5 rounded-full ${ST_C[s]}`}>{ST_L[s]}={s===S_H?'Hadir':s===S_I?'Izin':'Absen'}</span>)}
                     <span className="px-2 py-0.5 rounded border border-red-300 text-red-600 text-xs">■ blm gabung</span>
                   </div>
                 )}
+                <div className="flex rounded-lg border overflow-hidden">
+                  <button onClick={() => setTableMode('attendance')} className={`px-3 py-1 text-xs font-medium ${tableMode==='attendance'?'bg-blue-600 text-white':'bg-white text-slate-600'}`}>Kehadiran</button>
+                  <button onClick={() => setTableMode('volunteer')} className={`px-3 py-1 text-xs font-medium ${tableMode==='volunteer'?'bg-emerald-600 text-white':'bg-white text-slate-600'}`}>Volunteer</button>
+                </div>
               </div>
             </div>
             <div className="overflow-auto flex-1 bg-slate-50">
@@ -291,11 +291,15 @@ export default function ActivitiesPage() {
                   <tr>
                     <th className="sticky left-0 z-30 bg-white border-b-2 border-l border-r border-slate-300 px-3 py-2 text-left font-semibold text-slate-700 whitespace-nowrap min-w-[200px]" style={{boxShadow:'2px 0 4px rgba(0,0,0,0.06)'}}>Anggota</th>
                     {tableActs.map(a => (
-                      <th key={a.id} className="border-b-2 border-l border-r border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium">
+                      <th key={a.id} className="border-b-2 border-l border-r border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium group">
                         <div className="text-slate-600 leading-tight">{a.name}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
                           {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}
                           {a.mandatory !== false ? <span className="text-red-500 ml-1">W</span> : <span className="text-slate-300 ml-1">O</span>}
+                          <span className="ml-2 opacity-0 group-hover:opacity-100 inline-flex gap-1">
+                            <Pencil className="w-3 h-3 cursor-pointer hover:text-blue-500" onClick={() => { setTab('summary'); openEdit(a) }} />
+                            <Trash2 className="w-3 h-3 cursor-pointer hover:text-red-500" onClick={() => remove(a.id)} />
+                          </span>
                         </div>
                       </th>
                     ))}
