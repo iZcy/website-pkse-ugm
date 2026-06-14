@@ -79,12 +79,12 @@ export default function GlobalPage() {
 
         {/* Social Media */}
         <Section title="Social Media">
-          <Field label="Instagram"><input value={data.instagram || ''} onChange={e => setF('instagram', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="@paguyubankseugm" /></Field>
-          <Field label="Twitter / X"><input value={data.twitter || ''} onChange={e => setF('twitter', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
-          <Field label="Facebook"><input value={data.facebook || ''} onChange={e => setF('facebook', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
-          <Field label="YouTube"><input value={data.youtube || ''} onChange={e => setF('youtube', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
-          <Field label="LinkedIn"><input value={data.linkedin || ''} onChange={e => setF('linkedin', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
-          <Field label="TikTok"><input value={data.tiktok || ''} onChange={e => setF('tiktok', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Instagram"><input value={data.social_media?.instagram || ''} onChange={e => setF('social_media', { ...data.social_media, instagram: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="@paguyubankseugm" /></Field>
+          <Field label="Twitter / X"><input value={data.social_media?.twitter || ''} onChange={e => setF('social_media', { ...data.social_media, twitter: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="Facebook"><input value={data.social_media?.facebook || ''} onChange={e => setF('social_media', { ...data.social_media, facebook: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="YouTube"><input value={data.social_media?.youtube || ''} onChange={e => setF('social_media', { ...data.social_media, youtube: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="LinkedIn"><input value={data.social_media?.linkedin || ''} onChange={e => setF('social_media', { ...data.social_media, linkedin: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
+          <Field label="TikTok"><input value={data.social_media?.tiktok || ''} onChange={e => setF('social_media', { ...data.social_media, tiktok: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
         </Section>
       </div>
     </div>
