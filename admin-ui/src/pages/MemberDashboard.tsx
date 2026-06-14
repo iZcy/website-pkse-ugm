@@ -9,6 +9,8 @@ export default function MemberDashboard() {
   const [showPw, setShowPw] = useState(false)
   const [oldPw, setOldPw] = useState('')
   const [newPw, setNewPw] = useState('')
+  const [showOld, setShowOld] = useState(false)
+  const [showNew, setShowNew] = useState(false)
   const [pwMsg, setPwMsg] = useState('')
   const [pwOk, setPwOk] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -71,23 +73,40 @@ export default function MemberDashboard() {
             <span className="text-green-600">&rarr;</span>
           </a>
 
-          <button onClick={() => setShowPw(!showPw)} className="w-full flex items-center justify-between bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow border border-slate-100">
+          <button onClick={() => setShowPw(true)} className="w-full flex items-center justify-between bg-white rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow border border-slate-100">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600"><Key className="w-5 h-5" /></div>
               <div><h3 className="font-semibold text-gray-900 text-left">Ganti Password</h3><p className="text-xs text-gray-500">Ubah password login Anda</p></div>
             </div>
-            <span className={`text-slate-400 transition-transform ${showPw ? 'rotate-90' : ''}`}>&rarr;</span>
           </button>
-
-          {showPw && (
-            <form onSubmit={changePassword} className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 space-y-3">
-              <input type="password" value={oldPw} onChange={e => setOldPw(e.target.value)} placeholder="Password lama" className="w-full border rounded-lg px-3 py-2 text-sm" required />
-              <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Password baru" className="w-full border rounded-lg px-3 py-2 text-sm" required />
-              {pwMsg && <p className={`text-xs ${pwOk ? 'text-green-600' : 'text-red-500'}`}>{pwMsg}</p>}
-              <button type="submit" disabled={saving} className="w-full px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">{saving ? 'Menyimpan...' : 'Simpan Password Baru'}</button>
-            </form>
-          )}
         </div>
+
+        {showPw && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowPw(false)}>
+            <form onSubmit={changePassword} className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold text-slate-800 mb-4">Ganti Password</h3>
+              <div className="space-y-3">
+                <div className="relative">
+                  <input type={showOld ? 'text' : 'password'} value={oldPw} onChange={e => setOldPw(e.target.value)} placeholder="Password lama" className="w-full border rounded-lg px-3 py-2.5 pr-10 text-sm" required />
+                  <button type="button" onClick={() => setShowOld(!showOld)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showOld ? <span className="text-xs font-bold">🙈</span> : <span className="text-xs font-bold">👁</span>}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input type={showNew ? 'text' : 'password'} value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Password baru" className="w-full border rounded-lg px-3 py-2.5 pr-10 text-sm" required />
+                  <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showNew ? <span className="text-xs font-bold">🙈</span> : <span className="text-xs font-bold">👁</span>}
+                  </button>
+                </div>
+                {pwMsg && <p className={`text-xs ${pwOk ? 'text-green-600' : 'text-red-500'}`}>{pwMsg}</p>}
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" onClick={() => setShowPw(false)} className="px-4 py-2 text-sm rounded-lg border hover:bg-slate-50">Batal</button>
+                <button type="submit" disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium">{saving ? 'Menyimpan...' : 'Simpan'}</button>
+              </div>
+            </form>
+          </div>
+        )}
 
         <div className="text-center mt-6">
           <a href="/admin/logout" className="text-sm text-gray-400 hover:text-gray-600 inline-flex items-center gap-1"><LogOut className="w-3.5 h-3.5" /> Keluar</a>

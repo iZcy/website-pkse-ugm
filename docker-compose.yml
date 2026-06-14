@@ -47,6 +47,7 @@ services:
       - /var/www/rapor-ui:/var/www/rapor-ui:ro
       - /var/www/member-ui:/var/www/member-ui:ro
       - /var/www/login-ui:/var/www/login-ui:ro
+      - /var/www/assets:/var/www/assets:ro
     depends_on:
       - go-frontend
 
