@@ -45,6 +45,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/admin-ui:/var/www/admin-ui:ro
       - /var/www/rapor-ui:/var/www/rapor-ui:ro
+      - /var/www/member-ui:/var/www/member-ui:ro
     depends_on:
       - go-frontend
 

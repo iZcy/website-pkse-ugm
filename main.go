@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"os"
+	"strings"
 
 	"webapp/internal/admin"
 	"webapp/internal/auth"
@@ -77,7 +77,7 @@ func main() {
 	mux.HandleFunc("/rapor", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	})
-	mux.HandleFunc("/member", admin.MemberDashboard)
+	mux.HandleFunc("/api/member/", admin.MemberAPI)
 
 	// Public API
 

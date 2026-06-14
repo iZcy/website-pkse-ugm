@@ -1,9 +1,11 @@
 package admin
 
 import (
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"webapp/internal/auth"
@@ -206,4 +208,64 @@ func MemberDashboard(w http.ResponseWriter, r *http.Request) {
 		"Member":  member,
 		"MemberID": member.ID.Hex(),
 	})
+}
+
+func MemberAPI(w http.ResponseWriter, r *http.Request) {
+	uname, role, ok := auth.GetSessionUser(r)
+	if !ok || role != "member" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(401)
+		json.NewEncoder(w).Encode(map[string]string{"error": "unauthorized"})
+		return
+	}
+	member, err := db.GetMemberByNIM(uname)
+	if err != nil {
+		http.Error(w, "member not found", 404)
+		return
+	}
+
+	seg := strings.TrimPrefix(r.URL.Path, "/api/member")
+	seg = strings.Trim(seg, "/")
+
+	switch {
+	case seg == "profile":
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"full_name": member.FullName, "department": member.Department,
+			"program_studi": member.ProgramStudi, "nim": member.NIM,
+			"angkatan": member.Angkatan, "fakultas": member.Fakultas,
+			"photo_url": member.PhotoURL, "rapor_id": member.ID.Hex(),
+		})
+	case seg == "change-password" && r.Method == "POST":
+		var body struct {
+			Old string `json:"old"`
+			New string `json:"new"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(400)
+			json.NewEncoder(w).Encode(map[string]string{"error": "bad request"})
+			return
+		}
+		u, err := db.GetUserByUsername(uname)
+		if err != nil || !auth.CheckPassword(u.PasswordHash, body.Old) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(403)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Password lama salah"})
+			return
+		}
+		hash, _ := auth.HashPassword(body.New)
+		if err := db.UpdateUser(u.ID, map[string]any{"password_hash": hash}); err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(500)
+			json.NewEncoder(w).Encode(map[string]string{"error": "gagal"})
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"ok": "true"})
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(404)
+		json.NewEncoder(w).Encode(map[string]string{"error": "not found"})
+	}
 }

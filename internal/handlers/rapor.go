@@ -592,23 +592,113 @@ func (rh *RaporHandler) APIEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	activities, _ := db.GetActivitiesByDateRange(entry.PeriodLabel, "", inst.ActivityStart, inst.ActivityEnd)
-	present, total := 0, 0
-	for _, a := range activities {
-		if member != nil && a.Date.Before(member.CreatedAt) { continue }
-		att := false
-		for _, aid := range a.AttendeeIDs { if aid == entry.MemberID { att = true; break } }
-		total++; if att { present++ }
+
+	memberJoinDate := member.CreatedAt
+	if sp, ok := member.ActivePeriods[entry.PeriodLabel]; ok && sp != "" {
+		periods, _ := db.GetPeriods()
+		for _, p := range periods {
+			if p.Label == entry.PeriodLabel && p.SubPeriodDates != nil {
+				if ds, ok2 := p.SubPeriodDates[sp]; ok2 && ds != "" {
+					if t, err := time.Parse("2006-01-02", ds); err == nil { memberJoinDate = t }
+				}
+				break
+			}
+		}
 	}
-	absent := total - present
+
+	defWajib := map[string]float64{"hadir": 2, "izin": 1, "absen": 0}
+	defOpt := map[string]float64{"hadir": 1.5, "izin": 0.75, "absen": 0}
+	defVol := 1.0
+	if inst != nil && inst.AttendanceWeights != nil {
+		if w, ok := inst.AttendanceWeights["wajib"].(map[string]interface{}); ok {
+			for k, v := range w { if f, ok2 := v.(float64); ok2 { defWajib[k] = f } }
+		}
+		if w, ok := inst.AttendanceWeights["tidak_wajib"].(map[string]interface{}); ok {
+			for k, v := range w { if f, ok2 := v.(float64); ok2 { defOpt[k] = f } }
+		}
+		if v, ok := inst.AttendanceWeights["voluntary"].(float64); ok { defVol = v }
+	}
+
+	type actItem struct {
+		Name     string `json:"name"`
+		Attended bool   `json:"attended"`
+		Status   string `json:"status"`
+	}
+	type volItem struct {
+		Name string `json:"name"`
+		Role string `json:"role"`
+	}
+	catActs := map[string][]actItem{}
+	hadirCount, izinCount, absenCount, attTotal := 0, 0, 0, 0
+	wajibScore, wajibMax := 0.0, 0.0
+	optScore, optMax := 0.0, 0.0
+	var volActivities []volItem
+	volCount := 0
+
+	for _, a := range activities {
+		if a.Date.Before(memberJoinDate) { continue }
+		status := "absen"
+		if a.Attendance != nil {
+			if sc, ok := a.Attendance[entry.MemberID.Hex()]; ok {
+				switch sc { case 2: status = "hadir"; case 1: status = "izin" }
+			}
+		}
+		if status == "absen" {
+			for _, aid := range a.AttendeeIDs { if aid == entry.MemberID { status = "hadir"; break } }
+		}
+		catActs[a.Category] = append(catActs[a.Category], actItem{Name: a.Name, Attended: status == "hadir", Status: status})
+		attTotal++
+		switch status {
+		case "hadir": hadirCount++
+		case "izin": izinCount++
+		default: absenCount++
+		}
+		if a.Mandatory { wajibMax += defWajib["hadir"]; wajibScore += defWajib[status] } else { optMax += defOpt["hadir"]; optScore += defOpt[status] }
+		if a.VolunteerIDs != nil {
+			for _, vid := range a.VolunteerIDs {
+				if vid == entry.MemberID {
+					role := ""
+					if a.VolunteerRoles != nil { role = a.VolunteerRoles[entry.MemberID.Hex()] }
+					volActivities = append(volActivities, volItem{Name: a.Name, Role: role})
+					volCount++
+				}
+			}
+		}
+	}
+	volBonus := defVol * float64(volCount)
+	weightedTotal := wajibScore + optScore + volBonus
+	weightedMax := wajibMax + optMax
+	weightedPct := 0.0
+	if weightedMax > 0 { weightedPct = weightedTotal / weightedMax * 100 }
+	if weightedPct > 100 { weightedPct = 100 }
 	pct := 0
-	if total > 0 { pct = present * 100 / total }
-	
+	if attTotal > 0 { pct = hadirCount * 100 / attTotal }
+
+	allEntries, _ := db.GetRaporEntriesForMember(entry.MemberID.Hex(), entry.PeriodLabel)
+	var allInstances []map[string]any
+	for _, e := range allEntries {
+		if !e.Published { continue }
+		inst2, _ := db.GetRaporInstanceByID(e.InstanceID.Hex())
+		allInstances = append(allInstances, map[string]any{
+			"title": inst2.Title, "token": e.Token, "active": e.Token == token,
+		})
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
 		"member": map[string]any{"id": member.ID.Hex(), "FullName": member.FullName, "Department": member.Department, "ProgramStudi": member.ProgramStudi, "NIM": member.NIM, "PhotoURL": member.PhotoURL, "Angkatan": member.Angkatan, "Fakultas": member.Fakultas},
 		"instance": map[string]any{"title": inst.Title, "period_label": inst.PeriodLabel},
 		"entry": entry,
 		"scores": scores,
-		"attendance": map[string]any{"present": present, "absent": absent, "total": total, "pct": pct},
+		"attendance": map[string]any{
+			"present": hadirCount, "izin": izinCount, "absent": absenCount, "volunteer": volCount,
+			"total": attTotal, "pct": pct, "score": weightedPct,
+			"wajib": map[string]float64{"score": wajibScore, "max": wajibMax},
+			"opt": map[string]float64{"score": optScore, "max": optMax},
+			"volBonus": volBonus,
+		},
+		"activities": catActs,
+		"volunteerActivities": volActivities,
+		"allInstances": allInstances,
 	})
 }
