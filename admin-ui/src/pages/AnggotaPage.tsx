@@ -32,7 +32,7 @@ export default function AnggotaPage() {
     setEditId('')
     setForm({ full_name: '', nickname: '', program_studi: '', fakultas: '', angkatan: '', phone: '', nim: '', photo_url: '', cover_url: '', position: '' })
     setActivePeriods({})
-    setActivePeriods(m.active_periods || {})
+    setActivePeriods({})
     setShowModal(true)
   }
   function openEdit(m: any) {
@@ -92,7 +92,7 @@ export default function AnggotaPage() {
               <tr key={m.id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-3 text-slate-400 text-center">{(page - 1) * 20 + mi + 1}</td>
                 <td className="px-4 py-3">
-                  {m.photo_url ? <img src={m.photo_url} className="w-10 h-10 rounded-full object-cover" alt="" /> : <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-xs">N/A</div>}
+                  {m.photo_url ? <img loading="lazy" src={`${m.photo_url}?size=thumb`} className="w-10 h-10 rounded-full object-cover" alt="" /> : <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-xs">N/A</div>}
                 </td>
                 <td className="px-4 py-3">
                   <div className="font-medium text-slate-800">{m.full_name}</div>

@@ -59,7 +59,7 @@ export default function GaleriPage() {
         {gallery.map((item: any, i: number) => (
           <div key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
             {item.image_url ? (
-              <img src={item.image_url} className="w-full h-40 object-cover" alt="" />
+              <img loading="lazy" src={item.image_url} className="w-full h-40 object-cover" alt="" />
             ) : (
               <div className="w-full h-40 bg-slate-100 flex items-center justify-center text-slate-300"><ImageIcon className="w-8 h-8" /></div>
             )}

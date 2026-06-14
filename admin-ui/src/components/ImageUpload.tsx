@@ -38,7 +38,7 @@ export default function ImageUpload({ value, onChange, placeholder = 'URL Gambar
     <div className="space-y-2">
       {value && !previewError && (
         <div className="relative group w-full h-32 rounded-lg overflow-hidden bg-slate-100">
-          <img src={value} alt="" className="w-full h-full object-cover" onError={() => setPreviewError(true)} />
+          <img loading="lazy" src={value} alt="" className="w-full h-full object-cover" onError={() => setPreviewError(true)} />
           <button type="button" onClick={() => onChange('')} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <X className="w-3 h-3" />
           </button>

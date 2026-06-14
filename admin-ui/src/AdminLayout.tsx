@@ -137,7 +137,7 @@ export default function AdminLayout() {
                   {section.items.map((item, ii) => (
                     <Link
                       key={ii}
-                      onClick={item.href === 'broadcast' ? (e: any) => { e.preventDefault(); window.location.href = `/admin/broadcast?period=${period}` } : undefined}
+                      to={`/${item.href}?period=${period}`}
                       onClick={item.href === 'broadcast' ? (e: any) => { e.preventDefault(); window.location.href = `/admin/broadcast?period=${period}` } : undefined}
                       className={`sidebar-item w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${isActive(item.href) ? 'active' : ''}`}
                     >

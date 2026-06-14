@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react'
+import { Plus, GripVertical } from 'lucide-react'
 import Sortable from 'sortablejs'
 
 export default function PeriodePage() {

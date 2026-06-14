@@ -34,6 +34,20 @@ services:
       mongo:
         condition: service_healthy
 
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/cache:/var/cache/nginx/uploads
+      - ./nginx/logs:/var/log/nginx
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/admin-ui:/var/www/admin-ui:ro
+      - /var/www/rapor-ui:/var/www/rapor-ui:ro
+    depends_on:
+      - go-frontend
+
   wa-service:
     build:
       context: ./wa-service

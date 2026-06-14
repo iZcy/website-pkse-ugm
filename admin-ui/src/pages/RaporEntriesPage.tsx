@@ -250,7 +250,7 @@ export default function RaporEntriesPage() {
               return (
                 <div key={mid} data-row={mid} data-member={mid} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    {m.photo_url ? <img src={m.photo_url} className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100 flex-shrink-0" alt="" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{(m.full_name || '?')[0]}</div>}
+                    {m.photo_url ? <img loading="lazy" src={`${m.photo_url}?size=thumb`} className="w-8 h-8 rounded-full object-cover ring-2 ring-slate-100 flex-shrink-0" alt="" /> : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{(m.full_name || '?')[0]}</div>}
                     <div>
                       <div className="text-sm font-semibold text-slate-800 leading-tight">{m.full_name}</div>
                       {m.nim && <div className="text-[10px] text-slate-400">{m.nim}</div>}
@@ -263,11 +263,11 @@ export default function RaporEntriesPage() {
                         <label className="text-[11px] font-medium text-slate-500 mb-0.5 block">{a.label}</label>
                         {a.kind === 'numeric' ? (
                           <div className="flex items-center gap-2">
-                            <!-- REPLACED --><input type="number" data-idx={i} defaultValue={scores[i] || a.min || 0} min={a.min ?? 0} max={a.max ?? 5}
+                            <input type="number" data-idx={i} defaultValue={scores[i] || a.min || 0} min={a.min ?? 0} max={a.max ?? 5}
                               onChange={e => { const v = parseInt(e.target.value); setSliderVals(prev => ({ ...prev, [`${mid}-${i}`]: v })) }}
                               className="flex-1 h-1.5 accent-blue-600" />
                             <span className="text-xs font-bold text-slate-600 w-6 text-right">{sliderVals[`${mid}-${i}`] ?? scores[i] ?? a.min ?? 0}</span>
-                            <!-- old number removed -->>
+                            
                           </div>
                         ) : (
                           <textarea data-idx={i} defaultValue={scores[i] || ''} className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-xs resize-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none" rows={2} placeholder="Tulis penilaian..."/>

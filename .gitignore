@@ -16,3 +16,5 @@ strapi-cms/.tmp/
 strapi-cms/build/
 strapi-cms/.cache/
 strapi-cms/dist/
+nginx/cache/
+nginx/logs/

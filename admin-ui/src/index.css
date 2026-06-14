@@ -10,4 +10,4 @@
 
 body { font-family: 'Inter', system-ui, sans-serif; }
 
-.bc-var-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:500;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;cursor:pointer;transition:all .15s;white-space:nowrap}.bc-var-chip:hover{background:#dbeafe;border-color:#93c5fd}.bc-log-entry{animation:fadeInLog .2s ease-out}@keyframes fadeInLog{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}
+.bc-var-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:500;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;cursor:pointer;transition:all .15s;white-space:nowrap}.bc-var-chip:hover{background:#dbeafe;border-color:#93c5fd}.bc-log-entry{animation:fadeInLog .2s ease-out}@keyframes fadeInLog{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}

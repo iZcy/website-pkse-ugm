@@ -1,9 +1,14 @@
 package cms
 
 import (
+	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io"
 	"math/big"
 	"net/http"
@@ -15,6 +20,8 @@ import (
 
 	"webapp/internal/auth"
 	"webapp/internal/db"
+
+	"golang.org/x/image/draw"
 )
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -827,6 +834,14 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Generate thumbnail for image uploads
+	if strings.HasPrefix(contentType, "image/") {
+		thumbData, thumbCT, err := generateThumbnail(data, contentType, 300)
+		if err == nil {
+			db.SaveFileToGridFS("thumb_"+safeName, thumbData, thumbCT)
+		}
+	}
+
 	writeJSON(w, 200, map[string]string{"url": "/uploads/" + safeName})
 }
 
@@ -837,17 +852,63 @@ func ServeUpload(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	// Serve thumbnail variant with fallback to original
+	if r.URL.Query().Get("size") == "thumb" {
+		if data, ct, err := db.GetFileFromGridFS("thumb_" + filename); err == nil {
+			writeFileResponse(w, data, ct)
+			return
+		}
+	}
+
 	data, contentType, err := db.GetFileFromGridFS(filename)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
+	writeFileResponse(w, data, contentType)
+}
+
+func writeFileResponse(w http.ResponseWriter, data []byte, contentType string) {
 	if contentType == "" {
 		contentType = "application/octet-stream"
 	}
 	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 	w.Header().Set("Cache-Control", "public, max-age=31536000")
+	w.Header().Set("ETag", fmt.Sprintf("\"%x\"", md5.Sum(data)))
 	w.Write(data)
+}
+
+// generateThumbnail resizes an image to maxWidth pixels wide while preserving aspect ratio.
+func generateThumbnail(data []byte, contentType string, maxWidth int) ([]byte, string, error) {
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, "", err
+	}
+	bounds := img.Bounds()
+	w := bounds.Dx()
+	h := bounds.Dy()
+	if w <= maxWidth {
+		return data, contentType, nil // already small enough
+	}
+	newH := h * maxWidth / w
+	dst := image.NewRGBA(image.Rect(0, 0, maxWidth, newH))
+	draw.CatmullRom.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
+
+	var buf bytes.Buffer
+	switch contentType {
+	case "image/png":
+		if err := png.Encode(&buf, dst); err != nil {
+			return nil, "", err
+		}
+		return buf.Bytes(), "image/png", nil
+	default:
+		if err := jpeg.Encode(&buf, dst, &jpeg.Options{Quality: 85}); err != nil {
+			return nil, "", err
+		}
+		return buf.Bytes(), "image/jpeg", nil
+	}
 }
 
 func sanitizeUploadName(s string) string {

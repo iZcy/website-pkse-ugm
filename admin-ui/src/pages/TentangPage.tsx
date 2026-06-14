@@ -87,15 +87,15 @@ export default function TentangPage() {
         {/* Rich Text Editors */}
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h3 className="font-semibold text-slate-700">Sejarah / Tentang</h3>
-          <ReactQuill value={data.sejarah || data.tentang || ''} onChange={v => { setField('sejarah', v); setField('tentang', v) }} theme="snow" modules={quillModules} className="bg-white" />
+          <ReactQuill value={data.sejarah || data.tentang || ''} onChange={(v: string) => { setField('sejarah', v); setField('tentang', v) }} theme="snow" modules={quillModules} className="bg-white" />
         </div>
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h3 className="font-semibold text-slate-700">Visi</h3>
-          <ReactQuill value={data.visi || ''} onChange={v => setField('visi', v)} theme="snow" modules={quillModules} className="bg-white" />
+          <ReactQuill value={data.visi || ''} onChange={(v: string) => setField('visi', v)} theme="snow" modules={quillModules} className="bg-white" />
         </div>
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h3 className="font-semibold text-slate-700">Misi</h3>
-          <ReactQuill value={data.misi || ''} onChange={v => setField('misi', v)} theme="snow" modules={quillModules} className="bg-white" />
+          <ReactQuill value={data.misi || ''} onChange={(v: string) => setField('misi', v)} theme="snow" modules={quillModules} className="bg-white" />
         </div>
 
         {/* Gallery */}
@@ -111,7 +111,7 @@ export default function TentangPage() {
                   <button onClick={() => moveGalleryItem(i, -1)} className="p-0.5 hover:bg-slate-200 rounded" title="Naik"><ChevronUp className="w-3.5 h-3.5" /></button>
                   <button onClick={() => moveGalleryItem(i, 1)} className="p-0.5 hover:bg-slate-200 rounded" title="Turun"><ChevronDown className="w-3.5 h-3.5" /></button>
                 </div>
-                {item.image_url ? <img src={item.image_url} className="w-16 h-16 rounded object-cover flex-shrink-0" alt="" /> : <div className="w-16 h-16 rounded bg-slate-200 flex-shrink-0" />}
+                {item.image_url ? <img loading="lazy" src={item.image_url} className="w-16 h-16 rounded object-cover flex-shrink-0" alt="" /> : <div className="w-16 h-16 rounded bg-slate-200 flex-shrink-0" />}
                 <div className="flex-1 space-y-2">
                   <input value={item.title || ''} onChange={e => updateGalleryItem(i, 'title', e.target.value)} placeholder="Judul" className="w-full border rounded px-2 py-1 text-sm" />
                   <ImageUpload value={item.image_url || ''} onChange={url => updateGalleryItem(i, 'image_url', url)} />

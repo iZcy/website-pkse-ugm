@@ -103,7 +103,7 @@ export default function ProgramPage() {
                 <td className="px-4 py-2 text-slate-600">{p.department || '-'}</td>
                 <td className="px-4 py-2 font-medium text-slate-800">
                   <div className="flex items-center gap-2">
-                    {p.image_url && <img src={p.image_url} className="w-8 h-8 rounded-lg object-cover" alt="" />}
+                    {p.image_url && <img loading="lazy" src={p.image_url} className="w-8 h-8 rounded-lg object-cover" alt="" />}
                     {p.title || ''}
                   </div>
                 </td>

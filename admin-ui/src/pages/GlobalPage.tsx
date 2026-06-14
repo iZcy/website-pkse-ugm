@@ -51,7 +51,7 @@ export default function GlobalPage() {
         {/* Organization */}
         <Section title="Organisasi">
           <Field label="Nama Organisasi"><input value={data.org_name || ''} onChange={e => setF('org_name', e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" /></Field>
-          <Field label="Tentang (HTML)"><ReactQuill value={data.about_html || ''} onChange={v => setF('about_html', v)} theme="snow" modules={quillModules} className="bg-white" /></Field>
+          <Field label="Tentang (HTML)"><ReactQuill value={data.about_html || ''} onChange={(v: string) => setF('about_html', v)} theme="snow" modules={quillModules} className="bg-white" /></Field>
         </Section>
 
         {/* Logos */}
