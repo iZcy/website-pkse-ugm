@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react'
 import { apiGet } from '../lib/api'
 import { LogOut, Key, BarChart3, Loader2 } from 'lucide-react'
 
+interface KepengurusanItem {
+  period: string; period_name: string; sub_period: string;
+  department: string; position: string
+}
 interface Profile {
-  full_name: string; nickname: string; department: string; program_studi: string;
-  nim: string; angkatan: string; fakultas: string; photo_url: string; rapor_id: string;
-  phone: string; position: string;
-  active_periods?: Record<string,string>; active_positions?: Record<string,string>
+  full_name: string; nickname: string; program_studi: string;
+  nim: string; angkatan: string; fakultas: string; photo_url: string;
+  rapor_id: string; phone: string; kepengurusan?: KepengurusanItem[]
 }
 
 export default function MemberDashboard() {
@@ -45,9 +48,7 @@ export default function MemberDashboard() {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
   if (!profile) return <div className="min-h-screen flex items-center justify-center text-red-500">Gagal memuat profil. <a href="/login" className="underline ml-1">Login ulang</a></div>
 
-  const positions = profile.active_positions || {}
-  const periods = profile.active_periods || {}
-  const periodKeys = Object.keys(periods).sort().reverse()
+  const kepengurusan = profile.kepengurusan || []
 
   return (
     <div className="min-h-screen pb-16" style={{background:'linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdf4 100%)'}}>
@@ -64,7 +65,7 @@ export default function MemberDashboard() {
             )}
             <div>
               <h2 className="text-lg font-bold text-gray-900">{profile.full_name}</h2>
-              <p className="text-sm text-gray-500">{profile.department || '-'}{profile.program_studi ? ' · ' + profile.program_studi : ''}</p>
+              {profile.program_studi && <p className="text-sm text-gray-500">{profile.program_studi}</p>}
               {profile.nickname && <p className="text-xs text-gray-400">{profile.nickname}</p>}
             </div>
           </div>
@@ -75,17 +76,20 @@ export default function MemberDashboard() {
             {profile.phone && <div className="flex"><span className="text-gray-400 w-20">Telepon</span><span className="text-gray-700">{profile.phone}</span></div>}
           </div>
 
-          {periodKeys.length > 0 && (
+          {kepengurusan.length > 0 && (
             <div className="border-t mt-4 pt-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-2">Riwayat Kepengurusan</h3>
-              <div className="space-y-2">
-                {periodKeys.map(p => (
-                  <div key={p} className="flex justify-between items-start text-sm">
-                    <div>
-                      <span className="text-gray-600 font-medium">{p}</span>
-                      <span className="text-gray-400 ml-2">{periods[p] || '-'}</span>
+              <div className="space-y-3">
+                {kepengurusan.map((k, i) => (
+                  <div key={i} className="bg-slate-50 rounded-lg p-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-gray-700 font-medium text-sm">{k.period_name || k.period}</span>
+                        <span className="text-gray-400 text-xs ml-2">{k.sub_period}</span>
+                      </div>
                     </div>
-                    <span className="text-gray-500 text-xs">{positions[p] || 'Anggota'}</span>
+                    <div className="text-xs text-gray-500 mt-1">{k.department}</div>
+                    <div className="text-xs text-gray-600 font-medium">{k.position}</div>
                   </div>
                 ))}
               </div>

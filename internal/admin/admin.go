@@ -216,6 +216,33 @@ func MemberAPI(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case seg == "profile":
+		allPeriods, _ := db.GetPeriods()
+		periodDisplay := map[string]string{}
+		for _, p := range allPeriods { periodDisplay[p.Label] = p.DisplayName }
+		type kepengurusanItem struct {
+			Period     string `json:"period"`
+			PeriodName string `json:"period_name"`
+			SubPeriod  string `json:"sub_period"`
+			Department string `json:"department"`
+			Position   string `json:"position"`
+		}
+		var kepengurusan []kepengurusanItem
+		ap := member.ActivePeriods
+		if ap == nil { ap = map[string]string{} }
+		for periodLabel, subPeriod := range ap {
+			pos := "Anggota"
+			if member.ActivePositions != nil {
+				if p, ok := member.ActivePositions[periodLabel]; ok && p != "" { pos = p }
+			}
+			if pos == "Anggota" && member.Position != "" { pos = member.Position }
+			kepengurusan = append(kepengurusan, kepengurusanItem{
+				Period:     periodLabel,
+				PeriodName: periodDisplay[periodLabel],
+				SubPeriod:  subPeriod,
+				Department: member.Department,
+				Position:   pos,
+			})
+		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]any{
 			"full_name": member.FullName, "department": member.Department,
@@ -223,8 +250,8 @@ func MemberAPI(w http.ResponseWriter, r *http.Request) {
 			"angkatan": member.Angkatan, "fakultas": member.Fakultas,
 			"photo_url": member.PhotoURL, "rapor_id": member.ID.Hex(),
 			"position": member.Position, "phone": member.Phone,
-			"active_periods": member.ActivePeriods,
-			"active_positions": member.ActivePositions,
+			"nickname": member.Nickname,
+			"kepengurusan": kepengurusan,
 		})
 	case seg == "change-password" && r.Method == "POST":
 		var body struct {
