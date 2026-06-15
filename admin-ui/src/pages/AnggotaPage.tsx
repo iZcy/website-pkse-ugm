@@ -143,7 +143,7 @@ export default function AnggotaPage() {
                 </td>
                 <td className="px-4 py-3">
                   {m.active_periods?.[period]
-                    ? <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aktif ({m.active_periods[period]})</span>
+                    ? <div className="flex flex-col gap-1"><span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full inline-block w-fit">Aktif</span><span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full inline-block w-fit">{m.active_periods[period]}</span></div>
                     : <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">Tidak aktif</span>}
                 </td>
                 <td className="px-4 py-3 text-slate-600 text-xs font-mono">{m.phone || <span className="text-slate-300">-</span>}</td>
