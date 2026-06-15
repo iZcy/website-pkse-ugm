@@ -112,8 +112,8 @@ export default function AnggotaPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
+        <table className="w-full text-sm min-w-[900px]">
           <thead className="bg-slate-50 text-slate-600 text-xs uppercase">
             <tr>
               <th className="px-4 py-3 w-10">No.</th>
@@ -122,7 +122,7 @@ export default function AnggotaPage() {
               <th className="text-left px-4 py-3">Profil</th>
               <th className="text-left px-4 py-3">Status</th>
               <th className="text-left px-4 py-3">No. HP</th>
-              <th className="text-left px-4 py-3">Penempatan</th>
+              <th className="text-left px-4 py-3 whitespace-nowrap">Penempatan Saat Ini</th>
               <th className="px-4 py-3 w-24">Aksi</th>
             </tr>
           </thead>
