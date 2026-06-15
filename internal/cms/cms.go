@@ -229,6 +229,9 @@ func Departments(w http.ResponseWriter, r *http.Request) {
 			writeJSON(w, 400, map[string]string{"error": err.Error()})
 			return
 		}
+		if pid, ok := fields["parent_id"]; ok && (pid == "" || pid == nil) {
+			delete(fields, "parent_id")
+		}
 		if err := db.UpdateDepartment(idSegment, fields); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
