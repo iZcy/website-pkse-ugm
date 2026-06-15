@@ -788,6 +788,7 @@ type Activity struct {
 	Category       string               `bson:"category"       json:"category"`
 	Name           string               `bson:"name"           json:"name"`
 	Date           time.Time            `bson:"date"           json:"date"`
+	DateEnd        time.Time            `bson:"date_end,omitempty" json:"date_end,omitempty"`
 	Mandatory      bool                 `bson:"mandatory"      json:"mandatory"`
 	AttendeeIDs    []primitive.ObjectID `bson:"attendee_ids"   json:"attendee_ids"`
 	Attendance     map[string]int       `bson:"attendance,omitempty" json:"attendance,omitempty"`

@@ -131,6 +131,11 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 				body["date"] = t
 			}
 		}
+		if dateEndStr, ok := body["date_end"].(string); ok {
+			if t, err := time.Parse(time.RFC3339, dateEndStr); err == nil {
+				body["date_end"] = t
+			}
+		}
 		if err := db.UpdateActivity(idSegment, body); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return

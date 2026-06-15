@@ -16,6 +16,7 @@ export default function ActivitiesPage() {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('yayasan')
   const [date, setDate] = useState('')
+  const [dateEnd, setDateEnd] = useState('')
   const [mandatory, setMandatory] = useState(true)
   const [saving, setSaving] = useState(false)
   const [tableMode, setTableMode] = useState<'attendance'|'volunteer'>('attendance')
@@ -116,13 +117,14 @@ export default function ActivitiesPage() {
     } catch (e: any) { setSaving(false); alert(e.message) }
   }
 
-  function openAdd() { setEditId(''); setName(''); setCategory('yayasan'); setDate(''); setMandatory(true); setShowModal(true) }
-  function openEdit(a: Activity) { setEditId(a.id); setName(a.name); setCategory(a.category); setDate(a.date?.slice(0, 10) || ''); setMandatory(a.mandatory !== false); setShowModal(true) }
+  function openAdd() { setEditId(''); setName(''); setCategory('yayasan'); setDate(''); setDateEnd(''); setMandatory(true); setShowModal(true) }
+  function openEdit(a: Activity) { setEditId(a.id); setName(a.name); setCategory(a.category); setDate(a.date?.slice(0, 10) || ''); setDateEnd(a.date_end?.slice(0, 10) || ''); setMandatory(a.mandatory !== false); setShowModal(true) }
   async function save() {
     if (!name || !date) return alert('Isi semua field')
     setSaving(true)
     try {
-      const body = { period_label: period, name, category, date: date + 'T00:00:00Z', mandatory }
+      const body: any = { period_label: period, name, category, date: date + 'T00:00:00Z', mandatory }
+      if (dateEnd) body.date_end = dateEnd + 'T00:00:00Z'
       if (editId) await apiPut(`/api/cms/activities/${editId}`, body)
       else await apiPost('/api/cms/activities', body)
       setShowModal(false)
@@ -204,7 +206,7 @@ export default function ActivitiesPage() {
                       <th key={a.id} className="border-b-2 border-l border-r border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium group">
                         <div className="text-slate-600 leading-tight">{a.name}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
-                          {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}
+                          {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}{a.date_end ? ' — ' + new Date(a.date_end).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}
                           {a.mandatory !== false ? <span className="text-red-500 ml-1">W</span> : <span className="text-slate-300 ml-1">O</span>}
                           <span className="ml-2 opacity-0 group-hover:opacity-100 inline-flex gap-1">
                             <Pencil className="w-3 h-3 cursor-pointer hover:text-blue-500" onClick={() => openEdit(a)} />
@@ -289,6 +291,10 @@ export default function ActivitiesPage() {
               <div>
                 <label className="text-sm font-medium text-slate-700">Tanggal</label>
                 <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700">Sampai (opsional)</label>
+                <input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
