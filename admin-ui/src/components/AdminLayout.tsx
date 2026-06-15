@@ -73,20 +73,40 @@ export default function AdminLayout() {
   const location = useLocation()
   const period = searchParams.get('period') || ''
 
-  useEffect(() => { fetch('/api/admin/session', {credentials:'same-origin'}).then(r=>r.json()).then(d=>setRole(d.role||'')).catch(()=>{}) }, [])
+  const [fetchedOnce, setFetchedOnce] = useState(false)
 
   useEffect(() => {
-    fetch('/api/cms/periods', { credentials: 'same-origin' })
-      .then(r => r.json())
-      .then(data => {
-        const items = data.items || data || []
+    if (fetchedOnce) return
+    setFetchedOnce(true)
+
+    // Try sessionStorage cache first for instant load
+    try {
+      const cachedRole = sessionStorage.getItem('pkse_role')
+      const cachedPeriods = sessionStorage.getItem('pkse_periods')
+      if (cachedRole) setRole(cachedRole)
+      if (cachedPeriods) {
+        const items = JSON.parse(cachedPeriods)
         setPeriods(items)
-        if (!period && items.length) {
+        if (!searchParams.get('period') && items.length) {
           const active = items.find((p: any) => p.is_active)
           setSearchParams({ period: active?.label || items[0]?.label })
         }
-      })
-      .catch(() => {})
+      }
+    } catch {}
+
+    // Then fetch fresh data in background
+    Promise.all([
+      fetch('/api/admin/session', {credentials:'same-origin'}).then(r=>r.json()).then(d=>{setRole(d.role||'');sessionStorage.setItem('pkse_role',d.role||'')}).catch(()=>{}),
+      fetch('/api/cms/periods', { credentials: 'same-origin' }).then(r => r.json()).then(data => {
+        const items = data.items || data || []
+        setPeriods(items)
+        sessionStorage.setItem('pkse_periods', JSON.stringify(items))
+        if (!searchParams.get('period') && items.length) {
+          const active = items.find((p: any) => p.is_active)
+          setSearchParams({ period: active?.label || items[0]?.label })
+        }
+      }).catch(() => {})
+    ])
   }, [])
 
   function isActive(href: string) {
