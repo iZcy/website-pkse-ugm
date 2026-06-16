@@ -137,6 +137,26 @@ func SetActivityVolunteers(id string, volunteerIDs []primitive.ObjectID, volunte
 	if volunteerRoles == nil {
 		setFields["volunteer_roles"] = map[string]string{}
 	}
+
+	// Auto-set attendance for volunteers as hadir (status=2)
+	var activity Activity
+	if err := col("activities").FindOne(ctx, bson.M{"_id": oid}).Decode(&activity); err == nil {
+		attendance := activity.Attendance
+		if attendance == nil {
+			attendance = map[string]int{}
+		} else {
+			// copy to avoid nil map issues
+			attendance = map[string]int{}
+			for k, v := range activity.Attendance {
+				attendance[k] = v
+			}
+		}
+		for _, vid := range volunteerIDs {
+			attendance[vid.Hex()] = 2
+		}
+		setFields["attendance"] = attendance
+	}
+
 	_, err = col("activities").UpdateOne(ctx, bson.M{"_id": oid}, bson.M{"$set": setFields})
 	return err
 }
