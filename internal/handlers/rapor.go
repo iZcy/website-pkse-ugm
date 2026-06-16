@@ -143,9 +143,9 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 		for _, s := range e.Scores {
 			switch v := s.(type) {
 			case float64: sum += v; count++
-			case int: sum += float64(v); count++
-			case int32: sum += float64(v); count++
-			case int64: sum += float64(v); count++
+			case int: sum += float64(v)
+case int32: sum += float64(v)
+case int64: sum += float64(v); count++
 			case string:
 				if n, err := strconv.ParseFloat(v, 64); err == nil { sum += n; count++ }
 			}
@@ -161,8 +161,8 @@ func (rh *RaporHandler) Member(w http.ResponseWriter, r *http.Request) {
 					switch v := e.Scores[i].(type) {
 					case float64: snums = append(snums, v)
 					case int: snums = append(snums, float64(v))
-					case int32: snums = append(snums, float64(v))
-					case int64: snums = append(snums, float64(v))
+case int32: snums = append(snums, float64(v))
+case int64: snums = append(snums, float64(v))
 					case string:
 						if n, err := strconv.ParseFloat(v, 64); err == nil { snums = append(snums, n) }
 					default: snums = append(snums, 0)
@@ -274,6 +274,8 @@ func (rh *RaporHandler) View(w http.ResponseWriter, r *http.Request) {
 		if sa.Index < len(entry.Scores) { switch v := entry.Scores[sa.Index].(type) {
 case float64: s = int(v)
 case int: s = v
+case int32: s = int(v)
+case int64: s = int(v)
 case string:
     if n, err := strconv.Atoi(v); err == nil { s = n } else { s = 0; textVal = v }
 default: s = 0
@@ -552,8 +554,8 @@ func (rh *RaporHandler) APIMember(w http.ResponseWriter, r *http.Request) {
 			switch v := s.(type) {
 			case float64: snums = append(snums, v)
 			case int: snums = append(snums, float64(v))
-			case int32: snums = append(snums, float64(v))
-			case int64: snums = append(snums, float64(v))
+case int32: snums = append(snums, float64(v))
+case int64: snums = append(snums, float64(v))
 			case string:
 				if n, err := strconv.ParseFloat(v, 64); err == nil { snums = append(snums, n) }
 			default: snums = append(snums, 0)
@@ -594,6 +596,8 @@ func (rh *RaporHandler) APIEntry(w http.ResponseWriter, r *http.Request) {
 				switch v := entry.Scores[i].(type) {
 				case float64: s = int(v)
 				case int: s = v
+case int32: s = int(v)
+case int64: s = int(v)
 				case string:
 					if n, err := strconv.Atoi(v); err == nil { s = n } else { tv = v }
 				}
