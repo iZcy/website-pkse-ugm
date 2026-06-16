@@ -10,7 +10,7 @@ interface EntryData {
   instance: { title: string; period_label: string }
   entry: { feedback: string; token: string }
   scores: ScoreItem[]
-  attendance: { present: number; absent: number; izin: number; volunteer: number; total: number; pct: number; score: number; wajib: { score: number; max: number }; opt: { score: number; max: number }; volBonus: number }
+  attendance: { present: number; absent: number; izin: number; volunteer: number; total: number; pct: number; score: number; max_score: number; score_pct: number; wajib: { score: number; max: number }; opt: { score: number; max: number }; volBonus: number }
   activities: Record<string, ActItem[]>
   volunteerActivities: VolItem[]
   allInstances: { title: string; token: string; active: boolean }[]
@@ -115,7 +115,7 @@ export default function EntryDetailPage() {
           </div>
           <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
             <span>Skor Kehadiran</span>
-            <span className="font-bold text-green-700">{attendance.score.toFixed(1)}%</span>
+            <span className="font-bold text-green-700">{attendance.score} / {attendance.max_score}</span>
           </div>
           {attendance.wajib && (
             <div className="mb-3 space-y-1 text-xs text-gray-400">
@@ -124,9 +124,9 @@ export default function EntryDetailPage() {
             </div>
           )}
           <div className="h-2 rounded-full bg-gray-100 mb-2">
-            <div className="h-full rounded-full bg-green-500" style={{width:`${attendance.score}%`}} />
+            <div className="h-full rounded-full bg-green-500" style={{width:`${attendance.score_pct}%`}} />
           </div>
-          <p className="text-xs text-gray-500 text-center">{attendance.score.toFixed(1)}% skor kehadiran ({attendance.present} dari {attendance.total} kegiatan)</p>
+          <p className="text-xs text-gray-500 text-center">{attendance.score}/{attendance.max_score} skor kehadiran wajib ({attendance.present} dari {attendance.total} kegiatan)</p>
 
           {Object.entries(activities).map(([cat, acts]) => (
             <div key={cat} className="mt-4">

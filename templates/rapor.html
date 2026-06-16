@@ -136,16 +136,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:linear-gradient(135de
     </div>
     <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
       <span>Skor Kehadiran</span>
-      <span class="font-bold text-rapor-700">{{.AttendanceSummary.Score}}%</span>
+      <span class="font-bold text-rapor-700">{{.AttendanceSummary.Score}} / {{.AttendanceSummary.MaxScore}}</span>
     </div>
     <div class="mb-3 space-y-1 text-xs text-gray-400">
       <div>Wajib: {{.AttendanceSummary.WajibScore}} / {{.AttendanceSummary.WajibMax}} · Tidak Wajib: {{.AttendanceSummary.OptScore}} / {{.AttendanceSummary.OptMax}}</div>
       <div>Lintas: +{{.AttendanceSummary.VolBonus}}</div>
     </div>
     <div class="score-bar mb-2">
-      <div class="score-bar-fill bg-rapor-500" style="width:{{.AttendanceSummary.Score}}%"></div>
+      <div class="score-bar-fill bg-rapor-500" style="width:{{.AttendanceSummary.ScorePct}}%"></div>
     </div>
-    <p class="text-xs text-gray-500 text-center">{{.AttendanceSummary.Score}}% skor kehadiran ({{.AttendanceSummary.Present}} dari {{.AttendanceSummary.Total}} kegiatan)</p>
+    <p class="text-xs text-gray-500 text-center">{{.AttendanceSummary.Score}}/{{.AttendanceSummary.MaxScore}} skor kehadiran wajib ({{.AttendanceSummary.Present}} dari {{.AttendanceSummary.Total}} kegiatan)</p>
 
     {{if .ActivitiesByCategory}}
     <div class="mt-4 space-y-3">

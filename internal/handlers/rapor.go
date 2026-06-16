@@ -408,11 +408,8 @@ default: s = 0
 		}
 	}
 	volBonus = defVol * float64(volCount)
-	weightedTotal := wajibScore + optScore + volBonus
-	weightedMax := wajibMax + optMax
-	weightedPct := 0.0
-	if weightedMax > 0 { weightedPct = weightedTotal / weightedMax * 100 }
-	if weightedPct > 100 { weightedPct = 100 }
+	wajibPct := 0.0
+	if wajibMax > 0 { wajibPct = wajibScore / wajibMax * 100 }
 	var scoreTotal int
 	for _, si := range scoreNumeric { scoreTotal += si.Score }
 	var maxTotal int
@@ -431,7 +428,8 @@ default: s = 0
 		"AttendanceSummary":   map[string]any{
 			"Present": hadirCount, "Izin": izinCount, "Absent": absentCount, "Volunteer": volCount,
 			"Total": attTotal, "Percentage": pct,
-			"Score": fmt.Sprintf("%.1f", weightedPct),
+			"Score": fmt.Sprintf("%.1f", wajibScore), "MaxScore": fmt.Sprintf("%.1f", wajibMax),
+			"ScorePct": fmt.Sprintf("%.1f", wajibPct),
 			"WajibScore": fmt.Sprintf("%.1f", wajibScore), "WajibMax": fmt.Sprintf("%.1f", wajibMax),
 			"OptScore": fmt.Sprintf("%.1f", optScore), "OptMax": fmt.Sprintf("%.1f", optMax),
 			"VolBonus": fmt.Sprintf("%.1f", volBonus),
@@ -681,11 +679,8 @@ case int64: s = int(v)
 		}
 	}
 	volBonus := defVol * float64(volCount)
-	weightedTotal := wajibScore + optScore + volBonus
-	weightedMax := wajibMax + optMax
-	weightedPct := 0.0
-	if weightedMax > 0 { weightedPct = weightedTotal / weightedMax * 100 }
-	if weightedPct > 100 { weightedPct = 100 }
+	wajibPct := 0.0
+	if wajibMax > 0 { wajibPct = wajibScore / wajibMax * 100 }
 	pct := 0
 	if attTotal > 0 { pct = hadirCount * 100 / attTotal }
 
@@ -707,7 +702,8 @@ case int64: s = int(v)
 		"scores": scores,
 		"attendance": map[string]any{
 			"present": hadirCount, "izin": izinCount, "absent": absenCount, "volunteer": volCount,
-			"total": attTotal, "pct": pct, "score": weightedPct,
+			"total": attTotal, "pct": pct, "score": wajibScore, "max_score": wajibMax,
+			"score_pct": wajibPct,
 			"wajib": map[string]float64{"score": wajibScore, "max": wajibMax},
 			"opt": map[string]float64{"score": optScore, "max": optMax},
 			"volBonus": volBonus,
