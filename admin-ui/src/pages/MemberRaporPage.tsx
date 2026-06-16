@@ -19,7 +19,7 @@ export default function MemberRaporPage() {
   }, [id])
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50"><div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin" /></div>
-  if (!data?.member || !data.entries) return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50"><div className="text-center"><h1 className="text-xl font-bold text-red-700">Data Tidak Ditemukan</h1><a href="/login" className="text-green-600 underline text-sm">← Kembali ke login</a></div></div>
+  if (!data?.member || !data.entries) return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50"><div className="text-center"><h1 className="text-xl font-bold text-red-700">Data Tidak Ditemukan</h1><a href="/member" className="text-green-600 underline text-sm">← Kembali ke menu</a></div></div>
 
   const { member, entries, chartData, aspectLabels } = data
   const showChart = entries.length > 1 && chartData?.scores?.length > 0
