@@ -19,9 +19,10 @@ export default function MemberRaporPage() {
   }, [id])
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50"><div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin" /></div>
-  if (!data) return null
+  if (!data?.member || !data.entries) return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50"><div className="text-center"><h1 className="text-xl font-bold text-red-700">Data Tidak Ditemukan</h1><a href="/login" className="text-green-600 underline text-sm">← Kembali ke login</a></div></div>
 
   const { member, entries, chartData, aspectLabels } = data
+  const showChart = entries.length > 1 && chartData?.scores?.length > 0
 
   return (
     <div style={{background:'linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdf4 100%)',minHeight:'100vh',fontFamily:'Plus Jakarta Sans,sans-serif'}} className="pb-16">
@@ -47,12 +48,10 @@ export default function MemberRaporPage() {
           </div>
         </div>
 
-        {entries.length > 1 && chartData.scores.length > 0 && (
+        {showChart && (
           <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
             <h3 className="font-bold text-gray-900 mb-3">Perbandingan Skor</h3>
-            <div className="h-64">
-              <canvas id="scoreChart" />
-            </div>
+            <div className="h-64"><canvas id="scoreChart" /></div>
           </div>
         )}
 
