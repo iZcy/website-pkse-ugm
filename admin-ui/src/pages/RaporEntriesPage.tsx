@@ -143,12 +143,12 @@ export default function RaporEntriesPage() {
       const visibleAspects = aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas'))
       const scores = visibleAspects.map((a: any, i: number) => {
         const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
-        return inp?.value || String(a.min ?? 0)
+        return Number(inp?.value) || 0
       })
       const feedbackEl = row.querySelector('[data-feedback]') as HTMLTextAreaElement
       const body: any = {
         instance_id: instanceId, member_id: memberId, period_label: period,
-        scores,
+        scores, published: true,
       }
       if (feedbackEl) body.feedback = feedbackEl.value
       const result = await apiPost('/api/cms/rapor-entries', body)
@@ -178,12 +178,12 @@ export default function RaporEntriesPage() {
         const visibleAspects = aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas'))
         const scores = visibleAspects.map((a: any, i: number) => {
           const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
-          return inp?.value || String(a.min ?? 0)
+          return Number(inp?.value) || 0
         })
         const feedbackEl = row.querySelector('[data-feedback]') as HTMLTextAreaElement
         const body: any = {
           instance_id: instanceId, member_id: memberId, period_label: period,
-          scores,
+          scores, published: true,
         }
         if (feedbackEl) body.feedback = feedbackEl.value
         await apiPost('/api/cms/rapor-entries', body)

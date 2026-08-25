@@ -3,14 +3,14 @@ import { useParams, Link } from 'react-router-dom'
 import { apiGet } from '../lib/api'
 
 interface ScoreItem { label: string; desc: string; score: number; kind: string; min: number; max: number; textVal?: string }
-interface ActItem { name: string; attended: boolean; status: string }
+interface ActItem { name: string; attended: boolean; status: string; mandatory: boolean }
 interface VolItem { name: string; role: string }
 interface EntryData {
   member: { id: string; FullName: string; Department: string; ProgramStudi: string; NIM: string; PhotoURL: string; Angkatan: string; Fakultas: string }
   instance: { title: string; period_label: string }
   entry: { feedback: string; token: string }
   scores: ScoreItem[]
-  attendance: { present: number; absent: number; izin: number; volunteer: number; total: number; pct: number; score: number; max_score: number; score_pct: number; wajib: { score: number; max: number }; opt: { score: number; max: number }; volBonus: number }
+  attendance: { present: number; absent: number; izin: number; volunteer: number; total: number; pct: number; score: number; max_score: number; score_pct: number; wajib: { score: number; max: number; hadir: number; total: number }; opt: { score: number; max: number }; volBonus: number }
   activities: Record<string, ActItem[]>
   volunteerActivities: VolItem[]
   allInstances: { title: string; token: string; active: boolean }[]
@@ -114,25 +114,32 @@ export default function EntryDetailPage() {
             <StatBox color="purple" value={attendance.volunteer} label="Lintas" />
           </div>
           <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
-            <span>Skor Kehadiran</span>
-            <span className="font-bold text-green-700">{attendance.score} / {attendance.max_score}</span>
+            <span>Kehadiran Wajib</span>
+            <span className="font-bold text-green-700">{attendance.wajib.hadir} / {attendance.wajib.total}</span>
           </div>
-          {attendance.wajib && (
-            <div className="mb-3 space-y-1 text-xs text-gray-400">
-              <div>Wajib: {attendance.wajib.score} / {attendance.wajib.max} · Tidak Wajib: {attendance.opt.score} / {attendance.opt.max}</div>
-              <div>Lintas: +{attendance.volBonus}</div>
-            </div>
-          )}
           <div className="h-2 rounded-full bg-gray-100 mb-2">
-            <div className="h-full rounded-full bg-green-500" style={{width:`${attendance.score_pct}%`}} />
+            <div className="h-full rounded-full bg-green-500" style={{width:`${attendance.wajib.total > 0 ? (attendance.wajib.hadir / attendance.wajib.total * 100) : 0}%`}} />
           </div>
-          <p className="text-xs text-gray-500 text-center">{attendance.score}/{attendance.max_score} skor kehadiran wajib ({attendance.present} dari {attendance.total} kegiatan)</p>
+          <p className="text-xs text-gray-500 text-center">{attendance.wajib.hadir} dari {attendance.wajib.total} kegiatan wajib ({Math.round(attendance.wajib.total > 0 ? (attendance.wajib.hadir / attendance.wajib.total * 100) : 0)}%)</p>
 
-          {Object.entries(activities).map(([cat, acts]) => (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Akumulasi Skor</h4>
+            <div className="space-y-1.5 text-xs text-gray-600">
+              <div className="flex justify-between"><span>Wajib</span><span className="font-medium text-gray-800">{attendance.wajib.score}</span></div>
+              <div className="flex justify-between"><span>Tidak Wajib</span><span className="font-medium text-gray-800">{attendance.opt.score}</span></div>
+              <div className="flex justify-between"><span>Lintas</span><span className="font-medium text-green-600">+{attendance.volBonus}</span></div>
+              <div className="flex justify-between pt-1.5 border-t border-gray-100 text-sm font-bold text-gray-900"><span>Total</span><span>{Number(attendance.wajib.score) + Number(attendance.opt.score) + Number(attendance.volBonus)}</span></div>
+            </div>
+          </div>
+
+          {Object.entries(activities).map(([cat, acts]) => {
+            const wajibActs = acts.filter(a => a.mandatory)
+            if (wajibActs.length === 0) return null
+            return (
             <div key={cat} className="mt-4">
               <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{cat}</h4>
               <div className="flex flex-wrap gap-1.5">
-                {acts.map(a => (
+                {wajibActs.map(a => (
                   <span key={a.name} className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full ${
                     a.status === 'hadir' ? 'bg-green-100 text-green-700' :
                     a.status === 'izin' ? 'bg-amber-100 text-amber-600' :
@@ -142,7 +149,8 @@ export default function EntryDetailPage() {
                 ))}
               </div>
             </div>
-          ))}
+            )
+          })}
 
           {volunteerActivities && volunteerActivities.length > 0 && (
             <div className="mt-4">

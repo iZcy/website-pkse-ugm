@@ -14,7 +14,7 @@ export default function MemberRaporPage() {
 
   useEffect(() => {
     apiGet(`/rapor/api/member/${id}`)
-      .then(d => { setData(d); setLoading(false) })
+      .then(d => { if (d.error) { window.location.href = '/login'; return }; setData(d); setLoading(false) })
       .catch(() => { setLoading(false); navigate('/rapor') })
   }, [id])
 

@@ -237,6 +237,10 @@ func UpsertRaporEntry(e RaporEntry) error {
 		if e.Token == "" {
 			e.Token = GenerateToken()
 		}
+		var inst RaporInstance
+		if iErr := col("rapor_instances").FindOne(ctx, bson.M{"_id": e.InstanceID}).Decode(&inst); iErr == nil {
+			e.Published = inst.Published
+		}
 		_, err := col("rapor_entries").InsertOne(ctx, e)
 		return err
 	}
@@ -247,7 +251,6 @@ func UpsertRaporEntry(e RaporEntry) error {
 	update := bson.M{"$set": bson.M{
 		"scores":    e.Scores,
 		"feedback":  e.Feedback,
-		"published": e.Published,
 		"token":     token,
 		"updated_at": now,
 	}}

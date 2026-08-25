@@ -114,6 +114,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			member, mErr := db.GetMemberByName(username)
 			if mErr == nil && member != nil && member.NIM != "" {
 				u, err = db.GetUserByUsername(member.NIM)
+				if err != nil {
+					// Auto-register: NIM as username and password
+					hash, _ := auth.HashPassword(member.NIM)
+					newUser := db.User{ID: member.NIM, Username: member.NIM, PasswordHash: hash, Role: "member"}
+					if cErr := db.CreateUser(newUser); cErr == nil {
+						u = &newUser
+						err = nil
+					}
+				}
 			}
 			if err != nil || !auth.CheckPassword(u.PasswordHash, password) {
 				w.WriteHeader(http.StatusUnauthorized)

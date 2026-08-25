@@ -11,6 +11,7 @@ export default function PeriodePage() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ label: '', display_name: '' })
   const [subPeriods, setSubPeriods] = useState<string[]>(['Gelombang 1'])
+  const [subPeriodDates, setSubPeriodDates] = useState<Record<string, string>>({})
   const [usedSubs, setUsedSubs] = useState<Set<string>>(new Set())
   const listRef = useRef<HTMLDivElement>(null)
   const sortRef = useRef<Sortable | null>(null)
@@ -45,6 +46,7 @@ export default function PeriodePage() {
   function openCreate() {
     setForm({ label: '', display_name: '' })
     setSubPeriods(['Gelombang 1'])
+    setSubPeriodDates({})
     setIsEditing(false)
     setShowModal(true)
   }
@@ -52,6 +54,7 @@ export default function PeriodePage() {
   function openEdit(p: any) {
     setForm({ label: p.label, display_name: p.display_name })
     setSubPeriods((p.sub_periods?.length ? p.sub_periods : ['Gelombang 1']))
+    setSubPeriodDates(p.sub_period_dates || {})
     setIsEditing(true)
     loadSubPeriodUsage(p.label)
     setShowModal(true)
@@ -75,6 +78,9 @@ export default function PeriodePage() {
     setSaving(true)
     try {
       const body: any = { label: form.label, display_name: form.display_name, sub_periods: subPeriods.filter(s => s.trim()) }
+      const dates: Record<string, string> = {}
+      subPeriods.filter(s => s.trim()).forEach(s => { if (subPeriodDates[s]) dates[s] = subPeriodDates[s] })
+      if (Object.keys(dates).length) body.sub_period_dates = dates
       if (isEditing) await apiPut(`/api/cms/periods/${form.label}`, body)
       else await apiPost('/api/cms/periods', body)
       setShowModal(false); load()
@@ -139,8 +145,9 @@ export default function PeriodePage() {
                     {subPeriods.map((sp, i) => {
                       const used = usedSubs.has(sp)
                       return (
-                        <div key={i} className="flex gap-2 items-center">
-                          <input value={sp} onChange={e => { const n = [...subPeriods]; n[i] = e.target.value; setSubPeriods(n) }} className="flex-1 border rounded-lg px-3 py-2 text-sm" />
+                        <div key={i} className="flex flex-wrap gap-2 items-center">
+                          <input value={sp} onChange={e => { const n = [...subPeriods]; n[i] = e.target.value; setSubPeriods(n) }} className="flex-1 min-w-[120px] border rounded-lg px-3 py-2 text-sm" />
+                          <input type="date" value={subPeriodDates[sp] || ''} onChange={e => setSubPeriodDates({...subPeriodDates, [sp]: e.target.value})} className="w-[150px] border rounded-lg px-3 py-2 text-sm" />
                           <button onClick={() => { if (!used) setSubPeriods(subPeriods.filter((_, j) => j !== i)) }} className={`text-xs px-2 py-1 rounded ${used ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-red-50 text-red-600 hover:bg-red-100'}`} disabled={used}>{used ? 'Dipakai' : 'Hapus'}</button>
                         </div>
                       )

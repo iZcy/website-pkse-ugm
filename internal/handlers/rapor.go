@@ -322,9 +322,10 @@ default: s = 0
 	}
 
 	type actItem struct {
-		Name     string
-		Attended bool
-		Status   string
+		Name      string `json:"name"`
+		Attended  bool   `json:"attended"`
+		Status    string `json:"status"`
+		Mandatory bool   `json:"mandatory"`
 	}
 	catActs := map[string][]actItem{}
 	var attTotal int
@@ -350,7 +351,7 @@ default: s = 0
 		attended := status == "hadir"
 		cat := a.Category
 		if cat == "" { cat = "Lainnya" }
-		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended, Status: status})
+		catActs[cat] = append(catActs[cat], actItem{Name: a.Name, Attended: attended, Status: status, Mandatory: a.Mandatory})
 		attTotal++
 		switch status {
 		case "hadir": hadirCount++
@@ -504,7 +505,7 @@ func (rh *RaporHandler) APIMember(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("rapor_auth")
 	authorized := err == nil && verifyRaporToken(cookie.Value, memberID)
 	if !authorized {
-		uname, _, ok := auth.GetSessionUser(r)
+		uname, _, ok := auth.ResolveSession(w, r)
 		if ok {
 			m, e := db.GetMemberByNIM(uname)
 			if e == nil && m.ID.Hex() == memberID {
@@ -636,6 +637,7 @@ case int64: s = int(v)
 		Name     string `json:"name"`
 		Attended bool   `json:"attended"`
 		Status   string `json:"status"`
+		Mandatory bool  `json:"mandatory"`
 	}
 	type volItem struct {
 		Name string `json:"name"`
@@ -643,6 +645,7 @@ case int64: s = int(v)
 	}
 	catActs := map[string][]actItem{}
 	hadirCount, izinCount, absenCount, attTotal := 0, 0, 0, 0
+	wajibHadirCount, wajibIzinCount, wajibAbsenCount, wajibTotal := 0, 0, 0, 0
 	wajibScore, wajibMax := 0.0, 0.0
 	optScore, optMax := 0.0, 0.0
 	var volActivities []volItem
@@ -659,14 +662,23 @@ case int64: s = int(v)
 		if status == "absen" {
 			for _, aid := range a.AttendeeIDs { if aid == entry.MemberID { status = "hadir"; break } }
 		}
-		catActs[a.Category] = append(catActs[a.Category], actItem{Name: a.Name, Attended: status == "hadir", Status: status})
+		catActs[a.Category] = append(catActs[a.Category], actItem{Name: a.Name, Attended: status == "hadir", Status: status, Mandatory: a.Mandatory})
 		attTotal++
 		switch status {
 		case "hadir": hadirCount++
 		case "izin": izinCount++
 		default: absenCount++
 		}
-		if a.Mandatory { wajibMax += defWajib["hadir"]; wajibScore += defWajib[status] } else { optMax += defOpt["hadir"]; optScore += defOpt[status] }
+		if a.Mandatory {
+			wajibTotal++
+			wajibMax += defWajib["hadir"]
+			wajibScore += defWajib[status]
+			switch status {
+			case "hadir": wajibHadirCount++
+			case "izin": wajibIzinCount++
+			default: wajibAbsenCount++
+			}
+		} else { optMax += defOpt["hadir"]; optScore += defOpt[status] }
 		if a.VolunteerIDs != nil {
 			for _, vid := range a.VolunteerIDs {
 				if vid == entry.MemberID {
@@ -701,10 +713,10 @@ case int64: s = int(v)
 		"entry": entry,
 		"scores": scores,
 		"attendance": map[string]any{
-			"present": hadirCount, "izin": izinCount, "absent": absenCount, "volunteer": volCount,
+			"present": wajibHadirCount, "izin": wajibIzinCount, "absent": wajibAbsenCount, "volunteer": volCount,
 			"total": attTotal, "pct": pct, "score": wajibScore, "max_score": wajibMax,
 			"score_pct": wajibPct,
-			"wajib": map[string]float64{"score": wajibScore, "max": wajibMax},
+			"wajib": map[string]float64{"score": wajibScore, "max": wajibMax, "hadir": float64(wajibHadirCount), "total": float64(wajibTotal)},
 			"opt": map[string]float64{"score": optScore, "max": optMax},
 			"volBonus": volBonus,
 		},

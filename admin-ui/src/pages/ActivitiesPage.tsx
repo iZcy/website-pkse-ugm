@@ -197,14 +197,14 @@ export default function ActivitiesPage() {
               </div>
               <button onClick={saveTable} disabled={saving} className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium whitespace-nowrap">{saving?'Menyimpan...':'Simpan Semua'}</button>
             </div>
-            <div className="overflow-auto flex-1 bg-slate-50">
+            <div className="overflow-auto flex-1 bg-slate-50" style={{maxHeight:'calc(100vh - 240px)'}}>
               <table className="border-collapse text-[11px]">
-                <thead className="sticky top-0 z-20">
+                <thead className="sticky top-0 z-20" style={{top:0}}>
                   <tr>
                     <th className="sticky left-0 z-30 bg-white border-b-2 border-l border-r border-slate-300 px-3 py-2 text-left font-semibold text-slate-700 whitespace-nowrap min-w-[200px]" style={{boxShadow:'2px 0 4px rgba(0,0,0,0.06)'}}>Anggota</th>
                     {tableActs.map(a => (
-                      <th key={a.id} className="border-b-2 border-l border-r border-slate-300 bg-white px-3 py-2 text-center whitespace-nowrap font-medium group">
-                        <div className="text-slate-600 leading-tight">{a.name}</div>
+                      <th key={a.id} className={`border-b-2 border-l border-r border-slate-300 px-3 py-2 text-center whitespace-nowrap font-medium group ${a.mandatory !== false ? 'bg-white' : 'bg-slate-100'}`}>
+                        <div className={`leading-tight ${a.mandatory !== false ? 'text-slate-600' : 'text-slate-400'}`}>{a.name}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
                           {a.date ? new Date(a.date).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-'}{a.date_end ? ' — ' + new Date(a.date_end).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : ''}
                           {a.mandatory !== false ? <span className="text-red-500 ml-1">W</span> : <span className="text-slate-300 ml-1">O</span>}
@@ -240,6 +240,7 @@ export default function ActivitiesPage() {
                           )
                         }
                         const baseCls = 'border-b border-l border-r border-slate-200 px-0 py-1 text-center'
+                        const opt = a.mandatory === false
                         if (excluded) {
                           return (
                             <td key={a.id} className={`${baseCls} bg-red-50`}>
@@ -248,10 +249,10 @@ export default function ActivitiesPage() {
                           )
                         }
                         return (
-                          <td key={a.id} className={`${baseCls} cursor-pointer hover:bg-blue-50 transition-colors relative`}
+                          <td key={a.id} className={`${baseCls} cursor-pointer hover:bg-blue-50 transition-colors relative ${opt ? 'bg-slate-50' : ''}`}
                               onClick={() => setActiveCell(active ? null : {mid: m.id, aid: a.id})}>
                             <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-sm ${
-                              s===S_H?'bg-green-500 text-white':s===S_I?'bg-amber-400 text-white':'bg-red-100 text-red-600 border border-red-200'}`}>{ST_L[s]}</span>
+                              s===S_H?`bg-green-500 text-white`:s===S_I?'bg-amber-400 text-white':'bg-red-100 text-red-600 border border-red-200'}`}>{ST_L[s]}</span>
                             {active && (
                               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 z-50 flex gap-0.5 bg-white rounded-lg shadow-xl border p-0.5"
                                    onClick={e => e.stopPropagation()}>
