@@ -20,3 +20,4 @@ nginx/cache/
 nginx/logs/
 webapp-prod.new
 webapp-prod.bak.*
+docker-compose.yml.bak.*
