@@ -1,0 +1,56 @@
+# Production stack. Images come from GHCR (built by CI) — nothing is compiled
+# on the host, which is what keeps the Docker layer cache from growing without
+# bound the way the old build-on-server flow did.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: webapp
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  go-frontend:
+    image: ghcr.io/izcy/website-pkse-ugm/api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      PORT: 8080
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: webapp
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
+      GOMEMLIMIT: 512MiB
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  nginx:
+    image: ghcr.io/izcy/website-pkse-ugm/web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./nginx/cache:/var/cache/nginx/uploads
+      - ./nginx/logs:/var/log/nginx
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      - go-frontend
+
+  wa-service:
+    build:
+      context: ./wa-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - wa-session:/app/wa-session
+
+volumes:
+  mongo-data:
+  wa-session:

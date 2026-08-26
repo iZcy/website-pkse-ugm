@@ -141,7 +141,7 @@ export default function RaporEntriesPage() {
     if (!row) { setSaving(null); return }
     try {
       const visibleAspects = aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas'))
-      const scores = visibleAspects.map((a: any, i: number) => {
+      const scores = visibleAspects.map((_a: any, i: number) => {
         const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
         return Number(inp?.value) || 0
       })
@@ -176,7 +176,7 @@ export default function RaporEntriesPage() {
       if (!memberId) continue
       try {
         const visibleAspects = aspects.filter((a: any) => !a.disabled && !(a.label||'').toLowerCase().includes('lintas'))
-        const scores = visibleAspects.map((a: any, i: number) => {
+        const scores = visibleAspects.map((_a: any, i: number) => {
           const inp = row.querySelector(`[data-idx="${i}"]`) as HTMLInputElement
           return Number(inp?.value) || 0
         })

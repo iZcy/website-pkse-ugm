@@ -43,6 +43,13 @@ func adminData(w http.ResponseWriter, r *http.Request, activeSection string) map
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return nil
 	}
+	// Authentication is not authorization: members are real users, so the admin
+	// panel must check the role from the database, not just a valid session.
+	role = u.Role
+	if role != "admin" && role != "superadmin" {
+		http.Redirect(w, r, "/member", http.StatusFound)
+		return nil
+	}
 	var accessiblePeriods []db.Period
 	allPeriods, _ := db.GetPeriods()
 	if role == "superadmin" {

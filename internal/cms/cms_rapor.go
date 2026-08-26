@@ -12,7 +12,7 @@ import (
 )
 
 func Activities(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -159,7 +159,7 @@ func Activities(w http.ResponseWriter, r *http.Request) {
 }
 
 func RaporInstances(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -250,7 +250,7 @@ func RaporInstances(w http.ResponseWriter, r *http.Request) {
 }
 
 func RaporEntries(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}

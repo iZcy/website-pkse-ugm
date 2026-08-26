@@ -1,9 +1,10 @@
 package db
 
 import (
-	"context"
 	"bytes"
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -47,6 +48,7 @@ func Connect() error {
 	}
 	client = c
 	database = c.Database(dbName)
+	EnsureIndexes()
 	return nil
 }
 
@@ -1431,6 +1433,47 @@ func SaveFileToGridFS(filename string, data []byte, contentType string) (primiti
 	return id, nil
 }
 
+// FileInfo describes an upload without reading its contents.
+type FileInfo struct {
+	ID          string
+	Length      int64
+	ContentType string
+	UploadDate  time.Time
+}
+
+// StatFileInGridFS reads only the files-collection entry for a filename. It lets
+// callers answer conditional requests (If-None-Match) without pulling multi-
+// megabyte image data out of Mongo and into memory.
+func StatFileInGridFS(filename string) (*FileInfo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var doc bson.M
+	err := database.Collection("uploads.files").
+		FindOne(ctx, bson.M{"filename": filename}).Decode(&doc)
+	if err != nil {
+		return nil, err
+	}
+	fi := &FileInfo{}
+	if oid, ok := doc["_id"].(primitive.ObjectID); ok {
+		fi.ID = oid.Hex()
+	}
+	switch v := doc["length"].(type) {
+	case int64:
+		fi.Length = v
+	case int32:
+		fi.Length = int64(v)
+	case float64:
+		fi.Length = int64(v)
+	}
+	if meta, ok := doc["metadata"].(bson.M); ok {
+		fi.ContentType, _ = meta["content_type"].(string)
+	}
+	if d, ok := doc["uploadDate"].(primitive.DateTime); ok {
+		fi.UploadDate = d.Time()
+	}
+	return fi, nil
+}
+
 func GetFileFromGridFS(filename string) ([]byte, string, error) {
 	bucket, err := gridfs.NewBucket(database, options.GridFSBucket().SetName("uploads"))
 	if err != nil {
@@ -1441,13 +1484,47 @@ func GetFileFromGridFS(filename string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	var fileDoc bson.M
-	_ = bucket.GetFilesCollection().FindOne(nil, bson.M{"filename": filename}).Decode(&fileDoc)
 	ct := ""
-	if meta, ok := fileDoc["metadata"].(bson.M); ok {
-		ct, _ = meta["content_type"].(string)
+	if fi, sErr := StatFileInGridFS(filename); sErr == nil {
+		ct = fi.ContentType
 	}
 	return buf.Bytes(), ct, nil
+}
+
+// EnsureIndexes creates the secondary indexes the app's hot lookups rely on.
+// Without these every login, NIM lookup and rapor fetch is a collection scan.
+func EnsureIndexes() {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	type idx struct {
+		coll   string
+		keys   bson.D
+		unique bool
+	}
+	for _, i := range []idx{
+		{"users", bson.D{{Key: "username", Value: 1}}, true},
+		{"members", bson.D{{Key: "nim", Value: 1}}, false},
+		{"members", bson.D{{Key: "full_name", Value: 1}}, false},
+		{"rapor_entries", bson.D{{Key: "token", Value: 1}}, false},
+		{"rapor_entries", bson.D{{Key: "instance_id", Value: 1}}, false},
+		{"rapor_entries", bson.D{{Key: "member_id", Value: 1}, {Key: "period_label", Value: 1}}, false},
+		{"rapor_instances", bson.D{{Key: "period_label", Value: 1}}, false},
+		{"activities", bson.D{{Key: "period_label", Value: 1}}, false},
+		{"shortlinks", bson.D{{Key: "slug", Value: 1}}, false},
+		{"articles", bson.D{{Key: "period_label", Value: 1}}, false},
+		{"programs", bson.D{{Key: "period_label", Value: 1}}, false},
+		{"departments", bson.D{{Key: "period_label", Value: 1}}, false},
+		{"announcements", bson.D{{Key: "period_label", Value: 1}}, false},
+	} {
+		opts := options.Index()
+		if i.unique {
+			opts.SetUnique(true)
+		}
+		if _, err := database.Collection(i.coll).Indexes().CreateOne(ctx,
+			mongo.IndexModel{Keys: i.keys, Options: opts}); err != nil {
+			log.Printf("ensure index %s %v: %v", i.coll, i.keys, err)
+		}
+	}
 }
 
 func FindMemberByNIM(nim, fullName string) (*Member, error) {

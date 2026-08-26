@@ -45,7 +45,7 @@ export default function AnggotaPage() {
 
   const load = useCallback(async () => {
     try {
-      const data = await apiGet(`/api/cms/members?period=${period}&page=${page}&per_page=20&search=${encodeURIComponent(search)}`)
+      const data = await apiGet(`/api/cms/members?period=ALL&page=${page}&per_page=20&search=${encodeURIComponent(search)}`)
       setMembers(data.items || [])
       setTotalPages(data.pages || 1)
     } catch { setMembers([]) }
@@ -55,7 +55,7 @@ export default function AnggotaPage() {
   useEffect(() => {
     load()
     apiGet('/api/cms/periods').then(d => setPeriods(d||[])).catch(()=>{})
-    apiGet(`/api/cms/members?period=${period}&per_page=500`).then((d:any) => setAllMembers(d.items||[])).catch(()=>{})
+    apiGet(`/api/cms/members?period=ALL&per_page=500`).then((d:any) => setAllMembers(d.items||[])).catch(()=>{})
   }, [load, period])
 
   function openAdd() {

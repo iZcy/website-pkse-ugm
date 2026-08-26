@@ -71,16 +71,39 @@ func paginated[T any](items []T, page, perPage int) map[string]any {
 	}
 }
 
-func requireAny(w http.ResponseWriter, r *http.Request) (string, string, bool) {
-	u, role, ok := auth.GetSessionUser(r)
+// resolveRole authenticates the request and returns the caller's authoritative
+// role. The role is re-read from the database rather than trusted from the JWT,
+// so a demotion takes effect immediately instead of lingering until the refresh
+// token expires.
+func resolveRole(w http.ResponseWriter, r *http.Request) (string, string, bool) {
+	u, role, ok := auth.ResolveSession(w, r)
+	if !ok || u == "" {
+		return "", "", false
+	}
+	if dbUser, err := db.GetUserByUsername(u); err == nil && dbUser != nil {
+		role = dbUser.Role
+	}
+	return u, role, true
+}
+
+// requireStaff allows only admin and superadmin. Members are authenticated
+// users too, so authentication alone must never be treated as authorization
+// for CMS endpoints.
+func requireStaff(w http.ResponseWriter, r *http.Request) (string, string, bool) {
+	u, role, ok := resolveRole(w, r)
 	if !ok {
 		writeJSON(w, 401, map[string]string{"error": "unauthorized"})
+		return "", "", false
 	}
-	return u, role, ok
+	if role != "admin" && role != "superadmin" {
+		writeJSON(w, 403, map[string]string{"error": "forbidden"})
+		return "", "", false
+	}
+	return u, role, true
 }
 
 func requireSuperAdmin(w http.ResponseWriter, r *http.Request) bool {
-	_, role, ok := auth.GetSessionUser(r)
+	_, role, ok := resolveRole(w, r)
 	if !ok || role != "superadmin" {
 		writeJSON(w, 403, map[string]string{"error": "forbidden"})
 		return false
@@ -108,7 +131,7 @@ func periodForUser(r *http.Request, username, role string) string {
 func GlobalSettingHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		u, role, ok := requireAny(w, r)
+		u, role, ok := requireStaff(w, r)
 		_ = u
 		_ = role
 		if !ok {
@@ -142,7 +165,7 @@ func GlobalSettingHandler(w http.ResponseWriter, r *http.Request) {
 // ── PeriodAbout ──────────────────────────────────────────────────────────────
 
 func PeriodAboutHandler(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -186,7 +209,7 @@ func PeriodAboutHandler(w http.ResponseWriter, r *http.Request) {
 // ── Departments ──────────────────────────────────────────────────────────────
 
 func Departments(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -257,7 +280,7 @@ func Departments(w http.ResponseWriter, r *http.Request) {
 // ── Members ──────────────────────────────────────────────────────────────────
 
 func Members(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -266,9 +289,9 @@ func Members(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		period := periodForUser(r, username, role)
-		if period == "" {
-			period = r.URL.Query().Get("period")
+		period := r.URL.Query().Get("period")
+		if role != "superadmin" {
+			period = periodForUser(r, username, role)
 		}
 		members, err := db.GetMembers(period)
 		if err != nil {
@@ -373,7 +396,7 @@ func Members(w http.ResponseWriter, r *http.Request) {
 // ── Announcements ────────────────────────────────────────────────────────────
 
 func Announcements(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -452,7 +475,7 @@ func Announcements(w http.ResponseWriter, r *http.Request) {
 // ── Articles ─────────────────────────────────────────────────────────────────
 
 func Articles(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -531,7 +554,7 @@ func Articles(w http.ResponseWriter, r *http.Request) {
 // ── Periods ──────────────────────────────────────────────────────────────────
 
 func Periods(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -798,7 +821,7 @@ func Accounts(w http.ResponseWriter, r *http.Request) {
 // ── Upload ────────────────────────────────────────────────────────────────────
 
 func Upload(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -858,18 +881,49 @@ func ServeUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Serve thumbnail variant with fallback to original
 	if r.URL.Query().Get("size") == "thumb" {
-		if data, ct, err := db.GetFileFromGridFS("thumb_" + filename); err == nil {
-			writeFileResponse(w, data, ct)
+		if serveGridFSFile(w, r, "thumb_"+filename) {
 			return
 		}
+	}
+	if !serveGridFSFile(w, r, filename) {
+		http.NotFound(w, r)
+	}
+}
+
+// serveGridFSFile answers a request for one upload, reporting whether the file
+// existed. The file entry is stat-ed first so an unchanged image can be
+// answered with 304 without reading megabytes of chunks out of Mongo.
+func serveGridFSFile(w http.ResponseWriter, r *http.Request, filename string) bool {
+	fi, err := db.StatFileInGridFS(filename)
+	if err != nil {
+		return false
+	}
+	etag := fmt.Sprintf("\"%s-%d\"", fi.ID, fi.Length)
+
+	w.Header().Set("ETag", etag)
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	if !fi.UploadDate.IsZero() {
+		w.Header().Set("Last-Modified", fi.UploadDate.UTC().Format(http.TimeFormat))
+	}
+	if match := r.Header.Get("If-None-Match"); match != "" && strings.Contains(match, etag) {
+		w.WriteHeader(http.StatusNotModified)
+		return true
 	}
 
 	data, contentType, err := db.GetFileFromGridFS(filename)
 	if err != nil {
-		http.NotFound(w, r)
-		return
+		return false
 	}
-	writeFileResponse(w, data, contentType)
+	if contentType == "" {
+		contentType = fi.ContentType
+	}
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+	w.Write(data)
+	return true
 }
 
 func writeFileResponse(w http.ResponseWriter, data []byte, contentType string) {
@@ -936,7 +990,7 @@ func sanitizeUploadName(s string) string {
 // ── Batch Updates ────────────────────────────────────────────────────────────
 
 func BatchUpdateMembers(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -961,7 +1015,7 @@ func BatchUpdateMembers(w http.ResponseWriter, r *http.Request) {
 }
 
 func BatchUpdateDepartments(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -987,7 +1041,7 @@ func BatchUpdateDepartments(w http.ResponseWriter, r *http.Request) {
 
 // --- PROGRAMS ---
 func Programs(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -1228,7 +1282,7 @@ func randomShortCode(n int) (string, error) {
 
 // --- SHORTLINKS ---
 func ShortLinks(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -1349,7 +1403,7 @@ func ShortLinks(w http.ResponseWriter, r *http.Request) {
 
 // --- STATS ---
 func SyncStatsTemplate(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -1395,7 +1449,7 @@ func SyncStatsTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func Stats(w http.ResponseWriter, r *http.Request) {
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -1544,7 +1598,7 @@ func BulkCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}

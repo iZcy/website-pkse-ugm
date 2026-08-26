@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -27,7 +28,9 @@ func Init() {
 		access = os.Getenv("ADMIN_SESSION_SECRET")
 	}
 	if access == "" {
-		access = "changeme-access-secret"
+		// Never fall back to a hardcoded secret: that would make every session
+		// token forgeable by anyone who can read this source.
+		log.Fatal("auth: ADMIN_JWT_ACCESS_SECRET or ADMIN_SESSION_SECRET must be set")
 	}
 	refresh := os.Getenv("ADMIN_JWT_REFRESH_SECRET")
 	if refresh == "" {
@@ -104,6 +107,7 @@ func setCookie(w http.ResponseWriter, name, value string, maxAge int) {
 		Value:    value,
 		Path:     "/",
 		HttpOnly: true,
+		Secure:   true,
 		MaxAge:   maxAge,
 		SameSite: http.SameSiteLaxMode,
 	})

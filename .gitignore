@@ -18,3 +18,5 @@ strapi-cms/.cache/
 strapi-cms/dist/
 nginx/cache/
 nginx/logs/
+webapp-prod.new
+webapp-prod.bak.*

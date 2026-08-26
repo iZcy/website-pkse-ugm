@@ -1,0 +1,90 @@
+name: Build & Deploy
+
+# Versioning contract:
+#   git tag v1.4.0-rc1  -> builds :v1.4.0-rc1 and :dev, deploys to DEV
+#   GitHub Release      -> builds :<tag> and :latest, deploys to PROD
+on:
+  push:
+    tags: ['v*']
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      channel: ${{ steps.meta.outputs.channel }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: meta
+        run: |
+          version="${GITHUB_REF_NAME}"
+          if [ "${{ github.event_name }}" = "release" ]; then
+            channel=prod; moving=latest
+          else
+            channel=dev;  moving=dev
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+          echo "moving=$moving"   >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          build-args: VERSION=${{ steps.meta.outputs.version }}
+          tags: |
+            ${{ env.IMAGE_BASE }}/api:${{ steps.meta.outputs.version }}
+            ${{ env.IMAGE_BASE }}/api:${{ steps.meta.outputs.moving }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build & push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.web
+          push: true
+          tags: |
+            ${{ env.IMAGE_BASE }}/web:${{ steps.meta.outputs.version }}
+            ${{ env.IMAGE_BASE }}/web:${{ steps.meta.outputs.moving }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ needs.build.outputs.channel }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            set -e
+            cd ~/webapp
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            export IMAGE_TAG="${{ needs.build.outputs.version }}"
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            # Keep the host clean: CI builds the images, the box only runs them.
+            docker image prune -f
+            docker builder prune -af
