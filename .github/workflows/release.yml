@@ -1,8 +1,11 @@
-name: Build & Deploy
+name: Build & Publish
 
 # Versioning contract:
-#   git tag v1.4.0-rc1  -> builds :v1.4.0-rc1 and :dev, deploys to DEV
-#   GitHub Release      -> builds :<tag> and :latest, deploys to PROD
+#   git tag v1.4.0-rc1  ->  :v1.4.0-rc1 and :dev     -> dev box updates itself
+#   GitHub Release      ->  :v1.4.0    and :latest   -> prod updates itself
+#
+# There is no deploy step: Watchtower on the server polls GHCR and pulls the
+# moving tag its containers track. CI's only job is to publish good images.
 on:
   push:
     tags: ['v*']
@@ -14,26 +17,22 @@ env:
   IMAGE_BASE: ghcr.io/${{ github.repository }}
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     permissions: { contents: read, packages: write }
-    outputs:
-      version: ${{ steps.meta.outputs.version }}
-      channel: ${{ steps.meta.outputs.channel }}
     steps:
       - uses: actions/checkout@v4
 
       - id: meta
         run: |
-          version="${GITHUB_REF_NAME}"
+          echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           if [ "${{ github.event_name }}" = "release" ]; then
-            channel=prod; moving=latest
+            echo "moving=latest" >> "$GITHUB_OUTPUT"
+            echo "channel=prod"  >> "$GITHUB_OUTPUT"
           else
-            channel=dev;  moving=dev
+            echo "moving=dev" >> "$GITHUB_OUTPUT"
+            echo "channel=dev" >> "$GITHUB_OUTPUT"
           fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "channel=$channel" >> "$GITHUB_OUTPUT"
-          echo "moving=$moving"   >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
@@ -67,24 +66,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: ${{ needs.build.outputs.channel }}
-    steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          script: |
-            set -e
-            cd ~/webapp
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            export IMAGE_TAG="${{ needs.build.outputs.version }}"
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            # Keep the host clean: CI builds the images, the box only runs them.
-            docker image prune -f
-            docker builder prune -af
+      - name: Summary
+        run: |
+          {
+            echo "### Published \`${{ steps.meta.outputs.version }}\` to **${{ steps.meta.outputs.channel }}**"
+            echo ""
+            echo "Moving tag \`:${{ steps.meta.outputs.moving }}\` now points at this build."
+            echo "Watchtower polls every 5 minutes; confirm with \`curl https://pkseugm.web.id/healthz\`."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,6 +1,13 @@
-# Production stack. Images come from GHCR (built by CI) — nothing is compiled
-# on the host, which is what keeps the Docker layer cache from growing without
-# bound the way the old build-on-server flow did.
+# Production stack. Images are built by GitHub Actions and pushed to GHCR;
+# Watchtower pulls them here. Nothing is compiled on this host any more, which
+# is what stops the build cache from filling the disk the way it used to.
+#
+# Containers track a MOVING tag on purpose:
+#   prod -> :latest  (moved by publishing a GitHub Release)
+#   dev  -> :dev     (moved by pushing a v* tag)
+# Pinning an immutable :v1.2.3 here would freeze Watchtower forever, since that
+# digest never changes. The immutable tag still exists in the registry for
+# rollbacks, and /healthz reports which build is actually running.
 services:
   mongo:
     image: mongo:7
@@ -14,9 +21,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    # deliberately NOT watchtower-enabled: never auto-restart the database
 
   go-frontend:
-    image: ghcr.io/izcy/website-pkse-ugm/api:${IMAGE_TAG:-latest}
+    image: ghcr.io/izcy/website-pkse-ugm/api:${CHANNEL:-latest}
     restart: unless-stopped
     ports:
       - "127.0.0.1:8080:8080"
@@ -30,9 +38,17 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
 
   nginx:
-    image: ghcr.io/izcy/website-pkse-ugm/web:${IMAGE_TAG:-latest}
+    image: ghcr.io/izcy/website-pkse-ugm/web:${CHANNEL:-latest}
     restart: unless-stopped
     network_mode: host
     volumes:
@@ -42,6 +58,8 @@ services:
       - /var/www/certbot:/var/www/certbot:ro
     depends_on:
       - go-frontend
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
 
   wa-service:
     build:
@@ -50,6 +68,27 @@ services:
     restart: unless-stopped
     volumes:
       - wa-session:/app/wa-session
+    # locally built, not published to GHCR, so nothing for Watchtower to poll
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # GHCR credentials, only needed while the packages are private
+      - ${DOCKER_CONFIG_FILE:-/home/pkseugm/.docker/config.json}:/config.json:ro
+    environment:
+      DOCKER_CONFIG: /
+      # Only touch containers that opted in above — never mongo.
+      WATCHTOWER_LABEL_ENABLE: "true"
+      # Delete the superseded image after each update. This is the setting that
+      # keeps the host free of the dangling-layer debris we cleared out.
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_REMOVE_VOLUMES: "false"
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+      WATCHTOWER_POLL_INTERVAL: "300"
+      WATCHTOWER_TIMEOUT: "60s"
+      TZ: Asia/Jakarta
 
 volumes:
   mongo-data:

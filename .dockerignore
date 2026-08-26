@@ -1,0 +1,22 @@
+# Keep the build context small and reproducible. Without this the context is
+# ~300MB of runtime state and fails outright on root-owned nginx/cache.
+.git
+.github
+nginx/cache
+nginx/logs
+backups
+**/node_modules
+admin-ui/dist*
+webapp
+webapp-prod
+webapp-prod.*
+*.bak
+*.bak.*
+*.backup.*
+data.db
+*.log
+build_errors.log
+backup-members-*
+*.xlsx
+tmp
+DEPLOYMENT.md

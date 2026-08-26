@@ -16,6 +16,11 @@ import (
 	"webapp/internal/seed"
 )
 
+// version is stamped at build time via -ldflags "-X main.version=<tag>".
+// It is what /healthz reports, so you can tell which release is actually live
+// after Watchtower has pulled an image on its own.
+var version = "dev"
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -33,6 +38,12 @@ func main() {
 	admin.Init()
 
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		fmt.Fprintf(w, "{\"status\":\"ok\",\"version\":%q}\n", version)
+	})
 
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fs))
@@ -160,6 +171,6 @@ func main() {
 	mux.HandleFunc("/api/broadcast/members-phone", broadcast.MembersWithPhone)
 
 	addr := fmt.Sprintf(":%s", port)
-	fmt.Printf("Server running at http://localhost%s\n", addr)
+	log.Printf("webapp %s running at http://localhost%s", version, addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
