@@ -15,6 +15,23 @@ There is no deploy step in CI and no deploy SSH key. CI publishes images;
 **Watchtower** on the box polls GHCR every 5 minutes and pulls the channel tag
 its containers are pinned to.
 
+### Releasing without GitHub Actions
+
+Actions is currently blocked by an account-level billing lock, so releases are
+cut from the server instead. GHCR publishing is unrelated to Actions billing —
+pushing images costs nothing, and the packages are free because the repo is
+public. `scripts/release.sh` implements exactly the same contract as the
+workflow, so re-enabling Actions later changes nothing about the server:
+
+    ssh pkse
+    cd ~/webapp
+    ./scripts/release.sh v1.1.0            # -> :v1.1.0 and :dev
+    ./scripts/release.sh v1.1.0 --prod     # -> :v1.1.0 and :latest
+
+It refuses to run on a dirty tree, tags the commit, opens a GitHub Release for
+prod builds, and prunes the local build cache afterwards. Watchtower does the
+rest.
+
 ### Why containers track `:latest`, not `:v1.4.0`
 
 Watchtower updates a container when the digest behind its tag changes. An
