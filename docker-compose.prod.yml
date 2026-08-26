@@ -46,6 +46,7 @@ services:
       start_period: 10s
     labels:
       com.centurylinklabs.watchtower.enable: "true"
+      com.centurylinklabs.watchtower.scope: "pkse"
 
   nginx:
     image: ghcr.io/izcy/website-pkse-ugm/web:${CHANNEL:-latest}
@@ -60,6 +61,7 @@ services:
       - go-frontend
     labels:
       com.centurylinklabs.watchtower.enable: "true"
+      com.centurylinklabs.watchtower.scope: "pkse"
 
   wa-service:
     build:
@@ -73,6 +75,9 @@ services:
   watchtower:
     image: containrrr/watchtower
     restart: unless-stopped
+    labels:
+      # A scoped watchtower must label itself with the same scope.
+      com.centurylinklabs.watchtower.scope: "pkse"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       # GHCR credentials, only needed while the packages are private
@@ -81,6 +86,12 @@ services:
       DOCKER_CONFIG: /
       # Only touch containers that opted in above — never mongo.
       WATCHTOWER_LABEL_ENABLE: "true"
+      # Confine this instance to the PKSE stack. eksplorazcy-service carries a
+      # watchtower.enable label from the KreaZcy project but is built locally
+      # with no registry behind it, so an unscoped watchtower repeatedly tries
+      # to pull it from Docker Hub - which fails, and would silently pull a
+      # stranger image if that name were ever published there.
+      WATCHTOWER_SCOPE: "pkse"
       # Delete the superseded image after each update. This is the setting that
       # keeps the host free of the dangling-layer debris we cleared out.
       WATCHTOWER_CLEANUP: "true"
