@@ -214,7 +214,9 @@ func MemberDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func MemberAPI(w http.ResponseWriter, r *http.Request) {
-	uname, role, ok := auth.GetSessionUser(r)
+	// Same 15-minute trap as SessionAPI: without a refresh the member
+	// dashboard turned into "Data Tidak Ditemukan" after a quarter of an hour.
+	uname, role, ok := auth.ResolveSession(w, r)
 	if !ok || role != "member" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(401)
@@ -246,11 +248,8 @@ func MemberAPI(w http.ResponseWriter, r *http.Request) {
 		ap := member.ActivePeriods
 		if ap == nil { ap = map[string]string{} }
 		for periodLabel, subPeriod := range ap {
-			pos := "Anggota"
-			if member.ActivePositions != nil {
-				if p, ok := member.ActivePositions[periodLabel]; ok && p != "" { pos = p }
-			}
-			if pos == "Anggota" && member.Position != "" { pos = member.Position }
+			pos := member.PositionFor(periodLabel)
+			if pos == "" { pos = "Anggota" }
 			kepengurusan = append(kepengurusan, kepengurusanItem{
 				Period:     periodLabel,
 				PeriodName: periodDisplay[periodLabel],
@@ -305,10 +304,21 @@ func MemberAPI(w http.ResponseWriter, r *http.Request) {
 
 func SessionAPI(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	uname, role, ok := auth.GetSessionUser(r)
+	w.Header().Set("Cache-Control", "no-store")
+	// ResolveSession, not GetSessionUser: the access token lives 15 minutes and
+	// this endpoint is what the sidebar uses to decide whether to show the
+	// superadmin section. Reading only the access token meant the section
+	// silently disappeared a quarter of an hour after login while every other
+	// API kept working, because those refresh the token and this did not.
+	uname, role, ok := auth.ResolveSession(w, r)
 	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{"role": ""})
 		return
+	}
+	// Report the role from the database so a demotion is reflected immediately.
+	if u, err := db.GetUserByUsername(uname); err == nil && u != nil {
+		role = u.Role
 	}
 	json.NewEncoder(w).Encode(map[string]string{"username": uname, "role": role})
 }

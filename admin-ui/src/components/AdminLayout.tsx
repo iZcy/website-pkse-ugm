@@ -96,7 +96,7 @@ export default function AdminLayout() {
 
     // Then fetch fresh data in background
     Promise.all([
-      fetch('/api/admin/session', {credentials:'same-origin'}).then(r=>r.json()).then(d=>{setRole(d.role||'');sessionStorage.setItem('pkse_role',d.role||'')}).catch(()=>{}),
+      fetch('/api/admin/session', {credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(d=>{ if(d&&d.role){setRole(d.role);sessionStorage.setItem('pkse_role',d.role)} }).catch(()=>{}),
       fetch('/api/cms/periods', { credentials: 'same-origin' }).then(r => r.json()).then(data => {
         const items = data.items || data || []
         setPeriods(items)

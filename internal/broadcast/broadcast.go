@@ -30,16 +30,38 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	json.NewEncoder(w).Encode(v)
 }
 
-func requireAny(w http.ResponseWriter, r *http.Request) (string, string, bool) {
-	u, role, ok := auth.GetSessionUser(r)
+// resolveRole authenticates the request, refreshing an expired access token,
+// and returns the role as stored in the database rather than as baked into
+// the JWT, so a demotion takes effect immediately.
+func resolveRole(w http.ResponseWriter, r *http.Request) (string, string, bool) {
+	u, role, ok := auth.ResolveSession(w, r)
+	if !ok || u == "" {
+		return "", "", false
+	}
+	if dbUser, err := db.GetUserByUsername(u); err == nil && dbUser != nil {
+		role = dbUser.Role
+	}
+	return u, role, true
+}
+
+// requireStaff allows only admin and superadmin. Members are authenticated
+// users too; a member must never be able to send broadcasts from the
+// organisation's WhatsApp account or read every member's phone number.
+func requireStaff(w http.ResponseWriter, r *http.Request) (string, string, bool) {
+	u, role, ok := resolveRole(w, r)
 	if !ok {
 		writeJSON(w, 401, map[string]string{"error": "unauthorized"})
+		return "", "", false
 	}
-	return u, role, ok
+	if role != "admin" && role != "superadmin" {
+		writeJSON(w, 403, map[string]string{"error": "forbidden"})
+		return "", "", false
+	}
+	return u, role, true
 }
 
 func requireSuperAdmin(w http.ResponseWriter, r *http.Request) bool {
-	_, role, ok := auth.GetSessionUser(r)
+	_, role, ok := resolveRole(w, r)
 	if !ok || role != "superadmin" {
 		writeJSON(w, 403, map[string]string{"error": "forbidden"})
 		return false
@@ -122,7 +144,7 @@ func Status(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		return
 	}
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -143,7 +165,7 @@ func QR(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		return
 	}
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -171,7 +193,7 @@ func Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username, role, ok := requireAny(w, r)
+	username, role, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -557,7 +579,7 @@ func Logs(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		return
 	}
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -575,7 +597,7 @@ func LogDetail(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		return
 	}
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -609,7 +631,7 @@ func AnggotaContacts(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		return
 	}
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -642,7 +664,7 @@ func AnggotaContacts(w http.ResponseWriter, r *http.Request) {
 			Nickname:     m.Nickname,
 			Phone:        m.Phone,
 			Department:   m.Department,
-			Position:     m.Position,
+			Position:     m.PositionFor(period),
 			ProgramStudi: m.ProgramStudi,
 			Fakultas:     m.Fakultas,
 			Angkatan:     m.Angkatan,
@@ -695,7 +717,7 @@ func Disconnect(w http.ResponseWriter, r *http.Request) {
 }
 
 func WebSocket(w http.ResponseWriter, r *http.Request) {
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -727,7 +749,7 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, map[string]string{"error": "method not allowed"})
 		return
 	}
-	_, _, ok := requireAny(w, r)
+	_, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -758,7 +780,7 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 			ID:         m.ID.Hex(),
 			FullName:   m.FullName,
 			Department: m.Department,
-			Position:   m.Position,
+			Position:   m.PositionFor(period),
 			Phone:      m.Phone,
 			Period:     m.PeriodLabel,
 		})
@@ -770,7 +792,7 @@ func MembersWithPhone(w http.ResponseWriter, r *http.Request) {
 // ── Session Handlers ───────────────────────────────────────────────────────
 
 func SessionHandler(w http.ResponseWriter, r *http.Request) {
-	username, _, ok := requireAny(w, r)
+	username, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
@@ -854,7 +876,7 @@ func SessionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SessionByIDHandler(w http.ResponseWriter, r *http.Request) {
-	username, _, ok := requireAny(w, r)
+	username, _, ok := requireStaff(w, r)
 	if !ok {
 		return
 	}
