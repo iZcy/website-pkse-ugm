@@ -21,3 +21,13 @@ nginx/logs/
 webapp-prod.new
 webapp-prod.bak.*
 docker-compose.yml.bak.*
+
+# Editor/backup copies and build logs — never version these
+*.bak
+*.bak.*
+*.bak2
+*.backup.*
+build*.log
+build_err.txt
+dashboard.html
+backup-members-*.json
