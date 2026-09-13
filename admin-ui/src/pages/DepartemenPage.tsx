@@ -17,6 +17,10 @@ export default function DepartemenPage() {
   const [form, setForm] = useState({ name: '', description: '', icon: '', icon_url: '', parent_id: '', sort_order: 0 })
   const [assignDeptId, setAssignDeptId] = useState('')
   const [checkedMembers, setCheckedMembers] = useState<Set<string>>(new Set())
+  const [assignPosition, setAssignPosition] = useState('')
+  // Member whose jabatan is being edited (null = modal closed)
+  const [posMember, setPosMember] = useState<any>(null)
+  const [posValue, setPosValue] = useState('')
   const sortRef = useRef<Sortable | null>(null)
 
   const load = useCallback(async () => {
@@ -100,20 +104,61 @@ export default function DepartemenPage() {
   }
 
   function openAssign(deptId: string) {
-    setAssignDeptId(deptId); setCheckedMembers(new Set()); setShowAssign(true)
+    setAssignDeptId(deptId); setCheckedMembers(new Set()); setAssignPosition(''); setShowAssign(true)
+  }
+
+  // Jabatan is stored twice on purpose: `position` is what the Anggota modal
+  // and public pages display, `active_positions[period]` is the per-period
+  // record the member profile reads. Keeping them in step here means neither
+  // view ever disagrees with the other.
+  function positionPayload(m: any, pos: string) {
+    const ap = { ...(m?.active_positions || {}) }
+    if (pos) ap[period] = pos; else delete ap[period]
+    return { position: pos, active_positions: ap }
   }
 
   async function saveAssign() {
     setSaving(true)
+    const deptName = depts.find((d: any) => d.id === assignDeptId)?.name
+    const pos = assignPosition.trim()
     for (const mid of checkedMembers) {
       const m = members.find((x: any) => x.id === mid)
       await apiPut(`/api/cms/members/${mid}`, {
-        department: depts.find((d: any) => d.id === assignDeptId)?.name || m?.department,
-        sort_order: m?.sort_order || 0, position: m?.position || '',
+        department: deptName || m?.department,
+        sort_order: m?.sort_order || 0,
+        ...positionPayload(m, pos || m?.position || ''),
       }).catch(() => {})
     }
     setShowAssign(false); load(); setSaving(false)
   }
+
+  function openPosition(m: any) {
+    setPosMember(m); setPosValue(m.position || m.active_positions?.[period] || '')
+  }
+
+  async function savePosition() {
+    if (!posMember) return
+    setSaving(true)
+    try {
+      await apiPut(`/api/cms/members/${posMember.id}`, positionPayload(posMember, posValue.trim()))
+      setPosMember(null); load()
+    } catch (e: any) { alert(e.message) }
+    setSaving(false)
+  }
+
+  async function unassign() {
+    if (!posMember || !confirm(`Lepas ${posMember.full_name} dari ${posMember.department}?`)) return
+    setSaving(true)
+    try {
+      await apiPut(`/api/cms/members/${posMember.id}`, { department: '', sort_order: 0, ...positionPayload(posMember, '') })
+      setPosMember(null); load()
+    } catch (e: any) { alert(e.message) }
+    setSaving(false)
+  }
+
+  // Existing jabatan names in this period, offered as suggestions so the
+  // same role does not get typed five slightly different ways.
+  const knownPositions = Array.from(new Set(members.map((m: any) => (m.position || '').trim()).filter(Boolean))).sort()
 
   const unassigned = members.filter((m: any) => !m.department || !depts.some((d: any) => d.name?.toLowerCase() === m.department?.toLowerCase()))
   const tree = buildTree()
@@ -131,8 +176,8 @@ export default function DepartemenPage() {
       <div id="dept-cards" className="space-y-3">
         {depts.length === 0 && <div className="text-slate-400 text-center py-8">Belum ada departemen.</div>}
         {tree.map((d: any) => (
-          <DeptCard key={d.id} d={d} depth={0} members={getDeptMembers(d.name)}
-            onEdit={openEdit} onDelete={remove} onAddSub={openAdd} onAssign={openAssign} />
+          <DeptCard key={d.id} d={d} depth={0} getMembers={getDeptMembers}
+            onEdit={openEdit} onDelete={remove} onAddSub={openAdd} onAssign={openAssign} onMember={openPosition} />
         ))}
       </div>
 
@@ -153,11 +198,46 @@ export default function DepartemenPage() {
         </div>
       )}
 
+      <datalist id="known-positions">{knownPositions.map(p => <option key={p} value={p} />)}</datalist>
+
+      {posMember && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setPosMember(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm flex flex-col">
+            <div className="p-6 pb-0">
+              <h3 className="text-lg font-bold">Ubah Jabatan</h3>
+              <p className="text-sm text-slate-500 mt-1">{posMember.full_name} · {posMember.department}</p>
+            </div>
+            <div className="p-6 space-y-3">
+              <div>
+                <label className="text-sm font-medium">Jabatan</label>
+                <input autoFocus list="known-positions" value={posValue} onChange={e => setPosValue(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && savePosition()}
+                  placeholder="Contoh: Koordinator" className="w-full border rounded-lg px-3 py-2 text-sm" />
+                <p className="text-xs text-slate-400 mt-1">Kosongkan untuk menghapus jabatan.</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2 p-6 pt-0">
+              <button onClick={unassign} disabled={saving} className="text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg text-sm">Lepas dari kementerian</button>
+              <div className="flex gap-2">
+                <button onClick={() => setPosMember(null)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
+                <button onClick={savePosition} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">{saving ? '...' : 'Simpan'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showAssign && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && setShowAssign(false)}>
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
             <h3 className="text-lg font-bold p-6 pb-0 flex-shrink-0">Assign Anggota ke {depts.find((d: any) => d.id === assignDeptId)?.name}</h3>
             <div className="overflow-y-auto flex-1 p-6 space-y-1">
+              {unassigned.length > 0 && (
+                <div className="mb-3">
+                  <label className="text-sm font-medium">Jabatan <span className="text-slate-400 font-normal">(opsional, berlaku untuk semua yang dipilih)</span></label>
+                  <input list="known-positions" value={assignPosition} onChange={e => setAssignPosition(e.target.value)} placeholder="Contoh: Staf, Koordinator" className="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+              )}
               {unassigned.length === 0 && <div className="text-slate-400 text-sm">Semua anggota memiliki departemen.</div>}
               {unassigned.map((m: any) => (
                 <label key={m.id} className="flex items-center gap-2 px-2 py-1 hover:bg-slate-50 rounded cursor-pointer text-sm">
@@ -174,8 +254,9 @@ export default function DepartemenPage() {
   )
 }
 
-function DeptCard({ d, depth, members, onEdit, onDelete, onAddSub, onAssign }: any) {
+function DeptCard({ d, depth, getMembers, onEdit, onDelete, onAddSub, onAssign, onMember }: any) {
   const ml = depth * 24
+  const members = getMembers(d.name)
   return (
     <div>
       <div className="dept-card bg-white rounded-xl p-4 border border-slate-200 space-y-3" data-dept-id={d.id} style={{ marginLeft: ml }}>
@@ -197,14 +278,19 @@ function DeptCard({ d, depth, members, onEdit, onDelete, onAddSub, onAssign }: a
         <div className="bg-slate-50 rounded-lg p-2 min-h-[36px]">
           {members.length === 0 ? <div className="text-xs text-slate-400 p-1">Belum ada anggota di kementerian ini.</div> : (
             <div className="flex flex-wrap gap-1">{members.map((m: any) => (
-              <span key={m.id} className="inline-flex items-center gap-1 text-xs bg-white border border-slate-200 rounded-full px-2 py-1">{m.photo_url ? <img loading="lazy" src={`${m.photo_url}?size=thumb`} className="w-4 h-4 rounded-full" alt="" /> : null}{m.full_name}</span>
+              <button key={m.id} type="button" onClick={() => onMember(m)} title="Klik untuk ubah jabatan"
+                className="inline-flex items-center gap-1.5 text-xs bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 rounded-full px-2 py-1 transition-colors">
+                {m.photo_url ? <img loading="lazy" src={`${m.photo_url}?size=thumb`} className="w-4 h-4 rounded-full" alt="" /> : null}
+                <span>{m.full_name}</span>
+                {m.position && <span className="text-slate-400 border-l border-slate-200 pl-1.5">{m.position}</span>}
+              </button>
             ))}</div>
           )}
         </div>
       </div>
       {d._children?.length > 0 && (
         <div className="ml-6 mt-2 space-y-2 border-l-2 border-slate-200 pl-4">
-          {d._children.map((child: any) => <DeptCard key={child.id} d={child} depth={depth + 1} members={[]} onEdit={onEdit} onDelete={onDelete} onAddSub={onAddSub} onAssign={onAssign} />)}
+          {d._children.map((child: any) => <DeptCard key={child.id} d={child} depth={depth + 1} getMembers={getMembers} onEdit={onEdit} onDelete={onDelete} onAddSub={onAddSub} onAssign={onAssign} onMember={onMember} />)}
         </div>
       )}
     </div>
