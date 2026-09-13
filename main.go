@@ -169,6 +169,11 @@ func main() {
 	mux.HandleFunc("/api/broadcast/logs", broadcast.Logs)
 	mux.HandleFunc("/api/broadcast/logs/", broadcast.LogDetail)
 	mux.HandleFunc("/api/broadcast/members-phone", broadcast.MembersWithPhone)
+	// Draft persistence for the broadcast wizard. The handlers have existed
+	// since the original implementation but were never wired up, so the old
+	// UI always 404'd here and silently started fresh on every reload.
+	mux.HandleFunc("/api/broadcast/session", broadcast.SessionHandler)
+	mux.HandleFunc("/api/broadcast/session/", broadcast.SessionByIDHandler)
 
 	addr := fmt.Sprintf(":%s", port)
 	log.Printf("webapp %s running at http://localhost%s", version, addr)

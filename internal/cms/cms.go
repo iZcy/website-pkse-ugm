@@ -1440,7 +1440,7 @@ func SyncStatsTemplate(w http.ResponseWriter, r *http.Request) {
 		if t.TemplateID != "" {
 			tid = t.TemplateID
 		}
-		if err := db.UpsertPeriodStatValue(periodLabel, tid, "0"); err != nil {
+		if err := db.EnsurePeriodStatValue(periodLabel, tid, "0"); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
@@ -1580,6 +1580,14 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodDelete:
 		id := strings.TrimPrefix(r.URL.Path, "/api/cms/stats/")
+		// A period row that has no value document of its own is served under
+		// the template's id, so an unguarded delete here would remove the
+		// global template itself. Only superadmin may delete templates.
+		if existing, err := db.GetStatByID(id); err == nil && existing != nil &&
+			existing.PeriodLabel == "_TEMPLATE_" && role != "superadmin" {
+			writeJSON(w, 403, map[string]string{"error": "forbidden"})
+			return
+		}
 		if err := db.DeleteStat(id); err != nil {
 			writeJSON(w, 500, map[string]string{"error": err.Error()})
 			return

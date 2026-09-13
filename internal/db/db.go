@@ -1015,6 +1015,21 @@ func UpsertPeriodStatValue(periodLabel, templateID, value string) error {
 	return err
 }
 
+// EnsurePeriodStatValue creates the period value document for a template only
+// if none exists yet. Sync uses this rather than UpsertPeriodStatValue so that
+// re-syncing a period cannot reset values an admin has already filled in.
+func EnsurePeriodStatValue(periodLabel, templateID, initial string) error {
+	if periodLabel == "" || templateID == "" {
+		return fmt.Errorf("period_label and template_id are required")
+	}
+	statsCol := database.Collection("stats")
+	filter := bson.M{"period_label": periodLabel, "template_id": templateID}
+	update := bson.M{"$setOnInsert": bson.M{"value": initial}}
+	opts := options.Update().SetUpsert(true)
+	_, err := statsCol.UpdateOne(context.Background(), filter, update, opts)
+	return err
+}
+
 func CountMembersActiveFromSubPeriod(periodLabel, subPeriod string) (int64, error) {
 	if periodLabel == "" || subPeriod == "" {
 		return 0, nil
@@ -1029,6 +1044,20 @@ func CountMembersActiveFromSubPeriod(periodLabel, subPeriod string) (int64, erro
 	}
 	return col("members").CountDocuments(ctx, filter)
 }
+func GetStatByID(id string) (*StatData, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var st StatData
+	if err := database.Collection("stats").FindOne(ctx, bson.M{"_id": oid}).Decode(&st); err != nil {
+		return nil, err
+	}
+	return &st, nil
+}
+
 func DeleteStat(id string) error {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
