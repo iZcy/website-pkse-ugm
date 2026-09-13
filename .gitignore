@@ -31,3 +31,4 @@ build*.log
 build_err.txt
 dashboard.html
 backup-members-*.json
+*.bak_*

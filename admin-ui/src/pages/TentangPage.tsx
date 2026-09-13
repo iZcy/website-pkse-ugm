@@ -7,6 +7,12 @@ import ImageUpload from '../components/ImageUpload'
 import ReactQuill from 'react-quill-new'
 import 'react-quill-new/dist/quill.snow.css'
 
+// Ported from old stripHtml() helper in admin-common.js
+function stripHtml(s: string): string {
+  if (!s) return ''
+  return s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
@@ -98,6 +104,9 @@ export default function TentangPage() {
           <ReactQuill value={data.misi || ''} onChange={(v: string) => setField('misi', v)} theme="snow" modules={quillModules} className="bg-white" />
         </div>
 
+        {/* Live preview — ported from old renderTentangPreview() */}
+        <TentangPreview data={data} galleryCount={gallery.length} />
+
         {/* Gallery */}
         <div className="bg-white rounded-xl border p-6">
           <div className="flex items-center justify-between mb-3">
@@ -122,6 +131,46 @@ export default function TentangPage() {
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// Live preview of the public "Tentang" section (port of renderTentangPreview in admin-common.js)
+function TentangPreview({ data, galleryCount }: { data: any; galleryCount: number }) {
+  const title = (data.tagline_title || '').trim()
+  const subtitle = (data.tagline_subtitle || '').trim()
+  const desc = (data.tagline_description || '').trim()
+  const cover = data.cover_image_url || ''
+  const struktur = data.hierarchy_image_url || ''
+  const sejarah = stripHtml(data.sejarah || data.tentang || '').slice(0, 160)
+  const visi = stripHtml(data.visi || '').slice(0, 120)
+  const misi = stripHtml(data.misi || '').slice(0, 120)
+  return (
+    <div className="bg-white rounded-xl border p-6">
+      <h3 className="font-semibold text-slate-700 mb-3">Preview Tentang</h3>
+      <div className="space-y-2">
+        <p className="text-xs uppercase tracking-wide text-slate-400">Hero Tentang Periode</p>
+        <h4 className="text-lg font-bold text-slate-800">{title || '-'}</h4>
+        <p className="text-sm text-slate-600">{subtitle || '-'}</p>
+        <p className="text-sm text-slate-500">{desc || '-'}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+            <p className="text-xs text-slate-500 mb-2">Cover</p>
+            {cover ? <img src={cover} alt="cover" className="w-full h-24 object-cover rounded" /> : <p className="text-xs text-slate-400">Belum ada cover.</p>}
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+            <p className="text-xs text-slate-500 mb-2">Struktur</p>
+            {struktur ? <img src={struktur} alt="struktur" className="w-full h-24 object-cover rounded" /> : <p className="text-xs text-slate-400">Belum ada gambar struktur.</p>}
+          </div>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p className="text-xs text-slate-500">Ringkasan Tentang</p>
+          <p className="text-xs text-slate-700 mt-1"><span className="font-semibold">Latar Belakang:</span> {sejarah || '-'}</p>
+          <p className="text-xs text-slate-700 mt-1"><span className="font-semibold">Visi:</span> {visi || '-'}</p>
+          <p className="text-xs text-slate-700 mt-1"><span className="font-semibold">Misi:</span> {misi || '-'}</p>
+        </div>
+        <p className="text-xs text-slate-500">Galeri saat ini: <span className="font-semibold text-slate-700">{galleryCount}</span> item.</p>
       </div>
     </div>
   )

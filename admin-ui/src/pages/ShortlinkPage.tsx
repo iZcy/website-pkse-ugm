@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { shortlinkMassUploadConfig } from '../lib/massUploadConfigs'
 import { apiGet, apiPost, apiDelete } from '../lib/api'
 import { Plus, Trash2, Copy, Check } from 'lucide-react'
 
@@ -7,6 +9,7 @@ export default function ShortlinkPage() {
   const [items, setItems] = useState<any[]>([])
 
   const [showModal, setShowModal] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -41,6 +44,15 @@ export default function ShortlinkPage() {
     await apiDelete(`/api/cms/shortlinks/${id}`); load()
   }
 
+  // Ported from old clearShortlinks(): backend supports bulk delete via ?all=1
+  async function clearAll() {
+    if (!confirm('Bersihkan seluruh riwayat short link?')) return
+    try {
+      await apiDelete('/api/cms/shortlinks?all=1')
+      setPage(1); load()
+    } catch (e: any) { alert(e.message) }
+  }
+
   async function copyCode(code: string) {
     const url = `https://pkseugm.web.id/l/${code}`
     await navigator.clipboard.writeText(url)
@@ -54,14 +66,22 @@ export default function ShortlinkPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-slate-800">Shortlink</h2>
-        <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Shortlink</button>
+        <div className="flex gap-2">
+          <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Shortlink</button>
+          <MassUploadButton onClick={() => setShowMassUpload(true)} />
+        </div>
       </div>
+      {showMassUpload && <MassUpload config={shortlinkMassUploadConfig} onClose={() => setShowMassUpload(false)} onSuccess={load} />}
 
       <div className="mb-4">
         <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="Cari shortlink..." className="border rounded-lg px-3 py-2 text-sm w-64" />
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-700">Riwayat Short Link</h3>
+          <button onClick={clearAll} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg">Bersihkan Riwayat</button>
+        </div>
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
