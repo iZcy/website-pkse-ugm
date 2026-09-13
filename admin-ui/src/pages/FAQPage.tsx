@@ -1,12 +1,17 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Pencil, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, GripVertical } from 'lucide-react'
+import Sortable from 'sortablejs'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { faqMassUploadConfig } from '../lib/massUploadConfigs'
 
 interface FAQ {
   id: string
   question: string
   answer: string
+  order?: number
+  period_label?: string
 }
 
 const empty = (): FAQ => ({ id: '', question: '', answer: '' })
@@ -16,10 +21,15 @@ export default function FAQPage() {
   const [items, setItems] = useState<FAQ[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<FAQ>(empty())
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const tableRef = useRef<HTMLTableElement>(null)
+  const sortRef = useRef<Sortable | null>(null)
+  const itemsRef = useRef<FAQ[]>([])
+  itemsRef.current = items
 
   const load = useCallback(async () => {
     try {
@@ -30,6 +40,38 @@ export default function FAQPage() {
   }, [period])
 
   useEffect(() => { load() }, [load])
+
+  // Drag-to-reorder: each FAQ is its own <tbody class="faq-row"> so the
+  // question row and its expanded answer row move together. Sortable moves
+  // the DOM node itself; we undo that move and let React re-render from the
+  // new state so the two never disagree. The backend's UpdateFAQ $sets every
+  // field, so the whole object is sent with the new `order` (same as the old
+  // admin panel did).
+  useEffect(() => {
+    const el = tableRef.current
+    if (!el || loading || items.length === 0) return
+    sortRef.current?.destroy()
+    sortRef.current = Sortable.create(el, {
+      animation: 180, handle: '.faq-drag', draggable: '.faq-row',
+      onEnd: async (evt) => {
+        const { item, from, oldIndex, newIndex } = evt
+        if (oldIndex == null || newIndex == null || oldIndex === newIndex) return
+        const rows = Array.from(from.querySelectorAll(':scope > .faq-row')).filter(r => r !== item)
+        from.insertBefore(item, rows[oldIndex] ?? null)
+        const list = [...itemsRef.current]
+        const [moved] = list.splice(oldIndex, 1)
+        list.splice(newIndex, 0, moved)
+        setItems(list)
+        const updates = list
+          .map((f, idx) => ({ f, idx }))
+          .filter(({ f, idx }) => f.order !== idx)
+          .map(({ f, idx }) => apiPut(`/api/cms/faqs/${f.id}`, { ...f, order: idx }))
+        try { await Promise.all(updates) } catch (e: any) { alert('Gagal mengurutkan FAQ: ' + (e?.message || e)) }
+        load()
+      },
+    })
+    return () => { sortRef.current?.destroy(); sortRef.current = null }
+  }, [items, loading, load])
 
   const handleEdit = (item: FAQ) => {
     setEditId(item.id)
@@ -74,50 +116,58 @@ export default function FAQPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-slate-800">FAQ</h2>
-        <button onClick={() => { setEditId(''); setForm(empty()); setShowModal(true) }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Tambah
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => { setEditId(''); setForm(empty()); setShowModal(true) }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Tambah
+          </button>
+          <MassUploadButton onClick={() => setShowMassUpload(true)} />
+        </div>
       </div>
+      {showMassUpload && <MassUpload config={faqMassUploadConfig} onClose={() => setShowMassUpload(false)} onSuccess={load} />}
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
+        <table ref={tableRef} className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-600 text-left">
             <tr>
-              <th className="px-5 py-3 font-medium w-8"></th>
+              <th className="px-3 py-3 font-medium w-8"></th>
+              <th className="px-3 py-3 font-medium w-8"></th>
               <th className="px-5 py-3 font-medium">Pertanyaan</th>
               <th className="px-5 py-3 font-medium w-24"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
-            {items.length === 0 ? (
-              <tr><td colSpan={3} className="px-5 py-8 text-center text-slate-400">Belum ada data</td></tr>
-            ) : items.map((item) => (
-              <>
-                <tr key={item.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => toggleExpand(item.id)}>
-                  <td className="px-5 py-3 text-slate-400">
-                    {expanded.has(item.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  </td>
-                  <td className="px-5 py-3 text-slate-800">{item.question}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-                      <button onClick={() => handleEdit(item)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600" title="Edit">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500" title="Hapus">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+          {items.length === 0 ? (
+            <tbody>
+              <tr><td colSpan={4} className="px-5 py-8 text-center text-slate-400">Belum ada data</td></tr>
+            </tbody>
+          ) : items.map((item) => (
+            <tbody key={item.id} className="faq-row" data-id={item.id}>
+              <tr className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer" onClick={() => toggleExpand(item.id)}>
+                <td className="faq-drag px-3 py-3 text-slate-400 hover:text-slate-600 cursor-move" title="Geser urutan" onClick={e => e.stopPropagation()}>
+                  <GripVertical className="w-4 h-4" />
+                </td>
+                <td className="px-3 py-3 text-slate-400">
+                  {expanded.has(item.id) ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </td>
+                <td className="px-5 py-3 text-slate-800">{item.question}</td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => handleEdit(item)} className="p-1.5 rounded hover:bg-blue-50 text-blue-600" title="Edit">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(item.id)} className="p-1.5 rounded hover:bg-red-50 text-red-500" title="Hapus">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {expanded.has(item.id) && (
+                <tr className="bg-slate-50">
+                  <td colSpan={2}></td>
+                  <td colSpan={2} className="px-5 py-3 text-slate-600 text-sm whitespace-pre-wrap">{item.answer}</td>
                 </tr>
-                {expanded.has(item.id) && (
-                  <tr key={`${item.id}-answer`} className="bg-slate-50">
-                    <td></td>
-                    <td colSpan={2} className="px-5 py-3 text-slate-600 text-sm whitespace-pre-wrap">{item.answer}</td>
-                  </tr>
-                )}
-              </>
-            ))}
-          </tbody>
+              )}
+            </tbody>
+          ))}
         </table>
       </div>
 

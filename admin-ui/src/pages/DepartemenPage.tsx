@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { departemenMassUploadConfig } from '../lib/massUploadConfigs'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
 import { Plus, Pencil, Trash2, GripVertical, UserPlus, Network } from 'lucide-react'
@@ -12,6 +14,7 @@ export default function DepartemenPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [showAssign, setShowAssign] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ name: '', description: '', icon: '', icon_url: '', parent_id: '', sort_order: 0 })
@@ -22,6 +25,7 @@ export default function DepartemenPage() {
   const [posMember, setPosMember] = useState<any>(null)
   const [posValue, setPosValue] = useState('')
   const sortRef = useRef<Sortable | null>(null)
+  const memberSortRef = useRef<Sortable[]>([])
 
   const load = useCallback(async () => {
     try {
@@ -60,6 +64,64 @@ export default function DepartemenPage() {
     })
     return () => { sortRef.current?.destroy(); sortRef.current = null }
   }, [depts, loading])
+
+  // Members inside each kementerian card are draggable (handle only, so a
+  // click on the chip still opens the jabatan dialog). Lists share one group
+  // so a member can be dragged from one kementerian into another, which
+  // changes its `department` -- same behaviour as the old admin panel.
+  useEffect(() => {
+    if (loading || depts.length === 0) return
+    memberSortRef.current.forEach(s => s.destroy())
+    memberSortRef.current = []
+    document.querySelectorAll<HTMLElement>('#dept-cards .dept-member-list').forEach(ul => {
+      memberSortRef.current.push(Sortable.create(ul, {
+        group: 'members-cross-dept', animation: 180, handle: '.member-drag', draggable: '.dept-member-item',
+        onEnd: async (evt) => {
+          try { await handleMemberDrop(evt) } catch (e: any) { alert('Gagal menyimpan urutan anggota: ' + (e?.message || e)) }
+        },
+      }))
+    })
+    return () => { memberSortRef.current.forEach(s => s.destroy()); memberSortRef.current = [] }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [depts, members, loading])
+
+  async function handleMemberDrop(evt: Sortable.SortableEvent) {
+    const { item, from, to, oldIndex, newIndex } = evt
+    const movedId = item.dataset.memberId
+    const fromDept = from.dataset.deptName || ''
+    const toDept = to.dataset.deptName || ''
+    if (!movedId || oldIndex == null || newIndex == null) return
+    // Sortable already moved the DOM node; put it back so React owns the DOM
+    // again and re-renders the new order from state instead.
+    const siblings = Array.from(from.querySelectorAll(':scope > .dept-member-item')).filter(el => el !== item)
+    from.insertBefore(item, siblings[oldIndex] ?? null)
+    if (from === to && oldIndex === newIndex) return
+
+    const moved = members.find((m: any) => m.id === movedId)
+    const fromList = getDeptMembers(fromDept).filter((m: any) => m.id !== movedId)
+    const toList = from === to ? fromList : getDeptMembers(toDept).filter((m: any) => m.id !== movedId)
+    toList.splice(newIndex, 0, { ...moved, department: toDept })
+
+    // Optimistic local update so the chip lands where it was dropped right away.
+    const orderOf = new Map<string, { department: string; sort_order: number }>()
+    fromList.forEach((m: any, i: number) => orderOf.set(m.id, { department: fromDept, sort_order: i }))
+    toList.forEach((m: any, i: number) => orderOf.set(m.id, { department: toDept, sort_order: i }))
+    setMembers(prev => prev.map((m: any) => orderOf.has(m.id) ? { ...m, ...orderOf.get(m.id) } : m)
+      .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0)))
+
+    if (fromDept !== toDept) {
+      await apiPut(`/api/cms/members/${movedId}`, { department: toDept, position: moved?.position || '', sort_order: newIndex })
+    }
+    for (let i = 0; i < fromList.length; i++) {
+      await apiPut(`/api/cms/members/${fromList[i].id}`, { sort_order: i, department: fromDept })
+    }
+    if (from !== to) {
+      for (let i = 0; i < toList.length; i++) {
+        await apiPut(`/api/cms/members/${toList[i].id}`, { sort_order: i, department: toDept })
+      }
+    }
+    load()
+  }
 
   function buildTree() {
     const map = new Map<string, any>(); const roots: any[] = []
@@ -170,8 +232,12 @@ export default function DepartemenPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-slate-800">Kementerian / Departemen</h2>
-        <button onClick={() => openAdd()} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
+        <div className="flex gap-2">
+          <button onClick={() => openAdd()} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
+          <MassUploadButton onClick={() => setShowMassUpload(true)} />
+        </div>
       </div>
+      {showMassUpload && <MassUpload config={departemenMassUploadConfig} onClose={() => setShowMassUpload(false)} onSuccess={load} />}
 
       <div id="dept-cards" className="space-y-3">
         {depts.length === 0 && <div className="text-slate-400 text-center py-8">Belum ada departemen.</div>}
@@ -275,17 +341,19 @@ function DeptCard({ d, depth, getMembers, onEdit, onDelete, onAddSub, onAssign, 
             <button onClick={() => onDelete(d.id)} className="p-1 hover:bg-red-50 rounded"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
           </div>
         </div>
-        <div className="bg-slate-50 rounded-lg p-2 min-h-[36px]">
-          {members.length === 0 ? <div className="text-xs text-slate-400 p-1">Belum ada anggota di kementerian ini.</div> : (
-            <div className="flex flex-wrap gap-1">{members.map((m: any) => (
-              <button key={m.id} type="button" onClick={() => onMember(m)} title="Klik untuk ubah jabatan"
-                className="inline-flex items-center gap-1.5 text-xs bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 rounded-full px-2 py-1 transition-colors">
+        {/* The list container is always rendered (even when empty) so members can be dropped into an empty kementerian. */}
+        <div className="dept-member-list bg-slate-50 rounded-lg p-2 min-h-[36px] flex flex-wrap gap-1" data-dept-name={d.name}>
+          {members.length === 0 && <div className="text-xs text-slate-400 p-1">Belum ada anggota di kementerian ini.</div>}
+          {members.map((m: any) => (
+            <div key={m.id} className="dept-member-item inline-flex items-center text-xs bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 rounded-full pl-1 pr-2 py-1 transition-colors" data-member-id={m.id}>
+              <span className="member-drag text-slate-300 hover:text-slate-500 cursor-grab pr-0.5" title="Geser urutan / pindah kementerian"><GripVertical className="w-3.5 h-3.5" /></span>
+              <button type="button" onClick={() => onMember(m)} title="Klik untuk ubah jabatan" className="inline-flex items-center gap-1.5">
                 {m.photo_url ? <img loading="lazy" src={`${m.photo_url}?size=thumb`} className="w-4 h-4 rounded-full" alt="" /> : null}
                 <span>{m.full_name}</span>
                 {m.position && <span className="text-slate-400 border-l border-slate-200 pl-1.5">{m.position}</span>}
               </button>
-            ))}</div>
-          )}
+            </div>
+          ))}
         </div>
       </div>
       {d._children?.length > 0 && (
