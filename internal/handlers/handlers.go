@@ -164,6 +164,7 @@ func (h *Handler) TentangKami(w http.ResponseWriter, r *http.Request) {
 	data["PeriodAbout"] = periodAbout
 	depts, _ := db.GetDepartments(pl)
 	members, _ := db.GetMembers("")
+	members = db.ResolvePositions(members, pl)
 	programs, _ := db.GetPrograms(pl)
 	groups, _ := groupByDepartment(depts, members, programs)
 	data["DepartmentGroups"] = groups
@@ -175,6 +176,7 @@ func (h *Handler) Anggota(w http.ResponseWriter, r *http.Request) {
 	sel := r.URL.Query().Get("period")
 	data["SelectedPeriod"] = sel
 	members, _ := db.GetMembers(sel)
+	members = db.ResolvePositions(members, sel)
 	data["Members"] = members
 	periods, _ := db.GetPeriods()
 	data["Periods"] = periods
@@ -250,6 +252,7 @@ func (h *Handler) PeriodeDetail(w http.ResponseWriter, r *http.Request) {
 	periodAbout, _ := db.GetPeriodAbout(label)
 	data["PeriodAbout"] = periodAbout
 	members, _ := db.GetMembers(label)
+	members = db.ResolvePositions(members, label)
 	depts, _ := db.GetDepartments(label)
 	articles, _ := db.GetArticles(true, label)
 	stats, _ := db.GetStats(label)

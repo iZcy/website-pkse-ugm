@@ -73,7 +73,7 @@ export default function AnggotaPage() {
 
   function openEdit(m: any) {
     setEditId(m.id)
-    setForm({ full_name: m.full_name || '', nickname: m.nickname || '', program_studi: m.program_studi || '', fakultas: m.fakultas || '', angkatan: m.angkatan || '', phone: m.phone || '', nim: m.nim || '', photo_url: m.photo_url || '', cover_url: m.cover_url || '', position: m.position || '' })
+    setForm({ full_name: m.full_name || '', nickname: m.nickname || '', program_studi: m.program_studi || '', fakultas: m.fakultas || '', angkatan: m.angkatan || '', phone: m.phone || '', nim: m.nim || '', photo_url: m.photo_url || '', cover_url: m.cover_url || '', position: (m.active_positions?.[period] || '').trim() || (m.period_label === period ? (m.position || '') : '') })
     const ap: Record<string,string> = {}
     if (m.active_periods) { Object.entries(m.active_periods).forEach(([k, v]) => { ap[k] = v as string }) }
     setActivePeriods(ap)
@@ -88,7 +88,8 @@ export default function AnggotaPage() {
     if (Object.keys(activePeriods).length === 0) return alert('Pilih minimal satu periode aktif')
     setSaving(true)
     try {
-      const body: any = { ...form, period_label: period, active_periods: activePeriods }
+      const { position: _ro, ...editable } = form
+      const body: any = { ...editable, period_label: period, active_periods: activePeriods }
       if (editId) await apiPut(`/api/cms/members/${editId}`, body)
       else await apiPost('/api/cms/members', body)
       setShowModal(false); load()
@@ -225,7 +226,7 @@ export default function AnggotaPage() {
                   </div>
                 </div>
               )}
-              <Field label="Posisi (dikelola via Kementerian)">
+              <Field label={`Posisi di ${period} (dikelola via Kementerian)`}>
                 <input value={form.position || ''} disabled className="w-full border rounded-lg px-3 py-2 text-sm bg-slate-100 text-slate-400" placeholder="Atur di tab Kementerian" />
               </Field>
               <Field label="Foto *"><ImageUpload value={form.photo_url} onChange={url => setForm({ ...form, photo_url: url })} /></Field>

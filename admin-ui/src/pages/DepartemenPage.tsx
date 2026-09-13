@@ -3,7 +3,7 @@ import MassUpload, { MassUploadButton } from '../components/MassUpload'
 import { departemenMassUploadConfig } from '../lib/massUploadConfigs'
 import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
-import { Plus, Pencil, Trash2, GripVertical, UserPlus, Network } from 'lucide-react'
+import { Plus, Pencil, Trash2, GripVertical, UserPlus, UserMinus, Network, X, Check } from 'lucide-react'
 import ImageUpload from '../components/ImageUpload'
 import Sortable from 'sortablejs'
 
@@ -134,7 +134,9 @@ export default function DepartemenPage() {
   }
 
   function getDeptMembers(deptName: string) {
-    return members.filter((m: any) => (m.department || '').toLowerCase() === (deptName || '').toLowerCase())
+    return members
+      .filter((m: any) => (m.department || '').toLowerCase() === (deptName || '').toLowerCase())
+      .map((m: any) => ({ ...m, _jabatan: positionFor(m) }))
   }
 
   function openAdd(pid?: string) {
@@ -169,14 +171,22 @@ export default function DepartemenPage() {
     setAssignDeptId(deptId); setCheckedMembers(new Set()); setAssignPosition(''); setShowAssign(true)
   }
 
-  // Jabatan is stored twice on purpose: `position` is what the Anggota modal
-  // and public pages display, `active_positions[period]` is the per-period
-  // record the member profile reads. Keeping them in step here means neither
-  // view ever disagrees with the other.
+  // Jabatan is per period. active_positions[period] is authoritative; the
+  // legacy global `position` only counts for the period the record was
+  // created in (mirrors Member.PositionFor on the server), so a jabatan from
+  // an earlier periode never leaks into the current one.
+  function positionFor(m: any): string {
+    const v = (m?.active_positions?.[period] || '').trim()
+    if (v) return v
+    return m?.period_label === period ? (m?.position || '') : ''
+  }
   function positionPayload(m: any, pos: string) {
     const ap = { ...(m?.active_positions || {}) }
     if (pos) ap[period] = pos; else delete ap[period]
-    return { position: pos, active_positions: ap }
+    const out: any = { active_positions: ap }
+    // keep the legacy field in step only for the record's own periode
+    if (m?.period_label === period) out.position = pos
+    return out
   }
 
   async function saveAssign() {
@@ -195,7 +205,7 @@ export default function DepartemenPage() {
   }
 
   function openPosition(m: any) {
-    setPosMember(m); setPosValue(m.position || m.active_positions?.[period] || '')
+    setPosMember(m); setPosValue(positionFor(m))
   }
 
   async function savePosition() {
@@ -220,7 +230,7 @@ export default function DepartemenPage() {
 
   // Existing jabatan names in this period, offered as suggestions so the
   // same role does not get typed five slightly different ways.
-  const knownPositions = Array.from(new Set(members.map((m: any) => (m.position || '').trim()).filter(Boolean))).sort()
+  const knownPositions = Array.from(new Set(members.map((m: any) => positionFor(m)).filter(Boolean))).sort()
 
   const unassigned = members.filter((m: any) => !m.department || !depts.some((d: any) => d.name?.toLowerCase() === m.department?.toLowerCase()))
   const tree = buildTree()
@@ -283,10 +293,10 @@ export default function DepartemenPage() {
               </div>
             </div>
             <div className="flex items-center justify-between gap-2 p-6 pt-0">
-              <button onClick={unassign} disabled={saving} className="text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg text-sm">Lepas dari kementerian</button>
+              <button onClick={unassign} disabled={saving} title="Lepas dari kementerian" className="text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg text-sm inline-flex items-center gap-1.5"><UserMinus className="w-4 h-4" />Lepas</button>
               <div className="flex gap-2">
-                <button onClick={() => setPosMember(null)} className="px-4 py-2 border rounded-lg text-sm">Batal</button>
-                <button onClick={savePosition} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">{saving ? '...' : 'Simpan'}</button>
+                <button onClick={() => setPosMember(null)} className="px-4 py-2 border rounded-lg text-sm inline-flex items-center gap-1.5"><X className="w-4 h-4" />Batal</button>
+                <button onClick={savePosition} disabled={saving} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm inline-flex items-center gap-1.5"><Check className="w-4 h-4" />{saving ? '...' : 'Simpan'}</button>
               </div>
             </div>
           </div>
@@ -350,7 +360,7 @@ function DeptCard({ d, depth, getMembers, onEdit, onDelete, onAddSub, onAssign, 
               <button type="button" onClick={() => onMember(m)} title="Klik untuk ubah jabatan" className="inline-flex items-center gap-1.5">
                 {m.photo_url ? <img loading="lazy" src={`${m.photo_url}?size=thumb`} className="w-4 h-4 rounded-full" alt="" /> : null}
                 <span>{m.full_name}</span>
-                {m.position && <span className="text-slate-400 border-l border-slate-200 pl-1.5">{m.position}</span>}
+                {m._jabatan && <span className="text-slate-400 border-l border-slate-200 pl-1.5">{m._jabatan}</span>}
               </button>
             </div>
           ))}

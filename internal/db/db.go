@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -192,6 +193,33 @@ type Member struct {
 	NIM             string             `bson:"nim"          json:"nim"`
 	CreatedAt       time.Time          `bson:"created_at"    json:"created_at,omitempty"`
 	SortOrder       int                `bson:"sort_order"    json:"sort_order"`
+}
+
+// PositionFor returns the member's jabatan for one period. Jabatan is per
+// period: a member who was "Staf Mariposa" last year is not that this year.
+// active_positions is authoritative; the legacy global position field is only
+// honoured for the period the record was originally created in, since that
+// is the period it described before per-period positions existed.
+func (m Member) PositionFor(period string) string {
+	if m.ActivePositions != nil {
+		if v := strings.TrimSpace(m.ActivePositions[period]); v != "" {
+			return v
+		}
+	}
+	if period != "" && period == m.PeriodLabel {
+		return m.Position
+	}
+	return ""
+}
+
+// ResolvePositions rewrites each member's Position to the value for the
+// given period, for callers that hand Member structs to templates or JSON
+// that only know about the single Position field.
+func ResolvePositions(members []Member, period string) []Member {
+	for i := range members {
+		members[i].Position = members[i].PositionFor(period)
+	}
+	return members
 }
 
 type Announcement struct {
