@@ -3,6 +3,8 @@ import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
 import { Plus, Pencil, Trash2, Search } from 'lucide-react'
 import ImageUpload from '../components/ImageUpload'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { anggotaMassUploadConfig } from '../lib/massUploadConfigs'
 
 function SuggestInput({ value, onChange, placeholder, suggestions }: { value: string; onChange: (v: string) => void; placeholder: string; suggestions: string[] }) {
   const [show, setShow] = useState(false)
@@ -30,6 +32,8 @@ export default function AnggotaPage() {
   const [members, setMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
+  const [deptNames, setDeptNames] = useState<string[]>([])
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
@@ -92,6 +96,14 @@ export default function AnggotaPage() {
     setSaving(false)
   }
 
+  async function openMassUpload() {
+    try {
+      const d = await apiGet(`/api/cms/departments?period=${period}`)
+      setDeptNames((d?.items || d || []).map((x: any) => x.name))
+    } catch { setDeptNames([]) }
+    setShowMassUpload(true)
+  }
+
   async function remove(id: string) {
     if (!confirm('Hapus anggota ini?')) return
     await apiDelete(`/api/cms/members/${id}`); load()
@@ -109,8 +121,21 @@ export default function AnggotaPage() {
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} className="pl-9 pr-3 py-2 border rounded-lg text-sm w-56" placeholder="Cari..." />
           </div>
           <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
+          <MassUploadButton onClick={openMassUpload} />
         </div>
       </div>
+
+      {showMassUpload && (
+        <MassUpload
+          config={{ ...anggotaMassUploadConfig, columns: anggotaMassUploadConfig.columns.map(c => c.key === 'department' ? { ...c, type: 'select', options: ['', ...deptNames] } : c) }}
+          onClose={() => setShowMassUpload(false)}
+          onSuccess={load}
+          extraFields={() => {
+            const p = periods.find((x: any) => x.label === period)
+            return { active_periods: { [period]: (p?.sub_periods || ['Gelombang 1'])[0] } }
+          }}
+        />
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">

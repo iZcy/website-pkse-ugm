@@ -5,6 +5,8 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import ReactQuill from 'react-quill-new'
 import 'react-quill-new/dist/quill.snow.css'
 import ImageUpload from '../components/ImageUpload'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { artikelMassUploadConfig } from '../lib/massUploadConfigs'
 
 interface Article {
   id: string
@@ -23,6 +25,7 @@ export default function ArtikelPage() {
   const [items, setItems] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState<Article>(empty())
@@ -71,10 +74,15 @@ export default function ArtikelPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-slate-800">Artikel</h2>
-        <button onClick={() => { setEditId(''); setForm(empty()); setShowModal(true) }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
-          <Plus className="w-4 h-4" /> Tambah
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => { setEditId(''); setForm(empty()); setShowModal(true) }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700">
+            <Plus className="w-4 h-4" /> Tambah
+          </button>
+          <MassUploadButton onClick={() => setShowMassUpload(true)} />
+        </div>
       </div>
+
+      {showMassUpload && <MassUpload config={artikelMassUploadConfig} onClose={() => setShowMassUpload(false)} onSuccess={load} />}
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">

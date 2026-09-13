@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
 import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { akunMassUploadConfig } from '../lib/massUploadConfigs'
 
 export default function AkunPage() {
   const [items, setItems] = useState<any[]>([])
   const [periods, setPeriods] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
@@ -59,8 +62,11 @@ export default function AkunPage() {
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} className="pl-9 pr-3 py-2 border rounded-lg text-sm w-48" placeholder="Cari..." />
           </div>
           <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
+          <MassUploadButton onClick={() => setShowMassUpload(true)} />
         </div>
       </div>
+
+      {showMassUpload && <MassUpload config={akunMassUploadConfig} onClose={() => setShowMassUpload(false)} onSuccess={load} />}
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">

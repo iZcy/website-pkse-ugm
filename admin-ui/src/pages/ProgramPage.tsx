@@ -3,6 +3,8 @@ import { usePeriod } from '../components/AdminLayout'
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api'
 import { Plus, Pencil, Trash2, Search } from 'lucide-react'
 import ImageUpload from '../components/ImageUpload'
+import MassUpload, { MassUploadButton } from '../components/MassUpload'
+import { programMassUploadConfig } from '../lib/massUploadConfigs'
 
 export default function ProgramPage() {
   const { period } = usePeriod()
@@ -10,6 +12,7 @@ export default function ProgramPage() {
   const [depts, setDepts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showMassUpload, setShowMassUpload] = useState(false)
   const [editId, setEditId] = useState('')
   const [saving, setSaving] = useState(false)
   const [deptFilter, setDeptFilter] = useState('')
@@ -68,8 +71,19 @@ export default function ProgramPage() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-slate-800">Program</h2>
-        <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
+        <div className="flex gap-2">
+          <button onClick={openAdd} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah</button>
+          <MassUploadButton onClick={() => setShowMassUpload(true)} />
+        </div>
       </div>
+
+      {showMassUpload && (
+        <MassUpload
+          config={{ ...programMassUploadConfig, columns: programMassUploadConfig.columns.map(c => c.key === 'department' ? { ...c, type: 'select', options: ['', ...depts.map((d: any) => d.name)] } : c) }}
+          onClose={() => setShowMassUpload(false)}
+          onSuccess={load}
+        />
+      )}
 
       <div className="flex gap-3 mb-4">
         <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)} className="border rounded-lg px-3 py-2 text-sm bg-white">
